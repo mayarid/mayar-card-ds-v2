@@ -190,7 +190,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Status badge',
-      description: 'For the detail drawer and card tables. Rows use the plain status text.',
+      description: 'For the detail drawer and card tables (with `withIcon`). Rows use TransactionRowStatus, the same Badge without a glyph.',
       rows: [
         { label: 'Badge', codeOnly: true },
         { label: 'With icon', props: { withIcon: true }, codeOnly: true },
@@ -238,7 +238,7 @@ export const doc: ComponentDoc = {
     { name: 'TransactionRowIcon', type: 'icon, tone: "neutral" | "credit" | "accent", accent', description: '36px disc (32 in cards). A letter as children for an initial.' },
     { name: 'TransactionRowTime', type: 'dateTime: string, timeZone?: string', description: '"08:15" in the viewer zone. Never truncates.' },
     { name: 'TransactionAmount', type: 'amount, direction, currency?, void?', description: '"− Rp …" / "+ Rp …"; void strikes it through.' },
-    { name: 'TransactionRowStatus status', type: 'TransactionStatus', description: 'Coloured text; nothing for SETTLED.' },
+    { name: 'TransactionRowStatus status', type: 'TransactionStatus', description: 'The status Badge (Menunggu, Ditolak, Dibalik); nothing for SETTLED.' },
     { name: 'TransactionStatusBadge', type: 'status, withIcon?, Badge props', description: 'The status chip for drawers and tables.' },
     { name: 'groupTransactionsByDay(rows, now?)', type: '(rows) => { key, label, summary, rows }[]', description: 'Day groups; declined and reversed rows are left out of the totals.' },
     { name: 'transactionIconStyle / categoryStyle', type: '(tx | name) => { icon, color, tint }', description: 'The ported transaction-style and category-style maps.' },
@@ -255,8 +255,9 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder shows the row status as caption-lg medium text ("Pending", "Gagal") in warning-text / danger-text. The app renders a Badge with "Menunggu" / "Ditolak". This port uses the Wonder look (TransactionRowStatus) with the app labels. Decision (2026-11-12): keep the app labels "Menunggu" / "Ditolak", not the Wonder labels "Pending" / "Gagal". The badge stays as TransactionStatusBadge for the drawer.',
-    'Wonder has one truncating meta line; the app keeps the time out of the truncation. Same look, this port follows the app.',
+    'The shipped app code is the source of truth (decision 2026-11-12). Wonder is the visual reference only.',
+    'Row status: the app renders the status Badge ("Menunggu" warning, "Ditolak" danger, "Dibalik" default) 2px under the amount; TransactionRowStatus does the same. Wonder shows caption-lg medium coloured text with the labels "Pending" / "Gagal".',
+    'Meta line: the app keeps the time out of the truncation. Wonder has one truncating meta line.',
     'REVERSED ("Dibalik"), hover, pressed, focus, selected and the day-cards layout come from the app; Wonder has no feed specimen for them.',
     'Pressed (sunken) and selected (primary tint) are additions of this port; the app has hover (canvas) and a highlight tint on the QRIS cards.',
     'The detail drawer stays out of this pattern; the example composes it with Dialog placement="drawer".',

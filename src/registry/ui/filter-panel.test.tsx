@@ -29,8 +29,8 @@ import {
 
 const STATUS = [
   { value: 'settled', label: 'Berhasil' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'declined', label: 'Gagal' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'declined', label: 'Ditolak' },
 ]
 const CARDS = [
   { value: 'c1', label: 'Operasional Jakarta', description: '•••• 4821' },
@@ -66,7 +66,7 @@ describe('FilterPanel', () => {
     const { unmount } = render(<Panel />)
     expect(trigger().dataset.count).toBeUndefined()
     unmount()
-    render(<Panel defaultValue={{ status: ['pending', 'declined'], card: ['c1'] }} />)
+    render(<Panel defaultValue={{ status: 'pending', card: ['c1'] }} />)
     expect(trigger().dataset.count).toBe('2')
     expect(trigger().textContent).toContain('2')
   })
@@ -78,36 +78,59 @@ describe('FilterPanel', () => {
     expect(await screen.findByRole('dialog', { name: 'Filter' })).toBeTruthy()
   })
 
-  it('Terapkan commits the draft with the draft count; the value drops empty filters', async () => {
+  it('Terapkan commits the draft with the draft count; status chips allow one choice', async () => {
     const onValueChange = vi.fn()
     render(<Panel onValueChange={onValueChange} />)
     await userEvent.click(trigger())
-    await userEvent.click(screen.getByRole('button', { name: 'Pending' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Gagal' }))
-    expect(screen.getByRole('button', { name: 'Pending' }).getAttribute('aria-pressed')).toBe('true')
+    await userEvent.click(screen.getByRole('button', { name: 'Menunggu' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Ditolak' }))
+    expect(screen.getByRole('button', { name: 'Menunggu' }).getAttribute('aria-pressed')).toBe('false')
+    expect(screen.getByRole('button', { name: 'Ditolak' }).getAttribute('aria-pressed')).toBe('true')
+    // A press on the pressed chip keeps it on, as the app.
+    await userEvent.click(screen.getByRole('button', { name: 'Ditolak' }))
+    expect(screen.getByRole('button', { name: 'Ditolak' }).getAttribute('aria-pressed')).toBe('true')
     await userEvent.click(screen.getByRole('checkbox', { name: /Iklan Meta/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Terapkan (2)' }))
-    expect(onValueChange).toHaveBeenCalledWith({ status: ['pending', 'declined'], card: ['c2'] })
+    expect(onValueChange).toHaveBeenCalledWith({ status: 'declined', card: ['c2'] })
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(trigger().dataset.count).toBe('2')
   })
 
   it('Batal drops the draft and the next open starts from the applied value', async () => {
     const onValueChange = vi.fn()
-    render(<Panel defaultValue={{ status: ['settled'] }} onValueChange={onValueChange} />)
+    render(<Panel defaultValue={{ status: 'settled' }} onValueChange={onValueChange} />)
     await userEvent.click(trigger())
-    await userEvent.click(screen.getByRole('button', { name: 'Pending' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Menunggu' }))
     await userEvent.click(screen.getByRole('button', { name: 'Batal' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(onValueChange).not.toHaveBeenCalled()
     await userEvent.click(trigger())
-    expect(screen.getByRole('button', { name: 'Pending' }).getAttribute('aria-pressed')).toBe('false')
+    expect(screen.getByRole('button', { name: 'Menunggu' }).getAttribute('aria-pressed')).toBe('false')
     expect(screen.getByRole('button', { name: 'Berhasil' }).getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('multiple chips build a list', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <FilterPanel onValueChange={onValueChange}>
+        <FilterPanelTrigger>Filter</FilterPanelTrigger>
+        <FilterPanelContent>
+          <FilterPanelSection label="Status">
+            <FilterPanelChips name="status" options={STATUS} multiple />
+          </FilterPanelSection>
+        </FilterPanelContent>
+      </FilterPanel>,
+    )
+    await userEvent.click(trigger())
+    await userEvent.click(screen.getByRole('button', { name: 'Menunggu' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Ditolak' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Terapkan (1)' }))
+    expect(onValueChange).toHaveBeenCalledWith({ status: ['pending', 'declined'] })
   })
 
   it('Atur ulang clears the draft only', async () => {
     const onValueChange = vi.fn()
-    render(<Panel defaultValue={{ status: ['settled'], amount: { min: 100000 } }} onValueChange={onValueChange} />)
+    render(<Panel defaultValue={{ status: 'settled', amount: { min: 100000 } }} onValueChange={onValueChange} />)
     await userEvent.click(trigger())
     expect(screen.getByRole('button', { name: 'Terapkan (2)' })).toBeTruthy()
     await userEvent.click(screen.getByRole('button', { name: 'Atur ulang' }))
@@ -118,7 +141,7 @@ describe('FilterPanel', () => {
 
   it('reset and the draft count touch only the filters in this panel', async () => {
     const onValueChange = vi.fn()
-    render(<Panel defaultValue={{ status: ['settled'], source: 'account' }} onValueChange={onValueChange} />)
+    render(<Panel defaultValue={{ status: 'settled', source: 'account' }} onValueChange={onValueChange} />)
     await userEvent.click(trigger())
     expect(screen.getByRole('button', { name: 'Terapkan (1)' })).toBeTruthy()
     await userEvent.click(screen.getByRole('button', { name: 'Atur ulang' }))
@@ -172,9 +195,9 @@ describe('FilterPanel', () => {
     }
     render(<Controlled />)
     await userEvent.click(trigger())
-    await userEvent.click(screen.getByRole('button', { name: 'Gagal' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Ditolak' }))
     await userEvent.click(screen.getByRole('button', { name: /^Terapkan/ }))
-    expect(screen.getByText('{"status":["declined"]}')).toBeTruthy()
+    expect(screen.getByText('{"status":"declined"}')).toBeTruthy()
   })
 
   it('active chips remove one filter; clear all; result count', async () => {
@@ -183,13 +206,13 @@ describe('FilterPanel', () => {
     render(
       <FilterActiveBar>
         <FilterChipList>
-          <FilterChip onRemove={onRemove}>Status: Pending, Gagal</FilterChip>
+          <FilterChip onRemove={onRemove}>Status: Ditolak</FilterChip>
           <FilterChipClearAll onClick={onClear} />
         </FilterChipList>
         <FilterResultCount count={2} />
       </FilterActiveBar>,
     )
-    await userEvent.click(screen.getByRole('button', { name: 'Hapus filter Status: Pending, Gagal' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Hapus filter Status: Ditolak' }))
     expect(onRemove).toHaveBeenCalledOnce()
     await userEvent.click(screen.getByRole('button', { name: 'Hapus filter' }))
     expect(onClear).toHaveBeenCalledOnce()
@@ -217,7 +240,7 @@ describe('FilterPanel', () => {
   it('has no axe violations (open panel inline, chips, empty result)', async () => {
     const { container } = render(
       <div>
-        <FilterPanel defaultValue={{ status: ['pending'] }}>
+        <FilterPanel defaultValue={{ status: 'pending' }}>
           <FilterPanelTrigger>Filter</FilterPanelTrigger>
           <FilterPanelContent inline>
             <FilterPanelSection label="Status">
@@ -229,7 +252,7 @@ describe('FilterPanel', () => {
           </FilterPanelContent>
         </FilterPanel>
         <FilterChipList>
-          <FilterChip onRemove={() => {}}>Status: Pending</FilterChip>
+          <FilterChip onRemove={() => {}}>Status: Menunggu</FilterChip>
         </FilterChipList>
         <FilterEmptyResult onClear={() => {}} />
       </div>,

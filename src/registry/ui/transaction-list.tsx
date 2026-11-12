@@ -38,8 +38,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 TransactionList (pattern). Wonder Dashboard › "Transaksi C Default v2" (Day Grouped
- * List) and the shipped app: lib/components/TransactionList.svelte (the Transaksi "day feed" and
+ * Mayar v2 TransactionList (pattern). The shipped app is the source of truth; Wonder Dashboard ›
+ * "Transaksi C Default v2" (Day Grouped List) is the visual reference. App sources: lib/components/TransactionList.svelte (the Transaksi "day feed" and
  * the QRIS "day cards"), CardRecentTransactions.svelte, lib/transaction-style.ts and
  * lib/category-style.ts (ported below as data).
  * feed: one white panel (radius 2xl, control shadow). Day header 36px min, component fill,
@@ -48,7 +48,7 @@ import { cn } from '@/lib/utils'
  * Row: 36px disc (32 in cards) · title body-sm medium ink · meta caption-lg muted
  * ("kategori · kartu · 08:15", the time never truncates) · amount body-sm semibold tabular,
  * "− Rp" out / "+ Rp" in (success-text), struck through and muted when declined or reversed.
- * The row status is coloured caption text under the amount, only when it is not Berhasil.
+ * The row status is the status Badge (md) 2px under the amount, only when it is not Berhasil.
  */
 
 // ── Data: types, statuses, category and merchant styles ─────────────────────
@@ -557,7 +557,7 @@ function TransactionRowEnd({ className, ...props }: React.ComponentProps<'span'>
     <span
       data-slot="transaction-row-end"
       {...props}
-      className={cn('flex shrink-0 flex-col items-end', className)}
+      className={cn('flex shrink-0 flex-col items-end gap-0.5', className)}
     />
   )
 }
@@ -596,7 +596,7 @@ interface TransactionStatusBadgeProps extends Omit<React.ComponentProps<typeof B
   withIcon?: boolean
 }
 
-/** The status chip (Berhasil, Menunggu, Ditolak, Dibalik) for a detail drawer or a card table. Rows use `TransactionRowStatus`. */
+/** The status chip (Berhasil, Menunggu, Ditolak, Dibalik) for a detail drawer or a card table. Rows use `TransactionRowStatus` (the same Badge, hidden for SETTLED). */
 function TransactionStatusBadge({ status, withIcon = false, ...props }: TransactionStatusBadgeProps) {
   const meta = TRANSACTION_STATUS[status]
   return (
@@ -607,33 +607,21 @@ function TransactionStatusBadge({ status, withIcon = false, ...props }: Transact
   )
 }
 
-const ROW_STATUS_TONE: Record<TransactionStatusTone, string> = {
-  success: 'text-success-text',
-  warning: 'text-warning-text',
-  danger: 'text-danger-text',
-  neutral: 'text-ink-2',
-}
-
-interface TransactionRowStatusProps extends Omit<React.ComponentProps<'span'>, 'children'> {
+interface TransactionRowStatusProps extends Omit<React.ComponentProps<typeof Badge>, 'variant' | 'children'> {
   status: TransactionStatus
 }
 
 /**
- * The status under the amount: caption-lg medium text in the status colour (Wonder). Renders
+ * The status under the amount: the status Badge (md, no glyph), as the app's feed rows. Renders
  * nothing for SETTLED, because a row only shows the exceptions.
  */
-function TransactionRowStatus({ className, status, ...props }: TransactionRowStatusProps) {
+function TransactionRowStatus({ status, ...props }: TransactionRowStatusProps) {
   if (status === 'SETTLED') return null
   const meta = TRANSACTION_STATUS[status]
   return (
-    <span
-      data-slot="transaction-row-status"
-      data-status={status}
-      {...props}
-      className={cn('text-caption-lg font-medium whitespace-nowrap', ROW_STATUS_TONE[meta.tone], className)}
-    >
+    <Badge data-slot="transaction-row-status" data-status={status} variant={meta.badge} {...props}>
       {meta.label}
-    </span>
+    </Badge>
   )
 }
 

@@ -1,19 +1,22 @@
 import { Clock01Icon } from '@hugeicons/core-free-icons'
 import { createContext, use, useId, useMemo } from 'react'
 
+import { AnimatedNumber } from '@/components/ui/animated-number'
 import { Icon } from '@/components/ui/icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getUsageTone, UsageBar } from '@/components/ui/usage-bar'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 BudgetCard (pattern). Wonder Dashboard › "Budget Card Option B Remaining Rows" (the
- * shipped Beranda module) and "Budget Error v2". Also the app: routes/+page.svelte `.module`.
+ * Mayar v2 BudgetCard (pattern). The app is the source of truth: routes/+page.svelte `.module`
+ * (the Beranda Anggaran module). Wonder reference: Dashboard › "Budget Card Option B Remaining Rows"
+ * and "Budget Error v2".
  * Card: white, radius 2xl, control shadow. Head 16 16 8: title title-sm, period caption-lg muted
  * (clock 14). Item: 12px vertical padding, 6px gap, hairline between items. Top row body-sm (name
- * medium ink, "Sisa"/"Lebih" semibold); the UsageBar (blue ramp, red at 100%+); bottom row
- * caption-lg muted "Rp … dari Rp …" and the percent (medium danger when over).
- * Foot: well fill, hairline, 12×16, "Total sisa" caption-lg medium ink-2, total body-sm semibold.
+ * medium ink, "Sisa"/"Lebih" semibold); the UsageBar (the app's blue ramp, red at 100%+); bottom
+ * row caption-lg muted "Rp … / Rp …" and the percent (danger-text when over, same weight).
+ * Foot: no fill, hairline, 12×16, "Total sisa" caption-lg medium ink-2, total body-sm semibold ink
+ * ("Rp … / Rp …", the remainder animates).
  * Status (backend budget.service): under < 85% · near 85–99% · at exactly 100% · over > 100%.
  * The app only paints "over" in red; near and at show in the bar ramp and in the spoken status.
  */
@@ -186,9 +189,9 @@ function BudgetCardItem({ className, category, spent, amount, index = 0, style, 
       <UsageBar value={Math.max(0, percent)} max={100} tone={getUsageTone(Math.round(percent))} />
       <span className="flex items-baseline justify-between gap-2 text-caption-lg text-muted tabular-nums">
         <span>
-          <Money value={spent} /> dari <Money value={amount} />
+          <Money value={spent} /> / <Money value={amount} />
         </span>
-        <span className={cn(over && 'font-medium text-danger-text')}>{PERCENT.format(percent)}%</span>
+        <span className={cn(over && 'text-danger-text')}>{PERCENT.format(percent)}%</span>
       </span>
     </li>
   )
@@ -201,7 +204,7 @@ function BudgetCardFooter({ className, ...props }: React.ComponentProps<'footer'
       data-slot="budget-card-footer"
       {...props}
       className={cn(
-        'mt-auto flex items-center justify-between gap-3 border-t border-border-subtle bg-well px-4 py-3 text-ink-2',
+        'mt-auto flex items-center justify-between gap-3 border-t border-border-subtle px-4 py-3 text-ink-2',
         '[&>:first-child]:text-caption-lg [&>:first-child]:font-medium',
         '[&>:last-child]:text-body-sm [&>:last-child]:font-semibold [&>:last-child]:text-ink [&>:last-child]:tabular-nums',
         className,
@@ -217,14 +220,27 @@ interface BudgetCardTotalProps extends Omit<React.ComponentProps<'span'>, 'child
   total: number
 }
 
-/** "Rp 4.150.000 dari Rp 12.000.000" for the foot. Negative remainders read "−Rp …" in red. */
+/**
+ * "Rp 4.150.000 / Rp 12.000.000" for the foot. The remainder rolls to a new value (AnimatedNumber,
+ * as the app); a negative remainder reads "−Rp …" with a true minus.
+ */
 function BudgetCardTotal({ className, remaining, total, ...props }: BudgetCardTotalProps) {
+  const { hidden } = use(BudgetCardContext)
   return (
     <span data-slot="budget-card-total" {...props} className={cn(className)}>
-      <span className={cn(remaining < 0 && 'text-danger-text')}>
+      {remaining < 0 ? (
         <Money value={remaining} signed />
-      </span>{' '}
-      dari <Money value={total} />
+      ) : (
+        <AnimatedNumber
+          value={remaining}
+          prefix="Rp "
+          format={{ maximumFractionDigits: 0 }}
+          hidden={hidden}
+          hiddenText={BUDGET_MASK}
+          hiddenLabel="disembunyikan"
+        />
+      )}{' '}
+      / <Money value={total} />
     </span>
   )
 }

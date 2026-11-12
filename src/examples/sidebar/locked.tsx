@@ -40,7 +40,7 @@ export default function SidebarLocked() {
         </SidebarHeader>
         <SidebarNav>
           <SidebarGroup>
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroupLabel>Utama</SidebarGroupLabel>
             <SidebarGroupContent>
               {items.map((item) => (
                 <SidebarItem
@@ -58,7 +58,7 @@ export default function SidebarLocked() {
         </SidebarNav>
         <SidebarFooter>
           {/* The KYC card replaces the plan quota while the nav is locked. */}
-          <SidebarNotice title="Verifikasi diperlukan">
+          <SidebarNotice title="Verifikasi diperlukan" href="#settings">
             Menu lain terbuka setelah verifikasi KYC Anda disetujui.
           </SidebarNotice>
           <SidebarAccount name="Ayu Lestari" email="ayu@warungayu.id" />

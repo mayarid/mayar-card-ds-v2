@@ -119,7 +119,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Chip × size (code-only)',
-      description: 'The Tim header chip. Brand for a live plan, default for Free, warning once it has ended.',
+      description: 'The Tim header chip of the app: a brand MD Badge for every tier, also Free. Suspended (warning) is not in the app.',
       rows: [
         ...TIERS.map((t) => ({ label: t[0]?.toUpperCase() + t.slice(1), props: { tier: t }, codeOnly: true })),
         { label: 'Suspended', props: { tier: 'starter', suspended: true }, codeOnly: true },
@@ -168,11 +168,11 @@ export const doc: ComponentDoc = {
     dont: ['Do not colour tiers differently: every tier uses the primary disc and ink.', 'Do not show "0 kartu" for a lapsed plan; pass suspended.'],
   },
   notes: [
-    'Wonder disc fill is #eef1ff and the ink #2d3dec. This port uses the nearest tokens: primary-light and primary.',
-    'Wonder suspended ink is #b47908; this port uses warning-text (#8b5f10), the token the app uses for the same line.',
-    'IconDisc has no 28px size, so the disc is built inside this file.',
-    'The quota line comes from getPlanQuota in plan-quota.tsx, so the badge and the quota card always say the same thing.',
-    'The shipped app has no row badge any more: its sidebar footer shows the Plan Quota card, and Tim uses a brand Badge. PlanBadgeChip ports that Badge (code-only).',
+    'Source of truth: the shipped app. Wonder is the visual reference; where they differ, this port follows the app.',
+    'Chip: the app Tim header uses <Badge variant="brand" size="md">Paket {tier}</Badge> for every tier, also Free. PlanBadgeChip matches it. The suspended (warning, "berakhir") chip is not in the app; it stays opt-in.',
+    'Row: the app has no row badge (its sidebar footer shows the Plan Quota card), so the row follows the Wonder specimen and paints it with the app tokens of the quota card: the tier in primary, the quota line in muted, and a lapsed plan in semibold warning-text. Wonder shows a #eef1ff disc, #2d3dec ink and #b47908 for the lapsed line.',
+    'The disc is the 28px primary IconDisc (16px glyph). Wonder draws a 15px glyph.',
+    'The quota line comes from getPlanQuota in plan-quota.tsx, so the badge and the quota card always say the same thing ("7 terpakai · 3 tersedia", "Paket berakhir").',
     'The "Row as link" focus state and the "With usage" line are code-only.',
   ],
 }

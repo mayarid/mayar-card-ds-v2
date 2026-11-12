@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/filter-panel'
 
 export default function FilterPanelNoMatch() {
-  const [chips, setChips] = useState(['Status: Gagal', 'Jumlah: ≥ Rp 10.000.000'])
+  const [chips, setChips] = useState(['Status: Ditolak', 'Jumlah: ≥ Rp 10.000.000'])
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-3">

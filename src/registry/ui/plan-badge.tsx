@@ -4,15 +4,19 @@ import { SparklesIcon } from '@hugeicons/core-free-icons'
 
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Icon } from '@/components/ui/icon'
+import { IconDisc } from '@/components/ui/icon-disc'
 import { getPlanQuota } from '@/components/ui/plan-quota'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Plan Badge. Wonder Dashboard page › "Plan Badge" (Starter, Business, Enterprise Unlimited,
- * Free, Suspended, Rail). A 28px primary-light disc with a 15px sparkles glyph, then the tier
- * (caption-lg semibold, primary) over the quota line (caption-sm, muted; warning-text semibold once
- * the plan has ended). Row: padding 10/14, gap 10, a border-subtle hairline on top.
- * Rail: the disc alone, centred. Chip (code-only): the brand Badge "Paket Starter" of the Tim header.
+ * Mayar v2 Plan Badge. Two forms:
+ * - PlanBadgeChip: the app plan chip of the Tim header (TeamView.svelte):
+ *   `<Badge variant="brand" size="md">Paket Business</Badge>`, brand for every tier, also Free.
+ * - PlanBadge row: Wonder Dashboard › "Plan Badge" (Starter, Business, Enterprise Unlimited, Free,
+ *   Suspended, Rail). The app has no row badge; it uses the app tokens of the sidebar quota card:
+ *   a 28px primary IconDisc with the sparkles glyph, the tier (caption-lg semibold, primary) over the
+ *   quota line (caption-sm, muted; semibold warning-text once the plan has ended). Row: padding
+ *   10/14, gap 10, a border-subtle hairline on top. Rail: the disc alone, centred.
  */
 
 type PlanTier = 'free' | 'starter' | 'business' | 'enterprise'
@@ -65,13 +69,9 @@ function PlanBadge({
   const isLink = render !== undefined
 
   const disc = (
-    <span
-      data-slot="plan-badge-icon"
-      aria-hidden
-      className="flex size-7 shrink-0 items-center justify-center rounded-pill bg-primary-light text-primary"
-    >
-      <Icon icon={SparklesIcon} size={15} strokeWidth={1.9} />
-    </span>
+    <IconDisc data-slot="plan-badge-icon" aria-hidden size={28} tone="primary" className="shrink-0">
+      <Icon icon={SparklesIcon} />
+    </IconDisc>
   )
 
   const defaultProps: useRender.ElementProps<'div'> = {
@@ -120,7 +120,7 @@ function PlanBadge({
 
 interface PlanBadgeChipProps extends Omit<BadgeProps, 'variant' | 'prefix'> {
   tier: PlanTier
-  /** The plan has lapsed: warning paint and "berakhir". */
+  /** Not in the app: the plan has lapsed, warning paint and "berakhir". */
   suspended?: boolean
   /** Print "Paket" before the tier name. */
   prefix?: boolean
@@ -128,10 +128,10 @@ interface PlanBadgeChipProps extends Omit<BadgeProps, 'variant' | 'prefix'> {
 
 /**
  * The plan as a small chip, e.g. in the Tim page header: `<PlanBadgeChip tier="business" />`.
- * Brand for a live plan, default for Free, warning once it has ended.
+ * Brand MD Badge for every tier (the app). `suspended` paints it warning.
  */
 function PlanBadgeChip({ tier, suspended = false, prefix = true, size = 'md', children, ...props }: PlanBadgeChipProps) {
-  const variant = suspended ? 'warning' : tier === 'free' ? 'default' : 'brand'
+  const variant = suspended ? 'warning' : 'brand'
   const text = getPlanLabel(tier, { prefix })
   return (
     <Badge

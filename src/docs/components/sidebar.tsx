@@ -133,7 +133,7 @@ function SidebarSpecimen(props: Record<string, PropValue>) {
         </SidebarRailOnly>
         <SidebarNav aria-label={props.navLabel ? String(props.navLabel) : undefined}>
           <SidebarGroup>
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroupLabel>Utama</SidebarGroupLabel>
             <SidebarGroupContent>{MAIN.map(item)}</SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup collapsible defaultOpen={!props.groupClosed}>
@@ -143,7 +143,7 @@ function SidebarSpecimen(props: Record<string, PropValue>) {
         </SidebarNav>
         <SidebarFooter>
           {locked ? (
-            <SidebarNotice title="Verifikasi diperlukan">Menu lain terbuka setelah verifikasi KYC Anda disetujui.</SidebarNotice>
+            <SidebarNotice title="Verifikasi diperlukan" href="#settings">Menu lain terbuka setelah verifikasi KYC Anda disetujui.</SidebarNotice>
           ) : props.plan === false ? null : (
             <SidebarExpandedOnly>
               <PlanQuota max={10} used={Number(props.used ?? 3)} render={<a href="#settings" />}>
@@ -177,7 +177,7 @@ function sidebarCode(props: Record<string, PropValue>) {
   </SidebarHeader>
   <SidebarNav>
     <SidebarGroup>
-      <SidebarGroupLabel>Menu</SidebarGroupLabel>
+      <SidebarGroupLabel>Utama</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarItem href="/" label="Beranda"${props.locked ? ' locked' : ' active'}><Icon icon={DashboardSquare01Icon} /></SidebarItem>
         <SidebarItem href="/cards" label="Kartu"${props.locked ? ' locked' : ''}><Icon icon={CreditCardIcon} /></SidebarItem>
@@ -302,11 +302,11 @@ export const doc: ComponentDoc = {
       description: 'Notifications, collapse, search, two groups, the plan quota card and the account menu.',
     },
     { id: 'sidebar/collapsed-rail', title: 'Collapsed rail', description: 'Controlled. Items keep an accessible name and show a tooltip.' },
-    { id: 'sidebar/locked', title: 'Locked until KYC', description: 'Locked items are not links; the notice replaces the quota card.' },
+    { id: 'sidebar/locked', title: 'Locked until KYC', description: 'Locked items are not links; the notice replaces the quota card. On the rail the notice is a link to the settings page.' },
     {
       id: 'sidebar/mobile-drawer',
       title: 'Mobile drawer',
-      description: 'The responsive layout below 1024px: off-canvas, inert while closed, closes on Escape, the backdrop or a nav tap.',
+      description: 'The responsive layout below 1024px: a modal drawer. Focus moves in and stays inside, and goes back to "Buka menu" on close. Escape, the backdrop, the ✕ or a nav tap close it.',
       codeOnly: true,
     },
   ],
@@ -319,11 +319,11 @@ export const doc: ComponentDoc = {
     { name: 'SidebarItem label', type: 'string', description: 'Text, and the accessible name and tooltip on the rail. The icon goes in children.' },
     { name: 'SidebarItem active', type: 'boolean', description: 'Current page: aria-current="page".' },
     { name: 'SidebarItem locked / disabled', type: 'boolean', description: 'No href, not focusable, clicks do nothing. Locked adds a lock and lockedHint.' },
-    { name: 'SidebarItem badge', type: 'ReactNode', description: 'Trailing count (SidebarItemCount). A dot on the rail.' },
+    { name: 'SidebarItem badge', type: 'ReactNode', description: 'Trailing count (SidebarItemCount: the brand SM pill Badge). A dot on the rail.' },
     { name: 'SidebarItem render', type: 'ReactElement', description: 'Router link, e.g. <Link to="/cards" />.' },
     { name: 'SidebarGroup collapsible / open / defaultOpen / onOpenChange', type: 'boolean / callback', description: 'The label toggles the group. Always open on the rail.' },
     { name: 'SidebarIconButton', type: 'label, dot, variant', description: 'Icon-only button. variant "surface" is the rail search.' },
-    { name: 'SidebarNotice', type: 'title, children', description: 'Warning card (KYC). A warning square with a tooltip on the rail.' },
+    { name: 'SidebarNotice', type: 'title, children, href, render, linkLabel', description: 'Warning card (KYC). On the rail: a 36px warning square that is a link (href, default "/settings", or your router link through render), named "<title> — buka Pengaturan", with the text in a tooltip.' },
     { name: 'SidebarAccount', type: 'name, email, avatarSrc, children', description: 'Avatar, name, email and the account menu.' },
     { name: 'SidebarExpandedOnly / SidebarRailOnly', type: 'component', description: 'Show children only expanded or only on the rail.' },
     { name: 'useSidebar', type: 'hook', description: 'rail, drawer, collapsed, mobileOpen and their setters.' },
@@ -341,14 +341,15 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Values come from the Wonder v2 specimens; they match the shipped Sidebar.svelte (264/68px, item 36px, radius xl, gap 10).',
-    'Wonder names the first group "Menu"; the app prints "Utama". The examples follow Wonder. The <nav> is still named "Utama".',
-    'Wonder rail icons are 18px, expanded icons 17px. This port does the same.',
-    'Nav Item Badge (Wonder): primary-light pill, caption-sm semibold. The rail shows a 7px primary dot with a canvas ring.',
-    'The app showed tooltips with CSS on hover and focus. This port uses Base UI Tooltip (portal, collision handling), disabled while expanded.',
-    'Disabled items, the pressed and expanded icon button, and the "near limit" footer are code-only. The KYC rail notice is a focusable note, not a link (the app linked it to /settings); pass your own link next to it if you need one.',
+    'Source of truth: the shipped app (Sidebar.svelte, routes/+layout.svelte). Wonder is the visual reference; where they differ, this port follows the app. Shared values: 264/68px, item 36px, radius xl, gap 10.',
+    'First group label: "Utama", as in the app. Wonder shows "Menu".',
+    'Item icons are 17px, also on the rail, as in the app. Wonder shows 18px rail icons.',
+    'Item count: the app nav has no count. SidebarItemCount uses the app Badge (brand, SM, pill), so it matches the other chips. Wonder "Nav Item Badge" shows a semibold primary-light pill. The rail shows a 7px primary dot with a canvas ring.',
+    'Phone drawer (accessibility fix, not in the app): it is a modal Base UI Dialog named "Menu". Focus moves into it on open, Tab and Shift+Tab stay inside, the page behind is inert and does not scroll, and focus goes back to the trigger on close. Escape, a press on the backdrop, the ✕ and a nav tap close it. It is not in the DOM while closed (the app keeps it off screen with inert).',
+    'KYC rail notice: a real link to the settings page, as in the app ("Verifikasi diperlukan — buka Pengaturan"). Pass render={<Link to="/settings" />} for a router link. The expanded card is a note with no link, as in the app.',
+    'The app shows tooltips with CSS on hover and focus. This port uses Base UI Tooltip (portal, collision handling), disabled while expanded.',
+    'Disabled items, the pressed and expanded icon button, and the item count are code-only (not on the Wonder page).',
     'Inactive items keep role="link" with aria-disabled: an <a> without href cannot carry aria-label on the rail.',
-    'The mobile drawer does not trap focus (the app does not either); Escape, the backdrop and a nav tap close it, and it is inert while closed.',
     'The ⌘K shortcut and the search field are not part of this file: compose Input inside SidebarExpandedOnly (see the App shell example).',
   ],
 }

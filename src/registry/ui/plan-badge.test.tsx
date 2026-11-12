@@ -40,15 +40,23 @@ describe('PlanBadge', () => {
     expect(screen.getByRole('link').getAttribute('href')).toBe('/settings')
   })
 
-  it('chip: brand, default for Free, warning when suspended', () => {
+  it('chip: brand for every tier (the app), warning when suspended', () => {
     const { rerender } = render(<PlanBadgeChip tier="business" data-testid="c" />)
     expect(screen.getByTestId('c').dataset.variant).toBe('brand')
     expect(screen.getByTestId('c').textContent).toBe('Paket Business')
     rerender(<PlanBadgeChip tier="free" data-testid="c" />)
-    expect(screen.getByTestId('c').dataset.variant).toBe('default')
+    expect(screen.getByTestId('c').dataset.variant).toBe('brand')
+    expect(screen.getByTestId('c').dataset.size).toBe('md')
     rerender(<PlanBadgeChip tier="starter" suspended prefix={false} data-testid="c" />)
     expect(screen.getByTestId('c').dataset.variant).toBe('warning')
     expect(screen.getByTestId('c').textContent).toBe('Starter berakhir')
+  })
+
+  it('the disc is a 28px primary IconDisc', () => {
+    render(<PlanBadge tier="starter" data-testid="b" />)
+    const disc = screen.getByTestId('b').querySelector('[data-slot="plan-badge-icon"]')
+    expect(disc?.getAttribute('data-size')).toBe('28')
+    expect(disc?.getAttribute('data-tone')).toBe('primary')
   })
 
   it('getPlanLabel', () => {

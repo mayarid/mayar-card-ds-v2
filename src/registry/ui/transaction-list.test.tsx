@@ -142,9 +142,13 @@ describe('TransactionList', () => {
     expect(link.getAttribute('type')).toBeNull()
   })
 
-  it('row status: coloured text, nothing for SETTLED', () => {
+  it('row status: the status Badge, nothing for SETTLED', () => {
     const { rerender } = render(<TransactionRowStatus status="PENDING" />)
-    expect(screen.getByText('Menunggu').className).toContain('text-warning-text')
+    const badge = screen.getByText('Menunggu')
+    expect(badge.dataset.slot).toBe('transaction-row-status')
+    expect(badge.dataset.variant).toBe('warning')
+    rerender(<TransactionRowStatus status="DECLINED" />)
+    expect(screen.getByText('Ditolak').dataset.variant).toBe('danger')
     rerender(<TransactionRowStatus status="SETTLED" />)
     expect(screen.queryByText('Berhasil')).toBeNull()
   })

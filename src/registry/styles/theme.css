@@ -183,6 +183,10 @@
   --color-card-chip-3: #b8923e;
   --color-card-mc-red: #eb001b;
   --color-card-mc-orange: #f79e1b;
+  --color-card-mc-overlap: #ff5f00; /* code-only (app) */
+  --color-card-swoosh: #e91e78; /* code-only (app) */
+  --color-card-chip-line: #785a1e80; /* code-only (app) */
+  --color-card-frost-icon: #9db7ff; /* code-only (app) */
 
   /* Auth hero and story backgrounds — Wonder hero/*, story/* */
   --color-hero-1: #f6f7fe;

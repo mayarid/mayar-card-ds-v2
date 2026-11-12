@@ -80,7 +80,8 @@ describe('BudgetCard', () => {
         </BudgetCardFooter>
       </BudgetCard>,
     )
-    expect(screen.getByText('−Rp 500.000')).toBeTruthy()
+    const total = document.querySelector('[data-slot=budget-card-total]')
+    expect(total?.textContent).toBe('−Rp 500.000 / Rp 1.000.000')
   })
 
   it('skeleton is a busy status with a label', () => {

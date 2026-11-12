@@ -1,4 +1,5 @@
 import { Collapsible } from '@base-ui/react/collapsible'
+import { Dialog } from '@base-ui/react/dialog'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { Tooltip } from '@base-ui/react/tooltip'
 import { useRender } from '@base-ui/react/use-render'
@@ -21,17 +22,19 @@ import {
 } from 'react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Sidebar. Wonder Dashboard page › "Nav Item", "Nav Icon", "Sidebar Collapsed Rail" and the
- * "Beranda" artboards. Source: the shipped app (lib/components/Sidebar.svelte, routes/+layout.svelte).
+ * Mayar v2 Sidebar. Source of truth: the shipped app (lib/components/Sidebar.svelte,
+ * routes/+layout.svelte). Visual reference: Wonder "Nav Item", "Nav Icon", "Sidebar Collapsed Rail".
  * Expanded 264px column, padding 26/12, gap 20, canvas fill. Collapsed rail 68px (desktop only).
- * Below lg (responsive layout) it is an off-canvas drawer over an overlay.
- * Item: 36px, radius xl, gap 10, 17px icon, body-base medium. States: default, hover (state-hover),
- * pressed (state-pressed), focus, active (surface + control shadow, aria-current="page"),
- * locked (placeholder ink, lock icon, not focusable) and disabled (code-only).
+ * Below lg (responsive layout) it is an off-canvas drawer: a modal Base UI Dialog over the overlay,
+ * so focus stays inside while it is open and goes back to the trigger when it closes.
+ * Item: 36px, radius xl, gap 10, 17px icon (also on the rail), body-base medium. States: default,
+ * hover (state-hover), pressed (state-pressed), focus, active (surface + control shadow,
+ * aria-current="page"), locked (placeholder ink, lock icon, not focusable) and disabled (code-only).
  */
 
 /* ── State ─────────────────────────────────────────────────────────────── */
@@ -138,6 +141,7 @@ interface SidebarProps extends Omit<React.ComponentProps<'aside'>, 'inert'> {
 
 /**
  * The app navigation: logo row, grouped links, then the plan quota and the account row.
+ * Below lg (responsive layout) it is a modal drawer that traps focus while open.
  *
  * Compose it: `<Sidebar><SidebarHeader>…</SidebarHeader><SidebarNav><SidebarGroup>`
  * `<SidebarGroupContent><SidebarItem href="/" label="Beranda" active><Icon icon={…} /></SidebarItem>`
@@ -154,7 +158,6 @@ function Sidebar({
   layout = 'responsive',
   className,
   children,
-  onKeyDown,
   ...props
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useControllableState(collapsedProp, defaultCollapsed, onCollapsedChange)
@@ -168,43 +171,57 @@ function Sidebar({
     [collapsed, setCollapsed, rail, drawer, mobileOpen, setMobileOpen],
   )
 
+  const classes = cn(
+    'flex shrink-0 flex-col gap-5 bg-canvas py-6.5 font-sans text-ink-2 outline-none',
+    rail ? 'w-17 items-center px-0' : 'w-66 px-3',
+    layout === 'responsive' && 'h-dvh',
+    drawer
+      ? cn(
+          'fixed inset-y-0 left-0 z-(--z-popover) shadow-popover',
+          'transition-transform duration-(--motion-fast) ease-smooth-out motion-reduce:transition-none',
+          'data-starting-style:-translate-x-full data-ending-style:-translate-x-full',
+        )
+      : 'transition-[width] duration-(--motion-fast) ease-smooth-out',
+    layout === 'responsive' && !drawer && 'sticky top-0',
+    className,
+  )
+
   return (
     <SidebarContext value={context}>
       <Tooltip.Provider delay={300}>
-        {drawer && mobileOpen ? (
-          <button
-            type="button"
-            aria-label="Tutup menu"
-            data-slot="sidebar-backdrop"
-            onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-(--z-dropdown) cursor-default bg-overlay animate-fade-in"
-          />
-        ) : null}
-        <aside
-          data-slot="sidebar"
-          data-layout={layout}
-          data-collapsed={rail ? '' : undefined}
-          data-drawer={drawer ? (mobileOpen ? 'open' : 'closed') : undefined}
-          // Slid off screen while closed; inert keeps Tab out of the hidden links.
-          inert={drawer && !mobileOpen}
-          onKeyDown={(event) => {
-            onKeyDown?.(event)
-            if (drawer && mobileOpen && event.key === 'Escape') setMobileOpen(false)
-          }}
-          {...props}
-          className={cn(
-            'flex shrink-0 flex-col gap-5 bg-canvas py-6.5 font-sans text-ink-2',
-            'transition-[width,transform] duration-(--motion-fast) ease-smooth-out',
-            rail ? 'w-17 items-center px-0' : 'w-66 px-3',
-            layout === 'responsive' && 'h-dvh',
-            layout === 'responsive' && !drawer && 'sticky top-0',
-            drawer && 'fixed inset-y-0 left-0 z-(--z-popover) shadow-popover',
-            drawer && !mobileOpen && '-translate-x-full',
-            className,
-          )}
-        >
-          {children}
-        </aside>
+        {drawer ? (
+          // The phone drawer is a modal dialog (a div: an <aside> cannot take role="dialog"). Tab and
+          // Shift+Tab stay inside, focus moves in on open and back to the trigger on close; Escape
+          // and a press on the backdrop close it.
+          <Dialog.Root open={mobileOpen} onOpenChange={(open) => setMobileOpen(open)}>
+            <Dialog.Portal>
+              <Dialog.Backdrop
+                data-slot="sidebar-backdrop"
+                className="fixed inset-0 z-(--z-dropdown) bg-overlay transition-opacity duration-(--motion-fast) ease-smooth-out data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none"
+              />
+              <Dialog.Popup
+                aria-label="Menu"
+                data-slot="sidebar"
+                data-layout={layout}
+                data-drawer={mobileOpen ? 'open' : 'closed'}
+                {...(props as Omit<Dialog.Popup.Props, 'className'>)}
+                className={classes}
+              >
+                {children}
+              </Dialog.Popup>
+            </Dialog.Portal>
+          </Dialog.Root>
+        ) : (
+          <aside
+            data-slot="sidebar"
+            data-layout={layout}
+            data-collapsed={rail ? '' : undefined}
+            {...props}
+            className={classes}
+          >
+            {children}
+          </aside>
+        )}
       </Tooltip.Provider>
     </SidebarContext>
   )
@@ -535,7 +552,7 @@ function SidebarItemElement({
     title: state === 'locked' ? lockedHint : undefined,
     className: cn(
       sidebarItemClass,
-      rail ? 'w-9 justify-center px-0 [&>svg]:size-4.5' : 'w-full px-2.5',
+      rail ? 'w-9 justify-center px-0' : 'w-full px-2.5',
       state === 'active' &&
         (rail ? 'border-border-subtle shadow-[0_1px_2px_var(--color-shadow-ambient)]' : 'shadow-control'),
       className,
@@ -599,15 +616,18 @@ function SidebarItem(props: SidebarItemProps) {
   )
 }
 
-/** A count after the item label (Wonder "Nav Item Badge"): primary-light pill, caption-sm semibold. */
-function SidebarItemCount({ className, ...props }: React.ComponentProps<'span'>) {
+/**
+ * A count after the item label: the brand SM pill Badge. The app nav has no count; this uses the
+ * app Badge so it matches the other chips.
+ */
+function SidebarItemCount({ className, ...props }: Omit<React.ComponentProps<'span'>, 'prefix'>) {
   return (
-    <span
+    <Badge
       data-slot="sidebar-item-count"
-      className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-pill bg-primary-light px-1.5 py-0.5 text-caption-sm font-semibold text-primary tabular-nums',
-        className,
-      )}
+      variant="brand"
+      size="sm"
+      shape="pill"
+      className={cn('shrink-0 tabular-nums', className)}
       {...props}
     />
   )
@@ -630,13 +650,35 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<'div'>) {
 interface SidebarNoticeProps extends Omit<React.ComponentProps<'div'>, 'title'> {
   /** The heading, e.g. "Verifikasi diperlukan". */
   title: string
+  /** Where the rail square links to (the page that resolves the notice). Default `/settings`. */
+  href?: string
+  /**
+   * The rail link element, e.g. your router link: `render={<Link to="/settings" />}`.
+   * It gets the 36px warning square, the accessible name and the tooltip.
+   */
+  render?: useRender.ComponentProps<'a'>['render']
+  /** Accessible name of the rail link. Default: `"<title> — buka Pengaturan"`. */
+  linkLabel?: string
+}
+
+function SidebarNoticeRailLink({ className, render, ...props }: useRender.ComponentProps<'a'>) {
+  const defaultProps: useRender.ElementProps<'a'> = {
+    'data-slot': 'sidebar-notice',
+    className: cn(
+      'relative hit-44 inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-border-subtle bg-warning-light text-warning-text no-underline outline-none focus-ring:outline-focus',
+      className,
+    ),
+    children: <Icon icon={AlertCircleIcon} size={18} />,
+  } as useRender.ElementProps<'a'>
+  return useRender({ defaultTagName: 'a', render, props: mergeProps<'a'>(defaultProps, props) })
 }
 
 /**
  * A warning card in the footer, e.g. the KYC card while the nav is locked. `children` is the body text.
- * On the rail it becomes a 36px warning square with the text in a tooltip.
+ * On the rail it becomes a 36px warning square that links to the page that resolves it (default
+ * `/settings`, as in the app), with the text in a tooltip. Pass `render` for a router link.
  */
-function SidebarNotice({ title, className, children, ...props }: SidebarNoticeProps) {
+function SidebarNotice({ title, href = '/settings', render, linkLabel, className, children, ...props }: SidebarNoticeProps) {
   const { rail } = useSidebar()
   if (rail) {
     return (
@@ -649,19 +691,12 @@ function SidebarNotice({ title, className, children, ...props }: SidebarNoticePr
           </>
         }
       >
-        <div
-          role="note"
-          tabIndex={0}
-          aria-label={title}
-          data-slot="sidebar-notice"
-          className={cn(
-            'inline-flex size-9 items-center justify-center rounded-xl border border-border-subtle bg-warning-light text-warning-text outline-none focus-ring:outline-focus',
-            className,
-          )}
-          {...props}
-        >
-          <Icon icon={AlertCircleIcon} size={18} />
-        </div>
+        <SidebarNoticeRailLink
+          href={href}
+          render={render}
+          aria-label={linkLabel ?? `${title} — buka Pengaturan`}
+          className={className}
+        />
       </RailTooltip>
     )
   }

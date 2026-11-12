@@ -26,16 +26,19 @@ import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 PIN Gate. Wonder Dashboard › "Kartu Action PIN A … v2" (Verify, Wrong PIN, Locked,
- * Set Create, Set Confirm). Source: the shipped app (components/PinGate.svelte, PinDigits.svelte,
- * SetPinModal.svelte).
+ * Mayar v2 PIN Gate. The shipped app is the source of truth (components/PinGate.svelte,
+ * PinDigits.svelte, SetPinModal.svelte); Wonder Dashboard › "Kartu Action PIN A … v2" (Verify,
+ * Wrong PIN, Locked, Set Create, Set Confirm) is the visual reference.
  * Layout: centred column, 20px gap. Header: 44px primary disc (lock, 20px), 6px below it, title-sm,
  * body-sm ink-2 subtitle, 6px apart. Field: the LG OtpInput (44×52, radius xl, masked dots) and one
  * 16px line under it (caption-lg medium, 14px icon): danger for a wrong PIN, warning when locked,
  * ink-2 while it checks, success-text after a match. Links: 16px apart with a 1×14 hairline.
- * Dialog form: Dialog SM 400, header none, padding 32 24 24 (DialogBody), corner close.
+ * Dialog form: the app's Dialog surface (SM 400, header none, dialog elevation), padding 32 24 24
+ * (DialogBody), corner close.
+ * Copy (app): "PIN salah, coba lagi" · "PIN tidak sama, ulangi dari awal" · locked "PIN terkunci
+ * sementara. Coba beberapa saat lagi." A server message replaces the first and the last.
  * States: empty, typing, checking, wrong PIN (danger + one shake + clear + refocus), locked
- * (countdown when the time is known), success. `confirm` asks twice and checks that both match.
+ * (unlocks by itself when the end time is known), success. `confirm` asks twice and checks that both match.
  */
 
 type PinGateStatus = 'idle' | 'checking' | 'error' | 'locked' | 'success'
@@ -45,13 +48,11 @@ type PinGateStep = 'create' | 'confirm'
 type PinGateResult =
   | boolean
   | {
-      /** The line under the boxes. Defaults to the `errorMessage` of the gate. */
+      /** The line under the boxes. Defaults to the `errorMessage` of the gate, or the lock notice with `locked`. */
       error?: string
-      /** Tries left before a lock. Writes "Sisa N percobaan…" when there is no `error`. */
-      attemptsLeft?: number
       /** The PIN is locked. */
       locked?: boolean
-      /** Seconds until the lock ends. Shows a countdown; without it the lock has no end on screen. */
+      /** Seconds until the lock ends. The gate unlocks by itself then; `usePinGate().lockSeconds` counts down. */
       retryAfter?: number
     }
 
@@ -87,20 +88,11 @@ function usePinGate() {
   return { status, step, message, lockSeconds, value, length }
 }
 
-/** "0:59", "12:05". */
-function formatCountdown(seconds: number) {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-}
-
-const lockedLine = (seconds: number | null) =>
-  seconds !== null && seconds > 0
-    ? `PIN terkunci. Coba lagi dalam ${formatCountdown(seconds)}.`
-    : 'PIN terkunci sementara. Coba beberapa saat lagi.'
+/** The app's lock notice. */
+const LOCKED_NOTICE = 'PIN terkunci sementara. Coba beberapa saat lagi.'
 
 interface PinGateProps extends Omit<React.ComponentProps<'div'>, 'onSubmit' | 'defaultValue'> {
-  /** Checks the PIN. Return `true` for a match, `false` or `{ error, attemptsLeft, locked, retryAfter }` otherwise. A throw counts as wrong. */
+  /** Checks the PIN. Return `true` for a match, `false` or `{ error, locked, retryAfter }` otherwise. A throw counts as wrong. */
   onSubmit: (pin: string) => Promise<PinGateResult> | PinGateResult
   /** Called after `onSubmit` returns `true`. Close the dialog or continue the action here. */
   onSuccess?: (pin: string) => void
@@ -118,7 +110,7 @@ interface PinGateProps extends Omit<React.ComponentProps<'div'>, 'onSubmit' | 'd
   defaultStatus?: PinGateStatus
   /** The line under the boxes at first render (with `defaultStatus`). */
   defaultMessage?: string
-  /** A lock end time from your server (ms since epoch or a Date). Shows the countdown until then. */
+  /** A lock end time from your server (ms since epoch or a Date). The gate stays locked until then. */
   lockedUntil?: number | Date
   /** Locks after this many wrong tries in a row (client side). Off when not set. */
   maxAttempts?: number
@@ -146,9 +138,9 @@ interface PinGateProps extends Omit<React.ComponentProps<'div'>, 'onSubmit' | 'd
  * A PIN prompt before a sensitive action: show card details, move balance, create or change a PIN.
  *
  * The gate owns the flow: it submits when every box is filled, shows "checking", clears the boxes,
- * shakes and refocuses after a wrong PIN, locks with a countdown, and calls `onSuccess` after a match.
- * Your `onSubmit(pin)` does the check and returns `true`, `false` or `{ error, attemptsLeft, locked,
- * retryAfter }`. Compose the parts: `<PinGate onSubmit={check}><PinGateHeader><PinGateIcon />
+ * shakes and refocuses after a wrong PIN, locks (and unlocks at the end time), and calls `onSuccess`
+ * after a match. Your `onSubmit(pin)` does the check and returns `true`, `false` or
+ * `{ error, locked, retryAfter }`. Compose the parts: `<PinGate onSubmit={check}><PinGateHeader><PinGateIcon />
  * <PinGateTitle>…</PinGateTitle></PinGateHeader><PinGateField /></PinGate>`. Put it in `PinGateDialog`
  * for the modal form.
  */
@@ -167,8 +159,8 @@ function PinGate({
   lockoutSeconds = 30,
   confirm = false,
   defaultStep = 'create',
-  errorMessage = 'PIN salah, coba lagi.',
-  mismatchMessage = 'PIN tidak sama, ulangi dari awal.',
+  errorMessage = 'PIN salah, coba lagi',
+  mismatchMessage = 'PIN tidak sama, ulangi dari awal',
   successMessage = 'PIN benar.',
   checkingMessage = 'Memeriksa PIN…',
   disabled = false,
@@ -258,12 +250,13 @@ function PinGate({
   }, [focusTick, autoFocus])
 
   const lock = useCallback(
-    (seconds: number | undefined) => {
+    (seconds: number | undefined, line?: string) => {
       setValue('')
       const t = Date.now()
       setNow(t)
       setLockEnd(seconds && seconds > 0 ? t + seconds * 1000 : null)
-      setMessage(null)
+      // A server message replaces the app's lock notice, as the app does.
+      setMessage(line ?? null)
       setStatus('locked')
     },
     [setStatus, setValue],
@@ -320,7 +313,7 @@ function PinGate({
         }
         const detail = result === false ? {} : result
         if (detail.locked) {
-          lock(detail.retryAfter)
+          lock(detail.retryAfter, detail.error)
           return
         }
         failures.current += 1
@@ -328,12 +321,7 @@ function PinGate({
           lock(lockoutSeconds)
           return
         }
-        const left =
-          detail.attemptsLeft ?? (maxAttempts !== undefined ? maxAttempts - failures.current : undefined)
-        fail(
-          detail.error ??
-            (left !== undefined ? `PIN salah. Sisa ${left} percobaan sebelum PIN terkunci.` : errorMessage),
-        )
+        fail(detail.error ?? errorMessage)
       })()
     },
     [
@@ -369,7 +357,7 @@ function PinGate({
     [effectiveStatus, setStatus, setValue],
   )
 
-  const line = effectiveStatus === 'locked' ? (message ?? lockedLine(timedLock ? lockSeconds : null)) : message
+  const line = effectiveStatus === 'locked' ? (message ?? LOCKED_NOTICE) : message
 
   const context = useMemo<PinGateContextValue>(
     () => ({
@@ -558,7 +546,7 @@ function PinGateDialog({ children, className, closeLabel, ...props }: PinGateDia
           header="none"
           closeLabel={closeLabel}
           initialFocus={() => document.querySelector<HTMLElement>('[data-slot=pin-gate-field] input:not(:disabled)')}
-          className={cn('shadow-drawer', className)}
+          className={className}
         >
           <DialogBody className="overflow-visible">{children}</DialogBody>
         </DialogContent>

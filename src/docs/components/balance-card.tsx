@@ -207,7 +207,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Tile interaction states',
-      description: 'A tile that is a tab. Wonder shows the selected fill (component); hover, pressed and focus come from the app.',
+      description: 'A tile that is a tab: hover wash, selected fill (component) and an inset focus outline, as the app.',
       rows: [{ label: 'Tile', props: { variant: 'tile' } }],
       columns: TILE_STATES,
       render,
@@ -261,11 +261,13 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder shows the value and its delta row 6px apart inside the 12px tile gap; the caption pulls up 6px after the value.',
-    'Wonder: the hide toggle is 32px with radius md and a muted glyph. It renders the ghost Button with rounded-md text-muted.',
-    'Wonder prints short figures ("Rp 48,25 jt"). Decision (2026-11-12): keep the app format, the full figure ("Rp 48.250.000") with tabular digits, on every balance and budget amount.',
+    'The shipped app code is the source of truth (decision 2026-11-12). Wonder is the visual reference only.',
+    'Value and caption: the app keeps the 12px tile gap between the value and the caption or delta row; the chip and its period ("vs 30 hari lalu") sit 6px apart. Wonder pulls the delta row up to 6px under the value.',
+    'Hide toggle: the app renders the ghost icon Button (32px, radius lg, ink-2 glyph). Wonder shows radius md and a muted glyph.',
+    'Strip: one row with a 24px gap (16px under 768px), as the top-up page.',
+    'Amounts: the full figure ("Rp 48.250.000") with tabular digits on every balance and budget amount. Wonder prints short figures ("Rp 48,25 jt").',
     'The strip variant, the neutral delta, the low-balance warning and the loading bones come from the app (top-up page, Beranda), not from a Wonder specimen.',
-    'The app animates with NumberFlow; this port uses the AnimatedNumber primitive (tween, no count-up on mount, reduced motion snaps).',
+    'The value animates with AnimatedNumber (NumberFlow, as the app). No count-up on mount; reduced motion snaps.',
     'Tiles as tabs: the app wires role="tab", arrow keys and the chart panel itself. This pattern styles aria-selected and leaves the tab logic to the page (or the Tabs primitive).',
   ],
 }

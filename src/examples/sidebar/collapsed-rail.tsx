@@ -44,7 +44,7 @@ export default function SidebarCollapsedRail() {
         </SidebarHeader>
         <SidebarNav>
           <SidebarGroup>
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroupLabel>Utama</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarItem href="#/" label="Beranda">
                 <Icon icon={DashboardSquare01Icon} />

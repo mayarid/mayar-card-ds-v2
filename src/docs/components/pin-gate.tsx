@@ -83,7 +83,7 @@ function Specimen({ status, value, message, step, countdown, links = true, dialo
   if (!dialog) return <div className="w-[360px]">{gate}</div>
   return (
     <Dialog>
-      <DialogPanel size="sm" header="none" className="shadow-drawer">
+      <DialogPanel size="sm" header="none">
         <DialogBody>{gate}</DialogBody>
       </DialogPanel>
     </Dialog>
@@ -94,13 +94,13 @@ const STATES: MatrixAxisItem[] = [
   { label: 'Empty', props: {} },
   { label: 'Typing', props: { value: '1234' } },
   { label: 'Checking', props: { status: 'checking', value: '123456', message: 'Memeriksa PIN…' }, codeOnly: true },
-  { label: 'Wrong PIN', props: { status: 'error', message: 'PIN salah. Sisa 4 percobaan sebelum PIN terkunci.' } },
+  { label: 'Wrong PIN', props: { status: 'error', message: 'PIN salah, coba lagi' } },
   { label: 'Locked', props: { status: 'locked' } },
-  { label: 'Locked (countdown)', props: { countdown: true }, codeOnly: true },
+  { label: 'Locked (timed)', props: { countdown: true }, codeOnly: true },
   { label: 'Success', props: { status: 'success', value: '246810', message: 'PIN benar.' }, codeOnly: true },
   { label: 'Set: create', props: { step: 'create' } },
   { label: 'Set: confirm', props: { step: 'confirm', value: '12' } },
-  { label: 'Set: mismatch', props: { step: 'create', status: 'error', message: 'PIN tidak sama, ulangi dari awal.' } },
+  { label: 'Set: mismatch', props: { step: 'create', status: 'error', message: 'PIN tidak sama, ulangi dari awal' } },
 ]
 
 function specimenProps(props: Record<string, PropValue>): SpecimenProps {
@@ -194,7 +194,7 @@ export const doc: ComponentDoc = {
       if (!dialog) return <div className="w-[360px]">{gate}</div>
       return (
         <Dialog>
-          <DialogPanel size="sm" header="none" className="shadow-drawer">
+          <DialogPanel size="sm" header="none">
             <DialogBody>{gate}</DialogBody>
           </DialogPanel>
         </Dialog>
@@ -230,25 +230,25 @@ export const doc: ComponentDoc = {
     {
       id: 'pin-gate/inline',
       title: 'Inline, client-side lock',
-      description: 'maxAttempts={3} locks the boxes for lockoutSeconds with a countdown. The right PIN is 246810.',
+      description: 'maxAttempts={3} locks the boxes for lockoutSeconds, then unlocks them. The right PIN is 246810.',
       codeOnly: true,
     },
     {
       id: 'pin-gate/server-lock',
       title: 'Server tries and lock',
-      description: 'onSubmit returns { attemptsLeft } and then { locked, retryAfter }.',
+      description: 'onSubmit returns { error } with the server line, then { locked, retryAfter }.',
       codeOnly: true,
     },
   ],
   props: [
-    { name: 'onSubmit', type: '(pin: string) => Promise<PinGateResult> | PinGateResult', description: 'Checks the PIN. true: match. false or { error?, attemptsLeft?, locked?, retryAfter? }: wrong or locked. A throw counts as wrong (its message becomes the line).' },
+    { name: 'onSubmit', type: '(pin: string) => Promise<PinGateResult> | PinGateResult', description: 'Checks the PIN. true: match. false or { error?, locked?, retryAfter? }: wrong or locked. error replaces the line (also the lock notice). A throw counts as wrong (its message becomes the line).' },
     { name: 'onSuccess', type: '(pin: string) => void', description: 'After a match. Close the dialog or continue the action.' },
     { name: 'onStatusChange', type: '(status: PinGateStatus) => void', description: 'idle, checking, error, locked, success.' },
     { name: 'length', type: '4 | 6', default: '6', description: 'Number of boxes.' },
     { name: 'value / defaultValue / onValueChange', type: 'string', description: 'The typed digits, controlled or uncontrolled. The gate clears them after a wrong PIN.' },
     { name: 'maxAttempts', type: 'number', description: 'Client-side lock after this many wrong tries in a row.' },
     { name: 'lockoutSeconds', type: 'number', default: '30', description: 'Length of the client-side lock.' },
-    { name: 'lockedUntil', type: 'number | Date', description: 'A lock end from your server. Shows the countdown until then.' },
+    { name: 'lockedUntil', type: 'number | Date', description: 'A lock end from your server. The gate stays locked until then; usePinGate().lockSeconds counts down for a custom line.' },
     { name: 'confirm', type: 'boolean', default: 'false', description: 'Create + confirm: asks twice, restarts on a mismatch, submits the matched PIN.' },
     { name: 'errorMessage / mismatchMessage / checkingMessage / successMessage', type: 'string', description: 'The line under the boxes for each case.' },
     { name: 'defaultStatus / defaultMessage / defaultStep', type: 'PinGateStatus / string / "create" | "confirm"', description: 'Start state. For a gate that opens locked, and for docs and QA pages.' },
@@ -259,7 +259,7 @@ export const doc: ComponentDoc = {
   ],
   guidelines: {
     do: [
-      'Check the PIN on the server. Return attemptsLeft and retryAfter so the user knows what happens next.',
+      'Check the PIN on the server. Return its line as error, and retryAfter with a lock, so the gate unlocks on time.',
       'Use DialogTitle and DialogDescription in the header of PinGateDialog, so the dialog has a name.',
       'Close the dialog or continue the action in onSuccess, after a short pause so the success line is seen.',
       'Use confirm when the user creates or changes a PIN.',
@@ -271,12 +271,13 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder specifies Verify (empty), Wrong PIN, Locked, Set Create and Set Confirm in the dialog. Checking, Success, the lock countdown and the inline form are code-only.',
-    'Wonder locked line: "PIN terkunci sementara. Coba beberapa saat lagi." with no time. The countdown ("Coba lagi dalam 0:59") is code-only and shows only when the end time is known.',
-    'Wonder wrong-PIN line: "PIN salah. Sisa 4 percobaan sebelum PIN terkunci." The app shows "PIN salah, coba lagi". This port writes the Wonder line when attemptsLeft is known and the app line otherwise.',
-    'Wonder panel shadow is 0 24px 48px shadow-modal, not the dialog elevation; PinGateDialog uses shadow-drawer (the same drop plus the 1px ring).',
-    'Wonder subtitle is ink-2; DialogDescription is muted by default, so the examples pass className="text-ink-2".',
+    'The shipped app code is the source of truth (decision 2026-11-12). Wonder is the visual reference only.',
+    'Wonder specifies Verify (empty), Wrong PIN, Locked, Set Create and Set Confirm in the dialog. Checking, Success, the timed lock and the inline form are code-only.',
+    'Wrong PIN: the app line is "PIN salah, coba lagi" (or the server message). Wonder shows "PIN salah. Sisa 4 percobaan sebelum PIN terkunci."',
+    'Locked: the app line is "PIN terkunci sementara. Coba beberapa saat lagi." (or the server message), with no time. With retryAfter or lockedUntil the gate unlocks by itself at the end.',
+    'Dialog surface: the app uses its Dialog elevation; PinGateDialog keeps the Dialog default. Wonder shows a 0 24px 48px shadow-modal drop.',
+    'Checking (spinner + "Memeriksa PIN…") and Success ("PIN benar.") lines are additions of this port; the app leaves the line empty while it checks and closes on a match. Pass checkingMessage="" / successMessage="" for the app behaviour.',
+    'Wonder subtitle is ink-2, as the app; DialogDescription is muted by default, so the examples pass className="text-ink-2".',
     'The step dots of confirm (6px, the active one 16px wide) come from the app; the Set Confirm specimen has the same shape.',
-    'The Dashboard page id in the brief was the Auth page; the specimens were read from the Dashboard page.',
   ],
 }

@@ -1,5 +1,3 @@
-import { Toggle } from '@base-ui/react/toggle'
-import { ToggleGroup as BaseToggleGroup } from '@base-ui/react/toggle-group'
 import {
   ArrowDown01Icon,
   Cancel01Icon,
@@ -43,18 +41,18 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Filter Panel. Wonder Dashboard › "Transaksi C Filter Panel v2", "Transaksi C Filter
- * Active v2", "Transaksi C Filter No Match v2". Source: the shipped app (components/FilterPopover.svelte,
- * TransactionFilters.svelte).
+ * Mayar v2 Filter Panel. The shipped app is the source of truth (components/FilterPopover.svelte,
+ * TransactionFilters.svelte); Wonder Dashboard › "Transaksi C Filter Panel v2", "Transaksi C Filter
+ * Active v2", "Transaksi C Filter No Match v2" is the visual reference.
  * Trigger: 36px, radius xl, surface + control shadow, 16px icon, body-sm medium ink label, a 20px primary
- * count pill when filters are applied, an optional 14px chevron (the date button). Hover canvas, open
- * component (Wonder), focus outline.
- * Panel: 380 wide, radius 2xl, ring + 0 16px 32px shadow-modal. Header 12×16, hairline, body-base
+ * count pill when filters are applied, an optional 14px chevron (the date button). Hover and open
+ * canvas, a background-color transition (quick, smooth-out; none with reduced motion), pointer cursor.
+ * Panel: 380 wide, the Popover surface (radius 2xl, shadow-popover). Header 12×16, hairline, body-base
  * semibold title and "Atur ulang". Body 16px padding, sections 16px apart, caption-lg semibold ink-2
  * labels 8px above the control. Footer 12×16, hairline, "Batal" + "Terapkan (N)", both MD.
- * Section controls: multi-select chips (28px, radius md, caption-lg; selected primary-light + primary
- * ring), checkbox list (with search), select, amount (mode track + Rp inputs), date range (presets + two
- * date inputs). Active chips: 28px primary-light, radius md, × to remove, "Hapus filter", result count.
+ * Section controls: the Toggle Group SM chips, one choice (as the app; `multiple` for a list),
+ * checkbox list (with search), select, amount (mode track + Rp inputs, Input LG), date range (presets +
+ * two date inputs). Active chips: 28px primary-light, radius md, × to remove, "Hapus filter", result count.
  * Draft contract: the panel edits a draft; "Terapkan" commits it; "Batal", Esc and an outside press drop it.
  */
 
@@ -339,8 +337,8 @@ function FilterPanel({
 const triggerClassName = cn(
   'group/filter-trigger relative hit-44 inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border-0 px-3 whitespace-nowrap',
   'bg-surface font-sans text-body-sm font-medium text-ink-2 shadow-control outline-none select-none touch-manipulation',
-  'transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
-  'hover-fine:bg-canvas opened:bg-component focus-ring:outline-focus',
+  'transition-[background-color] duration-(--motion-quick) ease-smooth-out motion-reduce:transition-none',
+  'hover-fine:bg-canvas opened:bg-canvas focus-ring:outline-focus',
   'data-[count]:pr-2',
   'disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground disabled:shadow-none',
   '[&_svg]:pointer-events-none [&_svg]:shrink-0',
@@ -385,8 +383,6 @@ function FilterPanelTrigger({ className, children, icon = FilterHorizontalIcon, 
 }
 
 /* ── Panel ────────────────────────────────────────────────────────────────── */
-
-const panelShadow = 'shadow-[0_0_0_1px_var(--color-shadow-ring),0_16px_32px_var(--color-shadow-modal)]'
 
 interface FilterPanelContentProps extends Omit<React.ComponentProps<'div'>, 'title'> {
   /** The header title. `null` drops the header (and the reset link). */
@@ -463,7 +459,7 @@ function FilterPanelContent({
   const shared = {
     'data-slot': 'filter-panel-content',
     style: { width, ...style },
-    className: cn(panelShadow, className),
+    className,
   }
 
   if (inline) {
@@ -519,46 +515,43 @@ function FilterPanelSection({ className, label, children, ...props }: FilterPane
   )
 }
 
-const chipClassName = cn(
-  'relative hit-44 inline-flex h-7 cursor-pointer items-center rounded-md border-0 bg-transparent px-2.5 whitespace-nowrap',
-  'font-sans text-caption-lg font-medium text-ink-2 shadow-ring outline-none select-none touch-manipulation',
-  'before:h-[max(100%,40px)]!',
-  'transition-[background-color,box-shadow,color] duration-(--motion-quick) ease-smooth-out',
-  'hover-fine:not-data-pressed:bg-canvas hover-fine:not-data-pressed:text-ink focus-ring:outline-focus',
-  'data-pressed:bg-primary-light data-pressed:text-primary data-pressed:shadow-[0_0_0_1px_var(--color-primary)]',
-  'data-disabled:cursor-not-allowed data-disabled:bg-disabled data-disabled:text-disabled-foreground data-disabled:shadow-none',
-)
-
 interface FilterPanelChipsProps {
   className?: string
   /** The filter key in the value. */
   name: string
   options: readonly FilterOption[]
-  /** Several chips can be on (a list). `false`: one chip, pressed again to clear (a string). */
+  /**
+   * `false` (default, as the app): one chip is on and the value is a string; a press on it keeps it on
+   * ("Atur ulang" clears it). `true`: any number of chips, the value is a list.
+   */
   multiple?: boolean
 }
 
-/** Toggle chips (28px). Multi-select by default; the value is a list of option values. */
-function FilterPanelChips({ name, options, multiple = true, className }: FilterPanelChipsProps) {
+/** Toggle chips: the Toggle Group SM chips (28px). One choice by default, as the app's Status, Tipe and Struk. */
+function FilterPanelChips({ name, options, multiple = false, className }: FilterPanelChipsProps) {
   const { draft, setField } = useFilterField(name, 'FilterPanelChips')
   const { labelId } = use(SectionContext)
   const raw = draft[name]
-  const value = Array.isArray(raw) ? raw : typeof raw === 'string' && raw ? [raw] : []
-  return (
-    <BaseToggleGroup
-      data-slot="filter-panel-chips"
-      multiple={multiple}
-      value={value}
-      onValueChange={(next) => setField(name, multiple ? next : next[0])}
-      aria-labelledby={labelId || undefined}
-      className={cn('flex flex-wrap gap-1.5', className)}
-    >
-      {options.map((option) => (
-        <Toggle key={option.value} value={option.value} disabled={option.disabled} className={chipClassName}>
-          {option.label}
-        </Toggle>
-      ))}
-    </BaseToggleGroup>
+  const list = Array.isArray(raw) ? raw : typeof raw === 'string' && raw ? [raw] : []
+  const items = options.map((option) => (
+    <ToggleGroupItem key={option.value} value={option.value} disabled={option.disabled}>
+      {option.label}
+    </ToggleGroupItem>
+  ))
+  const shared = {
+    'data-slot': 'filter-panel-chips',
+    size: 'sm' as const,
+    'aria-labelledby': labelId || undefined,
+    className,
+  }
+  return multiple ? (
+    <ToggleGroup {...shared} multiple value={list} onValueChange={(next) => setField(name, next)}>
+      {items}
+    </ToggleGroup>
+  ) : (
+    <ToggleGroup {...shared} value={list[0] ?? ''} onValueChange={(next) => setField(name, next)}>
+      {items}
+    </ToggleGroup>
   )
 }
 
@@ -591,6 +584,7 @@ function FilterPanelChecklist({
   const shown = q
     ? options.filter((o) => o.label.toLowerCase().includes(q) || o.description?.toLowerCase().includes(q))
     : options
+  const selected = new Set(value)
 
   return (
     <div data-slot="filter-panel-checklist" className={cn('flex flex-col gap-2', className)} {...props}>
@@ -615,7 +609,7 @@ function FilterPanelChecklist({
             <Checkbox
               key={option.value}
               className="w-full items-center rounded-lg px-2.5 hover-fine:bg-state-hover [&_[data-slot=checkbox]]:mt-0"
-              checked={value.includes(option.value)}
+              checked={selected.has(option.value)}
               disabled={option.disabled}
               description={option.description}
               trailing={option.trailing}
@@ -649,7 +643,15 @@ function FilterPanelSelect({ name, options, allLabel = 'Semua', className }: Fil
   const items = useMemo(() => [{ value: '', label: allLabel }, ...options.map(({ value: v, label }) => ({ value: v, label }))], [options, allLabel])
   return (
     <Select<string> items={items} value={value} onValueChange={(next) => setField(name, next || undefined)}>
-      <SelectTrigger size="lg" aria-labelledby={labelId || undefined} className={cn('rounded-lg', className)}>
+      <SelectTrigger
+        size="lg"
+        aria-labelledby={labelId || undefined}
+        // The app's Sumber trigger: radius lg and a pointer cursor; the hover fill eases in.
+        className={cn(
+          'cursor-pointer rounded-lg transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out motion-reduce:transition-none',
+          className,
+        )}
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -713,7 +715,7 @@ function AmountControl({ name, className }: FilterPanelAmountProps) {
     setField(name, rangeFor(nextMode, a, b))
   }
 
-  const prefix = <InputPrefix className="font-normal text-muted">Rp</InputPrefix>
+  const prefix = <InputPrefix>Rp</InputPrefix>
   const group = label || 'Jumlah'
   return (
     <div data-slot="filter-panel-amount" className={cn('flex flex-col gap-2', className)}>
@@ -735,7 +737,6 @@ function AmountControl({ name, className }: FilterPanelAmountProps) {
         <Input
           size="lg"
           inputMode="numeric"
-          className="rounded-lg"
           leading={prefix}
           placeholder={mode === 'range' ? 'Min' : 'Jumlah'}
           aria-label={mode === 'range' ? `${group} minimum` : group}
@@ -746,7 +747,6 @@ function AmountControl({ name, className }: FilterPanelAmountProps) {
           <Input
             size="lg"
             inputMode="numeric"
-            className="rounded-lg"
             leading={prefix}
             placeholder="Maks"
             aria-label={`${group} maksimum`}
@@ -789,28 +789,24 @@ function FilterPanelDateRange({ name, today: todayProp, className }: FilterPanel
 
   return (
     <div data-slot="filter-panel-date-range" className={cn('flex flex-col gap-3', className)}>
-      <BaseToggleGroup
+      <ToggleGroup
+        size="sm"
         aria-labelledby={labelId || undefined}
-        value={active ? [active] : []}
-        onValueChange={(next) => {
-          const preset = next[0] as DatePreset | undefined
-          set(preset ? datePresetRange(preset, today) : {})
-        }}
-        className="flex flex-wrap gap-1.5"
+        value={active ?? ''}
+        onValueChange={(preset) => set(datePresetRange(preset as DatePreset, today))}
       >
         {DATE_PRESETS.map((p) => (
-          <Toggle key={p.value} value={p.value} className={chipClassName}>
+          <ToggleGroupItem key={p.value} value={p.value}>
             {p.label}
-          </Toggle>
+          </ToggleGroupItem>
         ))}
-      </BaseToggleGroup>
+      </ToggleGroup>
       <div className="grid grid-cols-2 gap-2">
         <label className="flex min-w-0 flex-col gap-1 text-caption-lg text-ink-2">
           Dari
           <Input
             type="date"
             size="lg"
-            className="rounded-lg"
             max={range.to ?? today}
             value={range.from ?? ''}
             onValueChange={(from) => set({ ...range, from: from || undefined })}
@@ -821,7 +817,6 @@ function FilterPanelDateRange({ name, today: todayProp, className }: FilterPanel
           <Input
             type="date"
             size="lg"
-            className="rounded-lg"
             min={range.from}
             max={today}
             value={range.to ?? ''}
@@ -843,19 +838,18 @@ function FilterActiveBar({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 /** The chips and the "Hapus filter" link, 8px apart, wrapping. */
-function FilterChipList({ className, ...props }: React.ComponentProps<'div'>) {
+function FilterChipList({ className, ...props }: React.ComponentProps<'ul'>) {
   return (
-    <div
+    <ul
       data-slot="filter-chip-list"
-      role="list"
       aria-label="Filter aktif"
-      className={cn('flex min-w-0 flex-wrap items-center gap-2', className)}
+      className={cn('m-0 flex min-w-0 list-none flex-wrap items-center gap-2 p-0', className)}
       {...props}
     />
   )
 }
 
-interface FilterChipProps extends React.ComponentProps<'span'> {
+interface FilterChipProps extends React.ComponentProps<'li'> {
   /** Removes this filter. The × button is named "Hapus filter {label}". */
   onRemove?: () => void
   /** The text for the × button name. Defaults to the chip text when it is a string. */
@@ -866,9 +860,8 @@ interface FilterChipProps extends React.ComponentProps<'span'> {
 function FilterChip({ className, children, onRemove, label, ...props }: FilterChipProps) {
   const name = label ?? (typeof children === 'string' ? children : 'ini')
   return (
-    <span
+    <li
       data-slot="filter-chip"
-      role="listitem"
       className={cn(
         'inline-flex h-7 max-w-full items-center gap-1 rounded-md bg-primary-light pl-2.5 text-caption-lg font-medium text-primary',
         onRemove ? 'pr-0.5' : 'pr-2.5',
@@ -892,18 +885,18 @@ function FilterChip({ className, children, onRemove, label, ...props }: FilterCh
           <Icon icon={Cancel01Icon} size={14} />
         </button>
       ) : null}
-    </span>
+    </li>
   )
 }
 
 /** "Hapus filter": clears every applied filter. 4px further from the last chip. */
 function FilterChipClearAll({ className, children = 'Hapus filter', ...props }: React.ComponentProps<typeof Button>) {
   return (
-    <span role="listitem" className="ml-1 inline-flex">
+    <li className="ml-1 inline-flex">
       <Button variant="link-muted" size="sm" className={cn('text-caption-lg', className)} {...props}>
         {children}
       </Button>
-    </span>
+    </li>
   )
 }
 

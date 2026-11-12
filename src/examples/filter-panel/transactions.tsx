@@ -31,8 +31,8 @@ const TODAY = '2026-11-12'
 
 const STATUS = [
   { value: 'settled', label: 'Berhasil' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'declined', label: 'Gagal' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'declined', label: 'Ditolak' },
   { value: 'reversed', label: 'Dibalik' },
 ]
 const TYPES = [
@@ -63,16 +63,17 @@ const labelOf = (options: { value: string; label: string }[], values: string[]) 
 export default function FilterPanelTransactions() {
   const [filters, setFilters] = useState<FilterValues>({ date: { from: '2026-10-14', to: TODAY } })
 
-  const status = (filters.status as string[] | undefined) ?? []
-  const types = (filters.type as string[] | undefined) ?? []
+  // Status and Tipe take one choice each (as the app), so their values are strings.
+  const status = filters.status as string | undefined
+  const type = filters.type as string | undefined
   const cards = (filters.card as string[] | undefined) ?? []
   const amount = filters.amount as NumberRange | undefined
   const date = filters.date as DateRange | undefined
 
   const rows = ROWS.filter(
     (r) =>
-      (status.length === 0 || status.includes(r.status)) &&
-      (types.length === 0 || types.includes(r.type)) &&
+      (!status || r.status === status) &&
+      (!type || r.type === type) &&
       (cards.length === 0 || cards.includes(r.card)) &&
       (amount?.min === undefined || r.amount >= amount.min) &&
       (amount?.max === undefined || r.amount <= amount.max) &&
@@ -123,8 +124,8 @@ export default function FilterPanelTransactions() {
         <FilterActiveBar>
           <FilterChipList>
             {date ? <FilterChip onRemove={() => drop('date')}>{`Tanggal: ${dateRangeLabel(date, TODAY)}`}</FilterChip> : null}
-            {status.length ? <FilterChip onRemove={() => drop('status')}>{`Status: ${labelOf(STATUS, status)}`}</FilterChip> : null}
-            {types.length ? <FilterChip onRemove={() => drop('type')}>{`Tipe: ${labelOf(TYPES, types)}`}</FilterChip> : null}
+            {status ? <FilterChip onRemove={() => drop('status')}>{`Status: ${labelOf(STATUS, [status])}`}</FilterChip> : null}
+            {type ? <FilterChip onRemove={() => drop('type')}>{`Tipe: ${labelOf(TYPES, [type])}`}</FilterChip> : null}
             {cards.length ? <FilterChip onRemove={() => drop('card')}>{`Kartu: ${labelOf(CARDS, cards)}`}</FilterChip> : null}
             {amount ? <FilterChip onRemove={() => drop('amount')}>{`Jumlah: ${formatAmountRange(amount)}`}</FilterChip> : null}
             {typeof filters.source === 'string' ? (

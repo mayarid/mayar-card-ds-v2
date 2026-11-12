@@ -44,6 +44,25 @@ describe('CardFace', () => {
     expect(document.querySelector('[data-slot="card-face-overlay"]')?.textContent).toContain('28 Okt 2026, 14:20')
   })
 
+  it('uses the app copy and the Mastercard logo', () => {
+    const { rerender } = render(<CardFace {...base} status="frozen" />)
+    expect(document.querySelector('[data-slot="card-face-overlay"]')?.textContent).toBe(
+      'Kartu dibekukanTransaksi untuk sementara ditolak',
+    )
+    rerender(<CardFace {...base} status="pending" />)
+    expect(document.querySelector('[data-slot="card-face-overlay"]')?.textContent).toBe('Sedang diprosesKartu sedang diaktifkan')
+    const network = document.querySelector('[data-slot="card-face-network"]')
+    expect(network?.tagName.toLowerCase()).toBe('svg')
+    expect(network?.querySelectorAll('path')).toHaveLength(4)
+  })
+
+  it('a pending tile shows the loader title on the primary-deep veil', () => {
+    render(<CardFace {...base} width={250} status="pending" />)
+    const overlay = document.querySelector('[data-slot="card-face-overlay"]')
+    expect(overlay?.textContent).toBe('Sedang diproses')
+    expect(overlay?.className).toContain('bg-primary-deep/55')
+  })
+
   it('sizes from width and keeps the 420:264 ratio', () => {
     render(<CardFace {...base} width={250} />)
     const card = screen.getByRole('img')

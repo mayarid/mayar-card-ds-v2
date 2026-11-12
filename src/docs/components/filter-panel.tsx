@@ -25,8 +25,8 @@ const TODAY = '2026-11-12'
 
 const STATUS = [
   { value: 'settled', label: 'Berhasil' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'declined', label: 'Gagal' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'declined', label: 'Ditolak' },
   { value: 'reversed', label: 'Dibalik' },
 ]
 const TYPES = [
@@ -99,7 +99,7 @@ function Section({ kind }: { kind: SectionKind }) {
   }
 }
 
-const SPEC_VALUE: FilterValues = { status: ['pending', 'declined'], amount: { min: 100000, max: 500000 }, card: ['ads'] }
+const SPEC_VALUE: FilterValues = { status: 'pending', amount: { min: 100000, max: 500000 }, card: ['ads'] }
 
 function panelCode(kinds: SectionKind[], title = 'Filter') {
   const body = kinds.map((k) => SECTION_CODE[k].split('\n').map((l) => '    ' + l).join('\n')).join('\n')
@@ -124,7 +124,7 @@ const TRIGGER_STATES: MatrixAxisItem[] = [
 ]
 
 function triggerRender(props: Record<string, PropValue>, force?: string) {
-  const value: FilterValues = props.active ? { status: ['pending', 'declined'] } : {}
+  const value: FilterValues = props.active ? { status: 'pending', type: 'purchase' } : {}
   return (
     <FilterPanel defaultValue={value}>
       <FilterPanelTrigger
@@ -171,9 +171,9 @@ function panelRender(props: Record<string, PropValue>) {
 /* Active bar matrix */
 
 const ACTIVE: Array<{ label: string; chips: string[]; count: number }> = [
-  { label: 'One filter', chips: ['Status: Pending, Gagal'], count: 2 },
-  { label: 'Several filters', chips: ['Tanggal: 30 hari terakhir', 'Status: Pending, Gagal', 'Jumlah: Rp 100.000–500.000'], count: 12 },
-  { label: 'No match', chips: ['Status: Gagal', 'Jumlah: ≥ Rp 10.000.000'], count: 0 },
+  { label: 'One filter', chips: ['Status: Menunggu'], count: 2 },
+  { label: 'Several filters', chips: ['Tanggal: 30 hari terakhir', 'Status: Menunggu', 'Jumlah: Rp 100.000–500.000'], count: 12 },
+  { label: 'No match', chips: ['Status: Ditolak', 'Jumlah: ≥ Rp 10.000.000'], count: 0 },
 ]
 
 function activeRender(props: Record<string, PropValue>) {
@@ -240,7 +240,7 @@ export const doc: ComponentDoc = {
     render: (values) => {
       const kinds = ALL_KINDS.filter((k) => values[k])
       return (
-        <FilterPanel defaultValue={{ status: ['pending'] }}>
+        <FilterPanel defaultValue={{ status: 'pending' }}>
           <FilterPanelTrigger>Filter</FilterPanelTrigger>
           <FilterPanelContent title={String(values.title || 'Filter')} align="start">
             {kinds.map((k) => (
@@ -255,7 +255,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Trigger × states',
-      description: 'Hover is canvas, open is component (Wonder), focus is the outline. The count pill shows the applied filters.',
+      description: 'Hover and open are canvas (as the app), focus is the outline. The count pill shows the applied filters.',
       rows: [
         { label: 'No filters', props: {} },
         { label: 'Active (count)', props: { active: true } },
@@ -267,7 +267,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Open panel (static)',
-      description: 'The panel as a static surface. Chips are multi-select; "Terapkan (N)" counts the draft filters of this panel.',
+      description: 'The panel as a static surface. Status and Tipe chips take one choice (as the app); "Terapkan (N)" counts the draft filters of this panel.',
       rows: PANELS.map((p, i) => ({ label: p.label, props: { panel: i }, codeOnly: p.codeOnly })),
       columns: [{ label: 'Open' }],
       render: panelRender,
@@ -310,7 +310,7 @@ export const doc: ComponentDoc = {
     { name: 'FilterPanelContent resetLabel / cancelLabel / applyLabel / footerStart', type: 'string / ReactNode', description: '"Atur ulang", "Batal", "Terapkan" (+ " (N)"), content at the footer start.' },
     { name: 'FilterPanelContent inline', type: 'boolean', default: 'false', description: 'In the page flow, not anchored. For docs and specimens.' },
     { name: 'FilterPanelSection label', type: 'string', description: 'The section label. It names the control inside.' },
-    { name: 'FilterPanelChips name / options / multiple', type: 'string / FilterOption[] / boolean', default: 'multiple: true', description: 'Toggle chips. A list, or one value when multiple is false.' },
+    { name: 'FilterPanelChips name / options / multiple', type: 'string / FilterOption[] / boolean', default: 'multiple: false', description: 'The Toggle Group SM chips. One value (a string) by default, as the app; multiple for a list.' },
     { name: 'FilterPanelChecklist name / options / searchable / emptyLabel', type: 'string / FilterOption[] / boolean / string', description: 'Checkbox list with optional search and the "Tidak ada kartu" hint.' },
     { name: 'FilterPanelSelect name / options / allLabel', type: 'string / FilterOption[] / string', description: 'One value from a short list; the "all" row clears it.' },
     { name: 'FilterPanelAmount name', type: 'string', description: 'Mode track + Rp inputs. Value { min, max }.' },
@@ -322,7 +322,7 @@ export const doc: ComponentDoc = {
   ],
   guidelines: {
     do: [
-      'Show every applied filter as a chip, with the section name first ("Status: Pending, Gagal").',
+      'Show every applied filter as a chip, with the section name first ("Status: Menunggu").',
       'Put the date range in its own button with a chevron, and leave it out of the Filter count (countExclude).',
       'Show the result count next to the chips, and the no-match state with "Hapus filter" when it is 0.',
     ],
@@ -332,13 +332,15 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Open trigger: Wonder fills it with component; the app uses canvas (the hover colour). This port uses component.',
-    'Panel shadow: Wonder uses ring + 0 16px 32px shadow-modal, not the Popover elevation; this port sets it on the panel.',
-    'Status and Tipe chips are multi-select in Wonder (Pending and Gagal both on). The app chips are single-select. This port is multi-select by default (multiple={false} for one value). The Toggle Group primitive is single-select only, so the chips are built in this file on Base UI ToggleGroup multiple, with the Toggle Group SM chip look but a transparent fill (Wonder).',
-    'Amount and ID inputs in Wonder are radius lg at 36px; the Input LG primitive is radius xl, so the inputs pass rounded-lg. The Rp prefix is muted in Wonder (the primitive prefix is ink-2 medium).',
-    'Date: the app pairs presets with a range calendar (DateRangeCalendar). This port skips the calendar: preset chips and two native date inputs. The Wonder "Filter Panel Tanggal" board is a non-v2 specimen, so the date section is the app layout simplified.',
+    'The shipped app code is the source of truth (decision 2026-11-12). Wonder is the visual reference only.',
+    'Open trigger: the app fills it with canvas (the hover colour) and eases only background-color; the trigger has a pointer cursor. Wonder fills the open trigger with component.',
+    'Panel shadow: the app uses the Popover elevation (shadow-popover). Wonder shows ring + 0 16px 32px shadow-modal.',
+    'Status, Tipe and Struk chips: the app allows one choice each (its Toggle Group SM, a press on the pressed chip keeps it on). FilterPanelChips does the same by default; pass multiple for a list. Wonder shows multi-select chips (Pending and Gagal both on) with a transparent fill.',
+    'Status labels follow the app: Berhasil, Menunggu, Ditolak, Dibalik. Wonder writes "Pending" and "Gagal".',
+    'Amount and ID inputs: the app uses Input LG (radius xl) with the default "Rp" prefix (ink-2 medium). Wonder shows radius lg at 36px and a muted prefix.',
+    'Sumber: the app trigger is 36px, radius lg, with a pointer cursor; FilterPanelSelect uses the Select LG trigger with rounded-lg, cursor-pointer and an eased hover fill.',
+    'Date: the app pairs presets with a range calendar (DateRangeCalendar). This port skips the calendar: preset chips (one choice) and two native date inputs.',
     'The ID Transaksi text field is not a part: put an Input in a FilterPanelSection and set the draft through useFilterPanel().setField.',
     'The Wonder Kartu checklist board ("Card Filter Status Checklist") is a non-v2 hex specimen; the checklist uses the v2 Checkbox and is marked code-only.',
-    'The Dashboard page id in the brief was the Auth page; the specimens were read from the Dashboard page.',
   ],
 }

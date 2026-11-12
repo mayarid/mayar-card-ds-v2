@@ -12,15 +12,17 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 BalanceCard (pattern). Wonder Dashboard › "Balance Card Tab Saldo Akun v2" and
+ * Mayar v2 BalanceCard (pattern). App code first, Wonder Dashboard › "Balance Card Tab Saldo Akun v2" and
  * "Balance Card Hidden v2" (Metric Tabs), plus the app: Beranda stat tiles (routes/+page.svelte
  * `.tile`) and the top-up balance strip (routes/top-up/+page.svelte `.topup-strip`, code-only).
  * card: white, radius 2xl, control shadow, 16px padding, 12px gap.
  * tile: the same box with no chrome, for a BalanceCardGroup (hairline right and bottom edges).
  * strip: one row, 16×20 padding, label + value on the left, actions on the right.
  * Label body-sm medium ink-2 (icon 16 muted) · value title-md semibold ink, tabular ·
- * caption caption-lg muted, 20px min height, 6px under the value · delta chip 20px, radius sm,
- * 4/6 padding, 14px arrow · hide toggle 32px, radius md, muted glyph.
+ * caption caption-lg muted, 20px min height, 12px under the value (the card gap) · delta chip 20px,
+ * radius sm, 4/6 padding, 14px arrow, 6px to its period · hide toggle: the ghost icon Button
+ * (32px, radius lg, ink-2 glyph), as the app's `Button variant="ghost" size="md" icon`.
+ * The source of truth is the app code (decision 2026-11-12); Wonder is the visual reference.
  * Hidden balance: a mask "Rp ••••••••" that screen readers hear as "saldo disembunyikan".
  */
 
@@ -86,7 +88,7 @@ const balanceCardVariants = cva('group/balance flex min-w-0 font-sans text-ink',
         'aria-selected:bg-component',
         'focus-ring:outline-focus focus-ring:outline-offset-[-1px]!',
       ],
-      strip: 'flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl bg-surface px-5 py-4 shadow-control',
+      strip: 'flex-row items-center justify-between gap-6 max-md:gap-4 rounded-2xl bg-surface px-5 py-4 shadow-control',
     },
   },
   defaultVariants: { variant: 'card' },
@@ -348,8 +350,6 @@ function BalanceCardCaption({ className, tone, children, ...props }: BalanceCard
         'm-0',
         captionVariants({ tone }),
         '[&>svg]:size-3.5 [&>svg]:shrink-0',
-        // Wonder: the value and its delta row sit 6px apart inside the 12px tile gap.
-        '[[data-slot=balance-card-value]+&]:-mt-1.5',
         className,
       )}
     >
@@ -442,7 +442,7 @@ function BalanceCardHideToggle({
       }}
       aria-label={ariaLabel}
       title={hidden ? 'Tampilkan saldo' : 'Sembunyikan saldo'}
-      render={<Button variant="ghost" size="icon-md" className="rounded-md text-muted" />}
+      render={<Button variant="ghost" size="icon-md" />}
       className={(state) =>
         cn('-my-1.5 -me-1.5', typeof className === 'function' ? className(state) : className)
       }

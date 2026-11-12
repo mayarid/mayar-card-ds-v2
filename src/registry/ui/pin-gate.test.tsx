@@ -86,7 +86,7 @@ describe('PinGate', () => {
     render(<Gate onSubmit={() => false} />)
     await typePin('111111')
     await waitFor(() => expect(root().dataset.state).toBe('error'))
-    expect(line().textContent).toBe('PIN salah, coba lagi.')
+    expect(line().textContent).toBe('PIN salah, coba lagi')
     expect(slots().every((s) => s.value === '')).toBe(true)
     expect(slots()[0]?.getAttribute('aria-invalid')).toBe('true')
     await waitFor(() => expect(document.activeElement).toBe(slots()[0]))
@@ -95,28 +95,28 @@ describe('PinGate', () => {
     expect(line().textContent).toBe('')
   })
 
-  it('uses the error and attemptsLeft from onSubmit; a throw counts as wrong', async () => {
+  it('uses the error from onSubmit; a throw counts as wrong', async () => {
     const onSubmit = vi
       .fn<PinGateProps['onSubmit']>()
-      .mockResolvedValueOnce({ attemptsLeft: 4 })
+      .mockResolvedValueOnce({ error: 'PIN salah. Sisa 4 percobaan.' })
       .mockRejectedValueOnce(new Error('Server sibuk'))
     render(<Gate onSubmit={onSubmit} />)
     await typePin('111111')
-    await waitFor(() => expect(line().textContent).toBe('PIN salah. Sisa 4 percobaan sebelum PIN terkunci.'))
+    await waitFor(() => expect(line().textContent).toBe('PIN salah. Sisa 4 percobaan.'))
     await typePin('222222')
     await waitFor(() => expect(line().textContent).toBe('Server sibuk'))
   })
 
-  it('locks after maxAttempts with a countdown, then unlocks', async () => {
+  it('locks after maxAttempts, then unlocks by itself', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     const { unmount } = render(<Gate onSubmit={() => false} maxAttempts={2} lockoutSeconds={3} />)
     await user.click(slots()[0]!)
     await user.keyboard('111111')
-    await waitFor(() => expect(line().textContent).toBe('PIN salah. Sisa 1 percobaan sebelum PIN terkunci.'))
+    await waitFor(() => expect(line().textContent).toBe('PIN salah, coba lagi'))
     await user.keyboard('222222')
     await waitFor(() => expect(root().dataset.state).toBe('locked'))
-    expect(line().textContent).toBe('PIN terkunci. Coba lagi dalam 0:03.')
+    expect(line().textContent).toBe('PIN terkunci sementara. Coba beberapa saat lagi.')
     expect(slots().every((s) => s.disabled)).toBe(true)
     await act(async () => {
       vi.advanceTimersByTime(3100)
@@ -130,11 +130,17 @@ describe('PinGate', () => {
   it('locks from the result with retryAfter, and from lockedUntil', async () => {
     const { unmount } = render(<Gate onSubmit={() => ({ locked: true, retryAfter: 90 })} />)
     await typePin('123456')
-    await waitFor(() => expect(line().textContent).toBe('PIN terkunci. Coba lagi dalam 1:30.'))
+    await waitFor(() => expect(line().textContent).toBe('PIN terkunci sementara. Coba beberapa saat lagi.'))
     unmount()
     render(<Gate lockedUntil={Date.now() + 59_500} />)
     expect(root().dataset.state).toBe('locked')
-    expect(line().textContent).toBe('PIN terkunci. Coba lagi dalam 1:00.')
+    expect(line().textContent).toBe('PIN terkunci sementara. Coba beberapa saat lagi.')
+  })
+
+  it('a server lock message replaces the notice', async () => {
+    render(<Gate onSubmit={() => ({ locked: true, error: 'PIN terkunci. Hubungi admin.' })} />)
+    await typePin('123456')
+    await waitFor(() => expect(line().textContent).toBe('PIN terkunci. Hubungi admin.'))
   })
 
   it('locked without a time shows the open-ended notice', () => {
@@ -159,7 +165,7 @@ describe('PinGate', () => {
     expect(screen.getByRole('status').textContent).toBe('confirm')
     expect(onSubmit).not.toHaveBeenCalled()
     await typePin('654321')
-    expect(line().textContent).toBe('PIN tidak sama, ulangi dari awal.')
+    expect(line().textContent).toBe('PIN tidak sama, ulangi dari awal')
     expect(screen.getByRole('status').textContent).toBe('create')
     await typePin('123456')
     await typePin('123456')
@@ -219,7 +225,7 @@ describe('PinGate', () => {
     const { container } = render(
       <div>
         <Gate />
-        <Gate defaultStatus="error" defaultMessage="PIN salah, coba lagi." />
+        <Gate defaultStatus="error" defaultMessage="PIN salah, coba lagi" />
         <Gate defaultStatus="locked" />
       </div>,
     )

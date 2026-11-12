@@ -70,6 +70,8 @@ async function open() {
   const trigger = screen.getByRole('combobox', { name: 'Tim' })
   await userEvent.click(trigger)
   const input = await screen.findByRole('combobox', { name: 'Cari tim' })
+  // Focus moves into the search row after the popup opens; type only once it is there.
+  await waitFor(() => expect(document.activeElement).toBe(input))
   return { trigger, input }
 }
 
@@ -110,6 +112,8 @@ describe('Combobox', () => {
     render(<Teams onValueChange={onValueChange} />)
     const { trigger } = await open()
     await userEvent.keyboard('fin')
+    // Wait until the list is filtered, so the keys act on the match, not on the full list.
+    await waitFor(() => expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Finance']))
     await userEvent.keyboard('{ArrowDown}{Enter}')
     expect(onValueChange.mock.calls[0]?.[0]).toEqual(TEAMS[3])
     await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
@@ -121,6 +125,7 @@ describe('Combobox', () => {
     render(<Teams onValueChange={onValueChange} />)
     await open()
     await userEvent.keyboard('mar')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(2))
     await userEvent.keyboard('{Enter}')
     expect(onValueChange.mock.calls[0]?.[0]).toEqual(TEAMS[0])
   })
@@ -130,6 +135,7 @@ describe('Combobox', () => {
     render(<Teams onValueChange={onValueChange} />)
     await open()
     await userEvent.keyboard('mar')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(2))
     await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}')
     expect(onValueChange.mock.calls[0]?.[0]).toEqual(TEAMS[1])
   })

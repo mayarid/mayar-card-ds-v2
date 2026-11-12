@@ -134,7 +134,7 @@ export default function SidebarAppShell() {
 
         <SidebarNav>
           <SidebarGroup>
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroupLabel>Utama</SidebarGroupLabel>
             <SidebarGroupContent>{main.map(item)}</SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup collapsible>

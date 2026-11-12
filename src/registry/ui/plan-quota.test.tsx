@@ -43,7 +43,7 @@ describe('getPlanQuota', () => {
     expect(getPlanQuota({ max: 10, used: 12 })).toMatchObject({
       status: 'over',
       percent: 120,
-      legend: '12 terpakai · 2 di atas kuota',
+      legend: '12 terpakai · 0 tersedia',
     })
     expect(getPlanQuota({ max: null, used: 3 }).status).toBe('unlimited')
     expect(getPlanQuota({ max: 10 })).toMatchObject({ status: 'unknown', percent: null, legend: '10 kartu' })
@@ -58,7 +58,7 @@ describe('getPlanQuota', () => {
 describe('PlanQuota', () => {
   it('prints the legend and shows the bar when it can measure', () => {
     const { container } = render(<Quota max={10} used={7} />)
-    expect(screen.getByTestId('legend').textContent).toBe('7terpakai3tersedia')
+    expect(screen.getByTestId('legend').textContent).toBe('7 terpakai · 3 tersedia')
     expect(screen.getByTestId('q').dataset.status).toBe('ok')
     expect(screen.getByText('Kuota kartu aktif paket Anda.')).toBeTruthy()
     expect(container.querySelector('[data-slot="plan-quota-bar"]')).not.toBeNull()
@@ -77,15 +77,18 @@ describe('PlanQuota', () => {
     expect(screen.getByRole('link').getAttribute('href')).toBe('/settings')
   })
 
-  it('near and full change the description and the tone', () => {
+  it('keeps the well card, primary tier and the same description at every status (the app)', () => {
     const { rerender } = render(<Quota max={10} used={8} />)
     expect(screen.getByTestId('q').dataset.status).toBe('near')
-    expect(screen.getByText('Kuota kartu hampir penuh.')).toBeTruthy()
+    expect(screen.getByTestId('q').className).toContain('bg-well')
+    expect(screen.getByTestId('q').className).toContain('rounded-3xl')
     rerender(<Quota max={10} used={10} />)
     expect(screen.getByTestId('q').dataset.status).toBe('at')
-    expect(screen.getByText('Kuota kartu penuh. Upgrade paket untuk menambah kartu.')).toBeTruthy()
+    expect(screen.getByTestId('q').className).toContain('bg-well')
+    expect(screen.getByText('Paket Starter').className).toContain('text-primary')
+    expect(screen.getByText('Kuota kartu aktif paket Anda.')).toBeTruthy()
     rerender(<Quota max={10} used={12} />)
-    expect(screen.getByTestId('legend').textContent).toBe('12terpakai2di atas kuota')
+    expect(screen.getByTestId('legend').textContent).toBe('12 terpakai · 0 tersedia')
   })
 
   it('action is an "Upgrade paket" button by default and can be a link', () => {

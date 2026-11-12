@@ -7,16 +7,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Card Face. Wonder "Mayar Card Dashboard" › Dashboard page: "Card Face Master v2",
- * "Card Skin <Name> v2" (×8), "Kartu Owner Grid v2" (tile), "Detail Kartu * v2" (hero states).
+ * Mayar v2 Card Face. Source of truth: the app `CardFace.svelte` (hero, thumbnail), `CardTile.svelte`
+ * (grid tile overlay) and `card-gradients.ts`. Visual reference: Wonder "Card Face Master v2",
+ * "Card Skin <Name> v2", "Kartu Owner Grid v2" and "Detail Kartu * v2".
  *
- * The art is drawn at the Wonder base size of 420×264 (radius 20) and scaled with a transform, so
- * every value in Wonder stays as it is at every size. The status overlay is NOT scaled: its text
- * stays readable on a small tile.
- *
- * Code-only (from the shipped app): the WebGL ice of a frozen card (`card-freeze-effect`), the CSS
- * frost that stands in for it, the freeze / thaw motion, the compact tile overlay for "closed", the
- * 48px thumbnail and the fluid `width="auto"`.
+ * The art is drawn at the base size of 420×264 (radius 20) and scaled with a transform, so every
+ * value stays as it is at every size. The status overlay is NOT scaled: its text stays readable on
+ * a small tile.
  */
 
 /** The nine card designs, in the order of the app picker. */
@@ -38,7 +35,7 @@ const CARD_SKIN_LABELS: Record<CardSkin, string> = {
   matrix: 'Matrix',
 }
 
-/* Wonder skin/* gradients. Angle 140deg and the middle stop differ per skin; chroma has four stops. */
+/* The app CARD_GRADIENTS. Angle 140deg and the middle stop differ per skin; chroma has four stops. */
 const SKIN_CLASSES: Record<CardSkin, string> = {
   midnight: 'bg-linear-140 from-skin-midnight-1 via-skin-midnight-2 via-55% to-skin-midnight-3',
   royal: 'bg-linear-140 from-skin-royal-1 via-skin-royal-2 via-60% to-skin-royal-3',
@@ -52,14 +49,20 @@ const SKIN_CLASSES: Record<CardSkin, string> = {
   matrix: 'bg-linear-140 from-skin-matrix-1 via-skin-matrix-2 via-52% to-skin-matrix-3',
 }
 
-/* Wonder "Hero Face" shadow (ink-navy at .28 and .12), built from the overlay token (the same navy at .4). */
+/* The app hero float (CardFace.svelte `.cf-face--shadow`): ink at 60% and primary at 35%. */
 const HERO_SHADOW =
-  'shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--color-overlay)_70%,transparent),0_1px_3px_color-mix(in_srgb,var(--color-overlay)_30%,transparent)]'
+  'shadow-[0_30px_60px_-22px_color-mix(in_srgb,var(--color-ink)_60%,transparent),0_14px_28px_-16px_color-mix(in_srgb,var(--color-primary)_35%,transparent)]'
+
+/* App card-art colours (theme tokens card-swoosh, card-chip-line, card-mc-overlap, card-frost-icon). */
+const SWOOSH_FILL = 'fill-card-swoosh'
+const CHIP_LINE = 'bg-card-chip-line'
+const MC_OVERLAP_FILL = 'fill-card-mc-overlap'
+const FROST_ICON = 'text-card-frost-icon'
 
 const BASE_WIDTH = 420
 const BASE_HEIGHT = 264
 const BASE_RADIUS = 20
-/** Below this width the overlay shows only the icon and a one-line title (Wonder tile). */
+/** Below this width the overlay shows only the icon and a one-line title (the app grid tile). */
 const COMPACT_BELOW = 300
 /** Below this width the overlay shows no text at all (thumbnails). */
 const BARE_BELOW = 120
@@ -304,7 +307,9 @@ function CardFace({
     return () => animation.cancel()
   }, [thawing])
 
-  const overlayStatus: CardStatus = frozen || thawing ? (cssFrost ? 'frozen' : 'active') : status
+  // A frozen tile keeps its label over the WebGL ice too (the app CardTile overlay).
+  const tileLabel = frozen && density === 'compact'
+  const overlayStatus: CardStatus = frozen || thawing ? (cssFrost || tileLabel ? 'frozen' : 'active') : status
   const name = cardFaceLabel({ skin, label, last4, number, expiry, status, closedLabel })
   const pan = number ? formatCardNumber(number) : `••••  ••••  ••••  ${last4}`
 
@@ -353,7 +358,7 @@ function CardFace({
           <div className="flex items-start justify-between">
             <svg data-slot="card-face-mark" viewBox="0 0 133.95 108" className="h-[19px] w-6">
               <path d={MAYAR_M} className="fill-on-brand" />
-              <path d={MAYAR_SWOOSH} className="fill-brand-pink" />
+              <path d={MAYAR_SWOOSH} className={SWOOSH_FILL} />
             </svg>
             {/* Contactless: lucide `wifi`, turned 90°. Card art, not a UI icon. */}
             <svg
@@ -377,9 +382,9 @@ function CardFace({
             data-slot="card-face-chip"
             className="relative h-[34px] w-[46px] shrink-0 overflow-clip rounded-md bg-linear-135 from-card-chip-1 via-card-chip-2 via-48% to-card-chip-3 inset-ring inset-ring-on-brand/30"
           >
-            <div className="absolute inset-y-0 left-1/2 w-px bg-skin-gold-3/60" />
-            <div className="absolute inset-x-0 top-[33%] h-px bg-skin-gold-3/60" />
-            <div className="absolute inset-x-0 top-[66%] h-px bg-skin-gold-3/60" />
+            <div className={cn('absolute inset-y-0 left-1/2 w-px', CHIP_LINE)} />
+            <div className={cn('absolute inset-x-0 top-[33%] h-px', CHIP_LINE)} />
+            <div className={cn('absolute inset-x-0 top-[66%] h-px', CHIP_LINE)} />
           </div>
 
           <div className="flex flex-col">
@@ -408,17 +413,20 @@ function CardFace({
                   {expiry}
                 </span>
               </div>
-              <div data-slot="card-face-network" className="flex shrink-0 items-center">
-                <span className="size-[30px] rounded-full bg-card-mc-red" />
-                <span className="-ml-3 size-[30px] rounded-full bg-card-mc-orange/90" />
-              </div>
+              <MastercardMark />
             </div>
           </div>
         </div>
       </div>
 
       {overlayStatus !== 'active' && !(overlayStatus === 'closed' && density !== 'full') ? (
-        <CardFaceOverlay ref={overlayRef} status={overlayStatus} density={density} closedLabel={closedLabel} />
+        <CardFaceOverlay
+          ref={overlayRef}
+          status={overlayStatus}
+          density={density}
+          frost={cssFrost}
+          closedLabel={closedLabel}
+        />
       ) : null}
 
       {effectMounted ? (
@@ -444,28 +452,68 @@ function CardFace({
   )
 }
 
+/* The app copy: the hero veils (CardFace.svelte) and the grid tile overlay (CardTile.svelte). */
 const OVERLAY_COPY: Record<Exclude<CardStatus, 'active'>, { title: string; body: string }> = {
-  frozen: { title: 'Kartu dibekukan', body: 'Transaksi baru ditolak sampai kartu dibuka' },
+  frozen: { title: 'Kartu dibekukan', body: 'Transaksi untuk sementara ditolak' },
   pending: { title: 'Sedang diproses', body: 'Kartu sedang diaktifkan' },
   closed: { title: 'Kartu ditutup', body: '' },
 }
 
+/* The app veil: ink at 55% with a 3px blur, under every hero label and the CSS frost. */
+const VEIL = 'bg-ink/55 backdrop-blur-[3px]'
+
 function CardFaceOverlay({
   status,
   density,
+  frost,
   closedLabel,
   ref,
 }: {
   status: Exclude<CardStatus, 'active'>
   density: 'bare' | 'compact' | 'full'
+  /** The CSS frost (and its veil) is what the holder sees, not the WebGL ice. */
+  frost: boolean
   closedLabel: string | null
   ref: React.Ref<HTMLDivElement>
 }) {
   const copy = OVERLAY_COPY[status]
-  const body = status === 'closed' ? closedLabel : copy.body
-  const icon = status === 'frozen' ? SnowIcon : status === 'pending' ? Loading03Icon : CancelCircleIcon
-  const iconSize = density === 'full' ? 36 : 24
+  const frozen = status === 'frozen'
 
+  // Tile (CardTile.svelte): a 24px icon and a caption-lg title. Frozen sits on a soft centre
+  // scrim so the ice stays visible; pending sits on a primary-deep veil.
+  if (density === 'compact') {
+    return (
+      <div
+        ref={ref}
+        aria-hidden
+        data-slot="card-face-overlay"
+        data-freeze-ignore=""
+        data-status={status}
+        className={cn(
+          'absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 text-on-brand',
+          status === 'pending' && 'bg-primary-deep/55 backdrop-blur-[3px]',
+          frozen && frost && VEIL,
+          frozen && 'text-shadow-[0_1px_2px_color-mix(in_srgb,var(--color-inverted)_45%,transparent)]',
+        )}
+      >
+        {frozen && frost ? <CardFaceFrost /> : null}
+        {frozen ? (
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_58%_46%_at_50%_50%,color-mix(in_srgb,var(--color-inverted)_52%,transparent)_0%,transparent_100%)]" />
+        ) : null}
+        <Icon
+          icon={frozen ? SnowIcon : Loading03Icon}
+          size={24}
+          className={cn(
+            frozen && 'text-[color-mix(in_oklch,var(--color-primary)_45%,var(--color-surface))]',
+            status === 'pending' && 'motion-safe:animate-spin',
+          )}
+        />
+        <span className="px-3 text-center text-caption-lg font-semibold">{copy.title}</span>
+      </div>
+    )
+  }
+
+  const body = status === 'closed' ? closedLabel : copy.body
   return (
     <div
       ref={ref}
@@ -474,36 +522,25 @@ function CardFaceOverlay({
       data-freeze-ignore=""
       data-status={status}
       className={cn(
-        'absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 backdrop-blur-[3px]',
-        status === 'frozen' && 'bg-skin-midnight-1/62',
-        status === 'pending' && 'bg-skin-royal-3/55',
-        status === 'closed' && 'bg-ink/55',
+        'absolute inset-0 z-10 flex flex-col items-center justify-center text-on-brand',
+        VEIL,
+        frozen ? 'gap-[7px]' : 'gap-[9px]',
       )}
     >
-      {status === 'frozen' ? <CardFaceFrost /> : null}
-      {density !== 'bare' ? (
+      {frozen ? <CardFaceFrost /> : null}
+      {density === 'full' ? (
         <>
-          <Icon
-            icon={icon}
-            size={iconSize}
-            className={cn(
-              status === 'frozen' ? 'text-primary-300' : 'text-on-brand',
-              status === 'pending' && 'motion-safe:animate-spin',
-            )}
-          />
-          <span
-            className={cn(
-              'px-3 text-center font-semibold text-on-brand',
-              density === 'full' ? 'text-body-base' : 'text-caption-lg',
-            )}
-          >
-            {copy.title}
-          </span>
-          {density === 'full' && body ? (
+          {status === 'pending' ? (
+            <span className="size-8 rounded-full border-[3px] border-on-brand/40 border-t-on-brand motion-safe:animate-spin" />
+          ) : (
+            <Icon icon={frozen ? SnowIcon : CancelCircleIcon} size={34} className={frozen ? FROST_ICON : undefined} />
+          )}
+          <span className="px-3 text-center text-[15px] font-semibold">{copy.title}</span>
+          {body ? (
             <span
               className={cn(
-                'px-3 text-center text-caption-lg tabular-nums',
-                status === 'frozen' ? 'text-on-brand/72' : 'text-on-brand/75',
+                'px-3 text-center tabular-nums',
+                status === 'closed' ? 'text-body-sm font-medium text-on-brand/85' : 'text-caption-lg text-on-brand/60',
               )}
             >
               {body}
@@ -512,6 +549,27 @@ function CardFaceOverlay({
         </>
       ) : null}
     </div>
+  )
+}
+
+/** The Mastercard logo of the app (`static/mastercard.svg`), 30px high. Card art, not a UI icon. */
+function MastercardMark() {
+  return (
+    <svg data-slot="card-face-network" viewBox="-6 -6 652 408" className="h-[30px] w-auto shrink-0">
+      <path d="M224.833 42.298h190.416v311.005H224.833z" className={MC_OVERLAP_FILL} />
+      <path
+        d="M244.446 197.828a197.448 197.448 0 0175.54-155.475 197.777 197.777 0 100 311.004 197.448 197.448 0 01-75.54-155.53z"
+        className="fill-card-mc-red"
+      />
+      <path
+        d="M621.101 320.394v-6.372h2.747v-1.319h-6.537v1.319h2.582v6.373zm12.691 0v-7.69h-1.978l-2.307 5.493-2.308-5.494h-1.977v7.691h1.428v-5.823l2.143 5h1.483l2.143-5v5.823z"
+        className="fill-card-mc-orange"
+      />
+      <path
+        d="M640 197.828a197.777 197.777 0 01-320.015 155.474 197.777 197.777 0 000-311.004A197.777 197.777 0 01640 197.773z"
+        className="fill-card-mc-orange"
+      />
+    </svg>
   )
 }
 

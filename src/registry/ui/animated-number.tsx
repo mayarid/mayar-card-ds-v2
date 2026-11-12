@@ -31,6 +31,18 @@ function useCanAnimate() {
   return useSyncExternalStore(noSubscribe, supportsNumberFlow, () => false)
 }
 
+/** One cached formatter per locale and options, so a render does not rebuild it. */
+const formatters = new Map<string, Intl.NumberFormat>()
+function getFormatter(locale: Intl.LocalesArgument, format?: Intl.NumberFormatOptions) {
+  const key = `${String(locale)}|${JSON.stringify(format ?? null)}`
+  let formatter = formatters.get(key)
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, format)
+    formatters.set(key, formatter)
+  }
+  return formatter
+}
+
 /** The prefix the app puts before an amount: "Rp " for IDR, else the currency code. */
 const moneyPrefix = (currency: string): string => (currency === 'IDR' ? 'Rp ' : `${currency} `)
 
@@ -135,7 +147,7 @@ function AnimatedNumber({
 
   return (
     <span data-slot="animated-number" {...props} className={classes}>
-      {`${prefix}${new Intl.NumberFormat(locale, format).format(value)}${suffix}`}
+      {`${prefix}${getFormatter(locale, format).format(value)}${suffix}`}
     </span>
   )
 }

@@ -7,13 +7,13 @@ import { UsageBar, type UsageBarProps } from '@/components/ui/usage-bar'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Plan Quota. Wonder Dashboard page › "Plan Quota Card" Normal / Near Limit / Full v2.
- * A tinted card (radius 14, 4px inset, border-subtle) holds the tier line (caption-lg semibold) and a
- * surface body (radius xl, padding 12, gap 10, ambient shadow) with the description (body-sm, ink-2),
- * a 6px bar on a well track, and the legend: "3 terpakai" left, "7 tersedia" right, numbers semibold.
- * Normal: well card, primary tier and fill. Near limit (80%+): warning-light card, warning-text tier
- * and number, warning fill. Full: danger-light card, danger-text tier and number, danger fill, and a
- * full-width primary "Upgrade paket" button. Over, unlimited, unknown and suspended are code-only.
+ * Mayar v2 Plan Quota. Source of truth: the app Sidebar.svelte plan quota card (`.v2-sidebar__quota`).
+ * Visual reference: Wonder Dashboard › "Plan Quota Card" Normal / Near Limit / Full v2.
+ * A well card (radius 3xl = 16, 4px inset, border-subtle) holds the tier line (caption-lg semibold,
+ * primary) and a surface body (radius xl, padding 12, gap 10, ambient shadow) with the description
+ * (body-sm, ink-2), the usage bar on a well track (the blue ramp, red at 100%) and the one-line
+ * legend "3 terpakai · 7 tersedia" (caption-lg, muted, tabular). Suspended: the legend reads
+ * "Paket berakhir" in semibold warning-text. The card does not change colour by status.
  */
 
 type PlanQuotaStatus = 'ok' | 'near' | 'at' | 'over' | 'unlimited' | 'unknown' | 'suspended'
@@ -42,7 +42,7 @@ interface PlanQuotaSummary {
 const numberFormat = new Intl.NumberFormat('id-ID')
 const fmt = (n: number) => numberFormat.format(n)
 
-/** The share of the quota (in %) at which the card turns to the near-limit tone. */
+/** The share of the quota (in %) at which `status` becomes `near`. Information only: the card does not change. */
 const NEAR_LIMIT_PERCENT = 80
 
 /** Works out the status, bar percent and legend text for a card quota. */
@@ -53,30 +53,11 @@ function getPlanQuota({ max, used = null, suspended = false }: PlanQuotaInput): 
   if (used === null) return { ...base, status: 'unknown', legend: `${fmt(max)} kartu` }
   const percent = max === 0 ? 100 : Math.round((used / max) * 100)
   if (used > max) {
-    return { status: 'over', percent, used, available: 0, legend: `${fmt(used)} terpakai · ${fmt(used - max)} di atas kuota` }
+    return { status: 'over', percent, used, available: 0, legend: `${fmt(used)} terpakai · 0 tersedia` }
   }
   const legend = `${fmt(used)} terpakai · ${fmt(max - used)} tersedia`
   const status = used === max ? 'at' : percent >= NEAR_LIMIT_PERCENT ? 'near' : 'ok'
   return { status, percent, used, available: max - used, legend }
-}
-
-type Tone = 'normal' | 'warning' | 'danger'
-
-function toneOf(status: PlanQuotaStatus): Tone {
-  if (status === 'near' || status === 'suspended') return 'warning'
-  if (status === 'at' || status === 'over') return 'danger'
-  return 'normal'
-}
-
-const cardTone: Record<Tone, string> = {
-  normal: 'bg-well',
-  warning: 'bg-warning-light',
-  danger: 'bg-danger-light',
-}
-const inkTone: Record<Tone, string> = {
-  normal: 'text-primary',
-  warning: 'text-warning-text',
-  danger: 'text-danger-text',
 }
 
 interface PlanQuotaContextValue extends PlanQuotaSummary {
@@ -95,8 +76,8 @@ const PlanQuotaContext = createContext<PlanQuotaContextValue>({
 interface PlanQuotaProps extends useRender.ComponentProps<'div'>, PlanQuotaInput {}
 
 /**
- * A card that shows how much of the plan's card quota is used, and turns warning near the limit
- * and danger when it is full.
+ * A card that shows how much of the plan's card quota is used, with a usage bar that turns red
+ * when the quota is full.
  *
  * `<PlanQuota max={10} used={7}><PlanQuotaTier>Paket Starter</PlanQuotaTier><PlanQuotaBody>`
  * `<PlanQuotaDescription /><PlanQuotaBar /><PlanQuotaLegend /></PlanQuotaBody></PlanQuota>`.
@@ -110,10 +91,9 @@ function PlanQuota({ max, used = null, suspended = false, className, render, ...
     'data-slot': 'plan-quota',
     'data-status': context.status,
     className: cn(
-      'flex min-w-0 flex-col gap-1 rounded-[14px] border border-border-subtle p-1 font-sans text-ink-2 no-underline',
-      cardTone[toneOf(context.status)],
+      'flex min-w-0 flex-col gap-1 rounded-3xl border border-border-subtle bg-well p-1 font-sans text-ink-2 no-underline',
       isLink &&
-        'outline-none transition-[border-color] duration-(--motion-quick) ease-smooth-out focus-ring:outline-focus hover-fine:border-ghost-hover-border',
+        'outline-none focus-ring:outline-focus',
       className,
     ),
   } as useRender.ElementProps<'div'>
@@ -122,13 +102,12 @@ function PlanQuota({ max, used = null, suspended = false, className, render, ...
   return <PlanQuotaContext value={context}>{element}</PlanQuotaContext>
 }
 
-/** The tier line above the body, e.g. "Paket Starter". Its ink follows the status. */
+/** The tier line above the body, e.g. "Paket Starter". */
 function PlanQuotaTier({ className, ...props }: React.ComponentProps<'span'>) {
-  const { status } = use(PlanQuotaContext)
   return (
     <span
       data-slot="plan-quota-tier"
-      className={cn('px-2 pt-1 text-caption-lg font-semibold', inkTone[toneOf(status)], className)}
+      className={cn('px-2 pt-1 text-caption-lg font-semibold text-primary', className)}
       {...props}
     />
   )
@@ -148,99 +127,55 @@ function PlanQuotaBody({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-const DESCRIPTIONS: Record<PlanQuotaStatus, string> = {
-  ok: 'Kuota kartu aktif paket Anda.',
-  unknown: 'Kuota kartu aktif paket Anda.',
-  unlimited: 'Kuota kartu aktif paket Anda.',
-  near: 'Kuota kartu hampir penuh.',
-  at: 'Kuota kartu penuh. Upgrade paket untuk menambah kartu.',
-  over: 'Kartu aktif melebihi kuota. Upgrade paket atau nonaktifkan kartu.',
-  suspended: 'Paket Anda sudah berakhir. Kartu dan anggota dibekukan.',
-}
-
-/** One line under the tier. Its default text follows the status; pass `children` to replace it. */
+/** One line under the tier: "Kuota kartu aktif paket Anda." Pass `children` to replace it. */
 function PlanQuotaDescription({ className, children, ...props }: React.ComponentProps<'span'>) {
-  const { status } = use(PlanQuotaContext)
   return (
     <span data-slot="plan-quota-description" className={cn('text-body-sm text-ink-2', className)} {...props}>
-      {children ?? DESCRIPTIONS[status]}
+      {children ?? 'Kuota kartu aktif paket Anda.'}
     </span>
   )
 }
 
 /**
- * The usage bar on a well track. Hidden when there is nothing to measure (unlimited, unknown or
- * suspended). Decorative: the legend prints the numbers.
+ * The usage bar on a well track: the blue usage ramp, red at 100% or more. Hidden when there is
+ * nothing to measure (unlimited, unknown or suspended). Decorative: the legend prints the numbers.
  */
 function PlanQuotaBar({ className, ...props }: Omit<UsageBarProps, 'value'>) {
-  const { status, percent } = use(PlanQuotaContext)
+  const { percent } = use(PlanQuotaContext)
   if (percent === null) return null
-  const tone = toneOf(status)
-  return (
-    <UsageBar
-      data-slot="plan-quota-bar"
-      value={percent}
-      track="well"
-      tone={tone === 'danger' ? 'over' : 'p4'}
-      color={tone === 'warning' ? 'var(--color-warning)' : undefined}
-      className={className}
-      {...props}
-    />
-  )
-}
-
-function LegendPart({ value, label, tone }: { value: number; label: string; tone?: string }) {
-  return (
-    <span className="inline-flex items-baseline gap-1">
-      <span className={cn('font-semibold text-ink', tone)}>{fmt(value)}</span>
-      <span>{label}</span>
-    </span>
-  )
+  return <UsageBar data-slot="plan-quota-bar" value={percent} track="well" className={className} {...props} />
 }
 
 /**
- * The numbers: "3 terpakai" and "7 tersedia" on one row. With no usage it prints one line
- * ("10 kartu", "Kartu tanpa batas", "Paket berakhir"). Pass `children` to replace it.
+ * The numbers as one line: "3 terpakai · 7 tersedia". With no usage it prints "10 kartu",
+ * "Kartu tanpa batas" or "Paket berakhir" (semibold warning-text). Pass `children` to replace it.
  */
 function PlanQuotaLegend({ className, children, ...props }: React.ComponentProps<'span'>) {
-  const { status, used, available, max, legend } = use(PlanQuotaContext)
-  const tone = toneOf(status)
-  const counted = used !== null && available !== null && max !== null
+  const { status, legend } = use(PlanQuotaContext)
   return (
     <span
       data-slot="plan-quota-legend"
       data-status={status}
       className={cn(
-        'flex items-center justify-between gap-2 text-caption-lg text-muted tabular-nums',
+        'text-caption-lg text-muted tabular-nums',
         status === 'suspended' && 'font-semibold text-warning-text',
         className,
       )}
       {...props}
     >
-      {children ??
-        (counted ? (
-          <>
-            <LegendPart value={used} label="terpakai" />
-            {status === 'over' ? (
-              <LegendPart value={used - max} label="di atas kuota" tone={inkTone.danger} />
-            ) : (
-              <LegendPart value={available} label="tersedia" tone={tone === 'normal' ? undefined : inkTone[tone]} />
-            )}
-          </>
-        ) : (
-          legend
-        ))}
+      {children ?? legend}
     </span>
   )
 }
 
 /**
- * The upgrade action: a full-width primary MD Button at the end of the body.
+ * Optional upgrade action: a full-width primary MD Button at the end of the body. The app sidebar
+ * card has none (the whole card links to the plan settings); use it on a card that is not a link.
  * `<PlanQuotaAction render={<a href="mailto:…" />}>Upgrade paket</PlanQuotaAction>`.
  */
 function PlanQuotaAction({ className, children = 'Upgrade paket', ...props }: ButtonProps) {
   return (
-    <Button data-slot="plan-quota-action" size="md" className={cn('w-full font-semibold', className)} {...props}>
+    <Button data-slot="plan-quota-action" size="md" className={cn('w-full', className)} {...props}>
       {children}
     </Button>
   )

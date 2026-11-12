@@ -263,19 +263,28 @@ function paintTexture({ gradient, pan = '', holder = '', expiry = '' }: Placehol
   x.fillText(holder, 60, 476)
   x.font = `600 30px ${MONO}`
   x.fillText(expiry, 640, 476)
-  // Network: two discs.
-  x.globalCompositeOperation = 'screen'
-  x.globalAlpha = 0.9
-  x.fillStyle = themeColor('card-mc-red', 'rgb(235 0 27)')
-  x.beginPath()
-  x.arc(TW - 150, 466, 34, 0, 7)
-  x.fill()
-  x.fillStyle = themeColor('card-mc-orange', 'rgb(247 158 27)')
-  x.beginPath()
-  x.arc(TW - 104, 466, 34, 0, 7)
-  x.fill()
-  x.globalAlpha = 1
-  x.globalCompositeOperation = 'source-over'
+  // Network: the Mastercard logo of the face (the app draws its mastercard.svg here), 78px high.
+  if (typeof Path2D !== 'undefined') {
+    const h = 78
+    const w = (652 / 408) * h
+    x.save()
+    x.translate(TW - w - 60, 430)
+    x.scale(h / 408, h / 408)
+    x.translate(6, 6)
+    x.fillStyle = themeColor('card-mc-overlap', 'rgb(255 95 0)')
+    x.fill(new Path2D('M224.833 42.298h190.416v311.005H224.833z'))
+    x.fillStyle = themeColor('card-mc-red', 'rgb(235 0 27)')
+    x.fill(
+      new Path2D(
+        'M244.446 197.828a197.448 197.448 0 0175.54-155.475 197.777 197.777 0 100 311.004 197.448 197.448 0 01-75.54-155.53z',
+      ),
+    )
+    x.fillStyle = themeColor('card-mc-orange', 'rgb(247 158 27)')
+    x.fill(
+      new Path2D('M640 197.828a197.777 197.777 0 01-320.015 155.474 197.777 197.777 0 000-311.004A197.777 197.777 0 01640 197.773z'),
+    )
+    x.restore()
+  }
   return c
 }
 
