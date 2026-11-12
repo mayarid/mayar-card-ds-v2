@@ -14,11 +14,14 @@ import {
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Combobox. Wonder "Mayar Forms Inputs Guide" › Select / Combobox (open, combobox, empty).
+ * Mayar v2 Combobox. Source: the app's Combobox.svelte (Wonder "Mayar Forms Inputs Guide" › Select /
+ * Combobox is the visual reference).
  * A Select with a search row inside the popup. The trigger has the Select / Input chrome (sizes
  * SM–XL, default and ghost) and keeps the focus ring while the popup is open. Popup: 36px search
  * row with a 16px search icon, a separator, then the filtered list (32px rows, 44px on a coarse
- * pointer). Empty and loading are separate states; each swaps in with animate-state-swap.
+ * pointer). Empty and loading are separate states; each fades in (opacity only). The popup is as
+ * wide as the trigger and has its own shadow (drop colour, not the modal colour of shadow-popover).
+ * Arrow keys stop at the ends of the list, and the first match is highlighted while you type.
  */
 
 /**
@@ -30,11 +33,20 @@ import { cn } from '@/lib/utils'
  * `value`/`defaultValue`/`onValueChange`, `inputValue`/`onInputValueChange` (async search), `name`,
  * `disabled` and `required`, and it reads `Field.Root`.
  */
-function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>(
-  props: ComboboxPrimitive.Root.Props<Value, Multiple, Item>,
-) {
-  return <ComboboxPrimitive.Root {...props} />
+function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>({
+  loopFocus = false,
+  autoHighlight = true,
+  ...props
+}: ComboboxPrimitive.Root.Props<Value, Multiple, Item>) {
+  return <ComboboxPrimitive.Root loopFocus={loopFocus} autoHighlight={autoHighlight} {...props} />
 }
+
+/** The popup's own shadow (the app: drop colour at 12/32/-8, not shadow-popover's modal colour). */
+const comboboxPopupClassName =
+  'overflow-hidden shadow-combobox'
+
+/** Empty and loading fade in, opacity only, like the app's v2-combobox-swap. */
+const comboboxSwapClassName = 'animate-[fade-in_var(--motion-state-swap)_ease-in-out_backwards]'
 
 interface ComboboxTriggerProps
   extends Omit<ComboboxPrimitive.Trigger.Props, 'className'>,
@@ -51,10 +63,11 @@ function ComboboxTrigger({ className, variant, size, children, ...props }: Combo
       data-size={size ?? 'lg'}
       className={cn(
         selectTriggerVariants({ variant, size }),
-        'group/combobox-trigger',
+        'group/combobox-trigger cursor-pointer',
         variant === 'ghost'
           ? 'opened:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus)]'
-          : 'opened:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
+          : // No hover wash while open, like the app.
+            'opened:not-aria-invalid:not-data-invalid:bg-surface opened:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
         className,
       )}
       {...props}
@@ -119,7 +132,7 @@ function ComboboxContent({
       >
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"
-          className={cn(selectPopupClassName, 'overflow-hidden', className)}
+          className={cn(selectPopupClassName, comboboxPopupClassName, className)}
           {...props}
         />
       </ComboboxPrimitive.Positioner>
@@ -257,7 +270,8 @@ function ComboboxEmpty({ className, ...props }: ComboboxEmptyProps) {
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
       className={cn(
-        'flex flex-col items-center gap-1 px-4 py-6 text-center animate-state-swap empty:hidden',
+        'flex flex-col items-center gap-1 px-4 py-6 text-center empty:hidden',
+        comboboxSwapClassName,
         className,
       )}
       {...props}
@@ -292,7 +306,7 @@ function ComboboxStatus({ className, ...props }: ComboboxStatusProps) {
   return (
     <ComboboxPrimitive.Status
       data-slot="combobox-status"
-      className={cn('px-4 py-6 text-center text-body-sm text-ink-2 animate-state-swap empty:hidden', className)}
+      className={cn('px-4 py-6 text-center text-body-sm text-ink-2 empty:hidden', comboboxSwapClassName, className)}
       {...props}
     />
   )
@@ -300,6 +314,7 @@ function ComboboxStatus({ className, ...props }: ComboboxStatusProps) {
 
 export {
   Combobox,
+  comboboxPopupClassName,
   ComboboxClear,
   ComboboxContent,
   ComboboxEmpty,

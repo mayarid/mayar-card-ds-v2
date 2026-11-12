@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
  * Content: title (body-sm medium), description (body-sm ink-2), one action (28px primary),
  * cancel (28px component, only with an action), close (24px, "Tutup notifikasi").
  * Placement: bottom centre, 28px + safe area. Max 3; older cards step back 12px and scale
- * 95% / 90%; hover or focus expands the stack.
+ * 95% / 90%; hover or focus sets the scale back to 1 and pauses the timers. No swipe dismiss.
  * Duration: 4s; 6s with an action or a description; loading never auto-dismisses.
  * Motion: open 350ms / close 250ms smooth-out, rise 16px, scale 0.97, blur 2px (--motion-toast-*).
  */
@@ -270,25 +270,33 @@ function isMulti(description: ReactNode, actionRow: boolean, closable?: boolean)
 
 /* ── Live toast ───────────────────────────────────────────────────────────── */
 
+/*
+ * Stack, as in the app's ToastViewport: every card sits on the bottom edge at its own height.
+ * Collapsed: card i lifts 12px × i and scales 1 / 0.95 / 0.9. Hover or focus (expanded) keeps
+ * the 12px lift and sets the scale back to 1. The transform moves at the close clock (250ms).
+ */
 const toastStackClass = [
   'absolute inset-x-0 bottom-0 mx-auto origin-bottom outline-none select-none focus-ring:outline-focus',
   'z-[calc(1000-var(--toast-index))]',
-  '[--toast-scale:calc(1-var(--toast-index)*0.05)] [--toast-lift:calc(var(--toast-index)*-12px)]',
-  'h-[var(--toast-frontmost-height,var(--toast-height))] data-expanded:h-(--toast-height)',
-  '[transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)+var(--toast-lift)))_scale(var(--toast-scale))]',
-  'data-expanded:[transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-var(--toast-offset-y)+var(--toast-lift)))]',
+  '[--toast-scale:max(0.9,calc(1-var(--toast-index)*0.05))] [--toast-lift:calc(var(--toast-index)*-12px)]',
+  '[--toast-sx:var(--toast-swipe-movement-x,0px)] [--toast-sy:var(--toast-swipe-movement-y,0px)]',
+  '[transform:translateX(var(--toast-sx))_translateY(calc(var(--toast-sy)+var(--toast-lift)))_scale(var(--toast-scale))]',
+  'data-expanded:[transform:translateX(var(--toast-sx))_translateY(calc(var(--toast-sy)+var(--toast-lift)))]',
   'data-limited:pointer-events-none data-limited:opacity-0',
-  'transition-[transform,opacity,filter,height] duration-(--motion-toast-open) ease-smooth-out',
+  'transition-[transform,opacity,filter] duration-(--motion-toast-open) ease-smooth-out',
   'data-ending-style:duration-(--motion-toast-close) motion-reduce:transition-none',
-  'data-starting-style:opacity-0 data-starting-style:blur-[2px]',
+  'data-starting-style:opacity-0 data-starting-style:blur-(--motion-toast-blur)',
   'data-starting-style:[transform:translateY(var(--motion-toast-distance))_scale(var(--motion-toast-scale))]',
-  'data-ending-style:opacity-0 data-ending-style:blur-[2px]',
+  'data-ending-style:opacity-0 data-ending-style:blur-(--motion-toast-blur)',
   'data-ending-style:not-data-swipe-direction:[transform:translateY(calc(var(--toast-lift)+var(--motion-toast-distance)))_scale(calc(var(--toast-scale)*var(--motion-toast-scale)))]',
-  'data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y)+150%))]',
-  'data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x)+150%))]',
+  'data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-sy)+150%))]',
+  'data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-sx)+150%))]',
   'motion-reduce:data-starting-style:transform-none motion-reduce:data-starting-style:blur-none',
-  "after:absolute after:inset-x-0 after:top-full after:h-[13px] after:content-['']",
+  'motion-reduce:data-ending-style:blur-none',
 ].join(' ')
+
+/** The app has no swipe-to-dismiss. */
+const NO_SWIPE: ToastPrimitive.Root.Props['swipeDirection'] = []
 
 const LIVE_SLOTS: ToastSlots = {
   Title: (props) => <ToastPrimitive.Title data-slot="toast-title" {...props} />,
@@ -301,6 +309,8 @@ const LIVE_SLOTS: ToastSlots = {
 interface ToastProps extends Omit<ToastPrimitive.Root.Props, 'toast'> {
   /** The toast object from `useToastManager().toasts`. */
   toast: ToastObject<ToastData>
+  /** Swipe-to-dismiss directions. Default none, as in the app; e.g. `['down', 'right']` turns it on. */
+  swipeDirection?: ToastPrimitive.Root.Props['swipeDirection']
 }
 
 /**
@@ -310,7 +320,7 @@ interface ToastProps extends Omit<ToastPrimitive.Root.Props, 'toast'> {
  * `<ToastProvider><App /><Toaster /></ToastProvider>` once. `<Toaster>` renders one `<Toast>` per
  * toast; render `<Toast>` yourself only for a custom viewport.
  */
-function Toast({ toast: item, className, ...props }: ToastProps) {
+function Toast({ toast: item, className, swipeDirection = NO_SWIPE, ...props }: ToastProps) {
   const type = (item.type as ToastType | undefined) ?? 'default'
   const cancel = item.data?.cancel
   const actionLabel = item.actionProps?.children
@@ -324,6 +334,7 @@ function Toast({ toast: item, className, ...props }: ToastProps) {
   return (
     <ToastPrimitive.Root
       toast={item}
+      swipeDirection={swipeDirection}
       data-slot="toast"
       className={cn(toastSurfaceClass, toastStackClass, className)}
       {...props}
@@ -331,10 +342,7 @@ function Toast({ toast: item, className, ...props }: ToastProps) {
       <ToastPrimitive.Content
         data-slot="toast-content"
         data-multi={isMulti(item.description, Boolean(actionLabel && cancel), item.data?.closable) || undefined}
-        className={cn(
-          toastLayoutClass,
-          'transition-opacity duration-(--motion-toast-close) data-behind:opacity-0 data-expanded:opacity-100',
-        )}
+        className={toastLayoutClass}
       >
         <ToastBody
           type={type}
@@ -367,7 +375,7 @@ function Toaster({ className, contained = false, ...props }: ToasterProps) {
       aria-label="Notifikasi"
       className={cn(
         contained ? 'absolute' : 'fixed',
-        'bottom-[calc(env(safe-area-inset-bottom,0px)+28px)] left-1/2 z-(--z-toast) w-[356px] max-w-[calc(100%-32px)] -translate-x-1/2 outline-none',
+        'bottom-[calc(env(safe-area-inset-bottom,0px)+28px)] left-1/2 z-(--z-toast) w-[356px] max-w-full -translate-x-1/2 outline-none',
         className,
       )}
       {...props}

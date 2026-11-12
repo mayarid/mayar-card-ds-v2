@@ -1,4 +1,4 @@
-import { Tabs, TabsCount, TabsList, TabsTab } from '@/components/ui/tabs'
+import { Tabs, TabsCount, TabsLink, TabsList, TabsNav, TabsTab } from '@/components/ui/tabs'
 import type { ComponentDoc, MatrixAxisItem, PropValue } from '@/docs/types'
 import { indent, toJsx } from '@/gallery/jsx'
 import tabsSource from '@/registry/ui/tabs.tsx?raw'
@@ -49,6 +49,47 @@ function render(props: Record<string, PropValue>, force?: Force) {
       </TabsList>
     </Tabs>
   )
+}
+
+/* The same bar as nav links (`TabsNav` + `TabsLink`): the first link is the current page. */
+function renderNav(props: Record<string, PropValue>, force?: Force) {
+  const target = props.target === undefined ? 1 : Number(props.target)
+  return (
+    <TabsNav
+      variant={props.variant as Variant}
+      size={props.size as Size}
+      tone={props.tone as Tone}
+      countTone={props.countTone as CountTone}
+      aria-label="Kartu"
+      value="all"
+    >
+      {ITEMS.map((item, index) => (
+        <TabsLink
+          key={item.value}
+          value={item.value}
+          href={`#${item.value}`}
+          disabled={Boolean(props.disabled) && index === target}
+          data-force-state={index === target ? force : undefined}
+          onClick={(event) => event.preventDefault()}
+        >
+          {item.label}
+          {props.withCount ? <TabsCount>{item.count}</TabsCount> : null}
+        </TabsLink>
+      ))}
+    </TabsNav>
+  )
+}
+
+function navCode(props: Record<string, PropValue>) {
+  const { withCount, disabled, target = 1, ...rest } = props
+  const links = ITEMS.map((item, index) =>
+    toJsx(
+      'TabsLink',
+      { value: item.value, href: `/kartu/${item.value}`, disabled: Boolean(disabled) && index === Number(target) },
+      `${item.label}${withCount ? `\n  <TabsCount>${item.count}</TabsCount>` : ''}`,
+    ),
+  ).join('\n')
+  return toJsx('TabsNav', { ...rest, 'aria-label': 'Kartu', value: 'all' }, links, DEFAULTS)
 }
 
 function code(props: Record<string, PropValue>) {
@@ -133,12 +174,29 @@ export const doc: ComponentDoc = {
       code,
       cellWidth: 320,
     },
+    {
+      title: 'Nav links × states',
+      description: 'TabsNav + TabsLink: the same look on links. The first link is the current page; the state is on the second link.',
+      rows: [
+        { label: 'Segmented', props: { variant: 'segmented' }, codeOnly: true },
+        { label: 'Line', props: { variant: 'line' }, codeOnly: true },
+        { label: 'Line · primary tone · count', props: { variant: 'line', tone: 'primary', withCount: true }, codeOnly: true },
+        { label: 'Line · count tone tint', props: { variant: 'line', tone: 'primary', countTone: 'tint', withCount: true }, codeOnly: true },
+      ],
+      columns: STATES,
+      render: renderNav,
+      code: navCode,
+      cellWidth: 320,
+    },
   ],
   examples: [
     { id: 'tabs/segmented', title: 'Segmented with panels', description: 'One panel for each tab. Arrow keys move and activate.' },
     { id: 'tabs/line-with-counts', title: 'Line with counts', description: 'tone="primary" gives the admin look. label is read after the number.', codeOnly: true },
     { id: 'tabs/fill', title: 'Fill (controlled)', description: 'The track spans its container; the tabs share it equally.', codeOnly: true },
     { id: 'tabs/unread-count', title: 'Unread count', description: 'countTone="primary" keeps the pill in both states.', codeOnly: true },
+    { id: 'tabs/with-header', title: 'With a header', description: 'TabsHeader puts a title on the list row; the panels start 12px below.', codeOnly: true },
+    { id: 'tabs/nav-links', title: 'Nav links', description: 'TabsNav + TabsLink: the selection lives in the URL. aria-current="page" on the active link.', codeOnly: true },
+    { id: 'tabs/full-height', title: 'Full-height nav bar', description: 'fullHeight: the tabs fill the bar, the underline sits on its edge. --tabs-gap sets the gap.', codeOnly: true },
     { id: 'tabs/loading-counts', title: 'Loading counts', description: 'A static bone in place of each count. The region owns aria-busy.', codeOnly: true },
   ],
   props: [
@@ -150,10 +208,17 @@ export const doc: ComponentDoc = {
     { name: 'value / defaultValue', type: 'string | number', description: 'Active tab, controlled or uncontrolled (Base UI).' },
     { name: 'onValueChange', type: '(value, details) => void', description: 'Called when the active tab changes.' },
     { name: 'orientation', type: '"horizontal" | "vertical"', default: '"horizontal"', description: 'Vertical line tabs use a rail on the end edge.' },
-    { name: 'TabsList scrollable', type: 'boolean', default: 'false', description: 'Line: the row scrolls sideways on a narrow screen.' },
+    { name: 'fullHeight', type: 'boolean', default: 'false', description: 'Line, horizontal: the nav-bar look. The list fills the parent height, the underline sits on the bottom edge, no own hairline.' },
+    { name: '--tabs-gap', type: 'CSS variable', default: '20px', description: 'Line: the gap between tabs. Set it on an ancestor, e.g. [--tabs-gap:24px].' },
+    { name: 'TabsList scrollable', type: 'boolean', default: 'false', description: 'Line: the row scrolls sideways on a narrow screen. The focus ring goes inside the tab.' },
     { name: 'TabsList activateOnFocus', type: 'boolean', default: 'true', description: 'Arrow keys activate the tab they move to.' },
+    { name: 'TabsList loopFocus', type: 'boolean', default: 'false', description: 'Arrow keys stop at the ends of the list, as in the app.' },
+    { name: 'TabsHeader', type: 'part', description: 'A row with a title at the start and the TabsList at the end. Wraps on a narrow screen.' },
+    { name: 'TabsTab aria-controls', type: 'string', description: 'Panel-less tabs: leave out TabsPanel and point each tab at the page-owned section (role="tabpanel").' },
     { name: 'TabsCount label', type: 'string', description: 'Screen-reader suffix after the number ("pengajuan").' },
     { name: 'TabsCount loading', type: 'boolean', default: 'false', description: 'A static bone in place of the number.' },
+    { name: 'TabsNav', type: 'part', description: 'A <nav> with the Tabs look. Takes variant, size, tone, countTone, fill, fullHeight, scrollable, disabled and value (the active link).' },
+    { name: 'TabsLink', type: 'part', description: 'value, href or render (router link), active, disabled. The active link gets aria-current="page"; a disabled link has no href.' },
   ],
   guidelines: {
     do: [
@@ -167,10 +232,12 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder could not be read during this port (the Wonder endpoint did not answer). The values come from the shipped Svelte component, which was built from the Wonder specimens. Check them against Wonder again.',
-    'The sliding pill and underline use Base UI Tabs.Indicator (--active-tab-* variables) with --motion-tabs and ease-smooth-out, not the JS measurer of the app.',
+    'The shipped app is the source of truth (decision, 12 Nov 2026). Values and behaviour come from Tabs.svelte; Wonder is the visual reference.',
+    'The sliding pill and underline use Base UI Tabs.Indicator (--active-tab-* variables) with --motion-tabs and ease-smooth-out. TabsNav measures its active link with a small layout effect, as the app does. The first position snaps.',
     'Base UI keeps a disabled tab focusable (aria-disabled), so arrow keys stop on it but do not activate it. The app skipped disabled tabs.',
-    'Code-only: tone, countTone, fill, loading counts, scrollable and vertical orientation. The app link mode (nav tabs with href), header slot and fullHeight are not ported: compose a <nav> with links for URL tabs.',
-    'countTone="tint" on segmented tabs uses the same round pill as countTone="primary" (the app only changed the colours there).',
+    'The app takes an items array and renders the tabs, panels, header and links from it. This port is compositional: TabsHeader replaces the header snippet, TabsNav + TabsLink replace link mode (items with href), and panel-less tabs are a Tabs without TabsPanel (pass aria-controls on each tab).',
+    'Not ported: the SvelteKit keepfocus and noscroll flags (use your router options on the link), and the app vertical layout (the app stacks a vertical rail above the panels; this port puts it beside them).',
+    'Wonder shows segmented MD/SM and neutral line tabs. tone, countTone, fill, loading counts, scrollable, fullHeight, the header, nav links and vertical orientation are code-only.',
+    'countTone="tint" on segmented tabs uses the same round pill as countTone="primary" (the app only changes the colours there).',
   ],
 }

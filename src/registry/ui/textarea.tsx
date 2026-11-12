@@ -1,14 +1,11 @@
 import { Field } from '@base-ui/react/field'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { useRef } from 'react'
-
-import { useInvalidShake } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 Textarea. Wonder "Mayar Forms Inputs Guide" › Textarea (default and ghost).
  * Same paints as Input: surface + control shadow, border-focus ring on focus, danger-subtle + danger ring
- * when invalid (one shake when it turns invalid), disabled fill. Radius xl 10px, 10/12 padding, 14/20 text.
+ * when invalid, disabled fill (the control shadow stays). No transition, as in the app. Radius xl 10px, 10/12 padding, 14/20 text.
  * Code-only sizes from the shipped app: MD (13px text, 8/12 padding, radius lg) and XL (16/24 text, 12/14 padding).
  * Text is 16px under a coarse pointer. ⌘/Ctrl+Enter submits the form; Enter adds a line.
  */
@@ -17,11 +14,9 @@ const textareaVariants = cva(
   [
     'block w-full min-w-0 resize-y border-0 font-sans font-normal text-ink outline-none touch-manipulation',
     'placeholder:text-placeholder',
-    'transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
     'pointer-coarse:text-body-lg',
     'aria-invalid:bg-danger-subtle aria-invalid:shadow-[0_0_0_1px_var(--color-danger)]',
     'disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground',
-    'data-shaking:motion-safe:animate-shake',
   ],
   {
     variants: {
@@ -29,7 +24,6 @@ const textareaVariants = cva(
         default: [
           'bg-surface shadow-control',
           'not-aria-invalid:focus-ring:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
-          'disabled:shadow-ring',
         ],
         ghost: [
           'bg-transparent shadow-none',
@@ -82,9 +76,6 @@ function Textarea({
   ref,
   ...props
 }: TextareaProps) {
-  const innerRef = useRef<HTMLTextAreaElement | null>(null)
-  useInvalidShake(innerRef, () => innerRef.current?.getAttribute('aria-invalid') === 'true')
-
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     onKeyDown?.(event)
     if (event.defaultPrevented) return
@@ -104,11 +95,7 @@ function Textarea({
       onValueChange={onValueChange ? (next) => onValueChange(next) : undefined}
       render={
         <textarea
-          ref={(node) => {
-            innerRef.current = node
-            if (typeof ref === 'function') ref(node)
-            else if (ref) ref.current = node
-          }}
+          ref={ref}
           data-slot="textarea"
           data-variant={variant ?? 'default'}
           data-size={size ?? 'lg'}

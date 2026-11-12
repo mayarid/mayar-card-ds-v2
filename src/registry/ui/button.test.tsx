@@ -56,6 +56,33 @@ describe('Button', () => {
     expect(link.getAttribute('type')).toBeNull()
   })
 
+  it('aria-disabled is a soft disable: focusable, no onClick', async () => {
+    const onClick = vi.fn()
+    render(
+      <Button aria-disabled title="Kartu dibekukan" onClick={onClick}>
+        Bayar
+      </Button>,
+    )
+    const button = screen.getByRole('button', { name: 'Bayar' })
+    expect(button).toHaveProperty('disabled', false)
+    await userEvent.click(button)
+    expect(onClick).not.toHaveBeenCalled()
+  })
+
+  it('a disabled link keeps role link and does not navigate', async () => {
+    const onClick = vi.fn()
+    render(
+      <Button render={<a href="/keluar" />} disabled onClick={onClick}>
+        Keluar
+      </Button>,
+    )
+    const link = screen.getByRole('link', { name: 'Keluar' })
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true })
+    link.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(true)
+    expect(onClick).not.toHaveBeenCalled()
+  })
+
   it('forwards the ref', () => {
     let node: HTMLButtonElement | null = null
     render(<Button ref={(el) => void (node = el)}>Ref</Button>)

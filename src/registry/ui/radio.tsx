@@ -56,7 +56,7 @@ function RadioGroupItem({ className, description, children, ...props }: RadioGro
       <RadioPrimitive.Indicator
         keepMounted
         data-slot="radio-indicator"
-        className="size-1.5 rounded-pill bg-on-primary transition-opacity duration-(--motion-quick) ease-smooth-out data-unchecked:opacity-0 data-disabled:bg-disabled-foreground"
+        className="size-1.5 rounded-pill bg-on-primary transition-opacity duration-(--motion-quick) ease-smooth-out data-unchecked:opacity-0"
       />
     </RadioPrimitive.Root>
   )

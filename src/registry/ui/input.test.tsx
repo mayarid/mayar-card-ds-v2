@@ -57,13 +57,14 @@ describe('Input', () => {
     expect(screen.getByRole('textbox').getAttribute('aria-invalid')).toBe('true')
   })
 
-  it('shakes once when it turns invalid, not on mount', () => {
+  it('does not shake by itself when it turns invalid', () => {
     const { rerender } = render(<Input aria-label="Email" invalid />)
     const box = () => screen.getByRole('textbox').closest('[data-slot=input-box]') as HTMLElement
     expect(box().hasAttribute('data-shaking')).toBe(false)
     rerender(<Input aria-label="Email" />)
     rerender(<Input aria-label="Email" invalid />)
-    expect(box().hasAttribute('data-shaking')).toBe(true)
+    // The app does not shake on invalid alone; Field shakes on a shakeSignal bump.
+    expect(box().hasAttribute('data-shaking')).toBe(false)
   })
 
   it('disabled blocks typing', async () => {

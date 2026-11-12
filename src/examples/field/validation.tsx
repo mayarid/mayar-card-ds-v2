@@ -9,9 +9,11 @@ const LIMIT = 10_000_000
 export default function FieldValidation() {
   const [amount, setAmount] = useState('25.000.000')
   const [error, setError] = useState('')
+  const [attempt, setAttempt] = useState(0)
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setAttempt((n) => n + 1)
     const value = Number(amount.replace(/\D/g, ''))
     if (!value) setError('Nominal wajib diisi.')
     else if (value > LIMIT) setError('Nominal melebihi batas Rp10.000.000.')
@@ -20,7 +22,7 @@ export default function FieldValidation() {
 
   return (
     <form onSubmit={submit} noValidate className="flex w-80 flex-col gap-3">
-      <Field invalid={error !== ''}>
+      <Field invalid={error !== ''} shakeSignal={attempt}>
         <FieldLabel required>Nominal top up</FieldLabel>
         <Input inputMode="numeric" value={amount} onValueChange={setAmount} leading={<InputPrefix>Rp</InputPrefix>} />
         <FieldDescription>Saldo masuk dalam 1 menit.</FieldDescription>

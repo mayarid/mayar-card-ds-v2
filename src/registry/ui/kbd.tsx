@@ -24,7 +24,7 @@ function Kbd({ className, disabled = false, ...props }: KbdProps) {
       data-disabled={disabled ? '' : undefined}
       className={cn(
         'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-component px-1.5',
-        'font-sans text-caption-sm font-medium whitespace-nowrap text-ink-2 select-none',
+        'font-sans text-caption-sm font-medium whitespace-nowrap text-ink-2',
         'data-disabled:text-disabled-foreground',
         className,
       )}

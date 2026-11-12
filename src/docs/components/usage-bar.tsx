@@ -60,7 +60,7 @@ export const doc: ComponentDoc = {
   playground: {
     controls: [
       { name: 'value', type: 'select', options: ['0', '30', '60', '80', '95', '120'], default: '60' },
-      { name: 'tone', type: 'select', options: ['auto', 'p1', 'p2', 'p3', 'p4', 'over'], default: 'auto' },
+      { name: 'tone', type: 'select', options: ['auto', 'p1', 'p2', 'p3', 'p4', 'over', 'warning'], default: 'auto' },
       { name: 'height', type: 'select', options: ['6', '8'], default: '6' },
       { name: 'track', type: 'select', options: ['component', 'well'], default: 'component' },
       { name: 'labelled', label: 'label + value', type: 'boolean', default: true },
@@ -72,7 +72,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Usage ramp × height',
-      description: '<50% p1, 50% p2, 75% p3, 90% p4 (flat primary), 100%+ over (danger).',
+      description: '<50% p1, 50% p2, 75% p3, 90% p4 (flat primary), 100%+ over (danger). warning is set by hand, never by the ramp.',
       rows: [
         { label: '30% (p1)', props: { value: 30 }, codeOnly: true },
         { label: '60% (p2)', props: { value: 60 }, codeOnly: true },
@@ -80,6 +80,7 @@ export const doc: ComponentDoc = {
         { label: '95% (p4)', props: { value: 95 }, codeOnly: true },
         { label: '120% (over)', props: { value: 120 }, codeOnly: true },
         { label: '0%', props: { value: 0 }, codeOnly: true },
+        { label: '85% (warning)', props: { value: 85, tone: 'warning' }, codeOnly: true },
       ],
       columns: [
         { label: 'Height 6', props: { height: 6 } },
@@ -119,7 +120,12 @@ export const doc: ComponentDoc = {
     { name: 'value', type: 'number', description: 'Current value. Required. Clamped to min–max for the fill.' },
     { name: 'max', type: 'number', default: '100', description: 'Upper end. Use the limit, e.g. 10_000_000.' },
     { name: 'min', type: 'number', default: '0', description: 'Lower end.' },
-    { name: 'tone', type: '"none" | "p1" | "p2" | "p3" | "p4" | "over"', description: 'Ramp bucket override. Default: from the percent.' },
+    {
+      name: 'tone',
+      type: '"none" | "p1" | "p2" | "p3" | "p4" | "over" | "warning"',
+      description:
+        'Ramp bucket override. Default: from the percent. "warning" paints the theme warning fill (bg-warning) for a near-limit plan quota; the ramp never picks it, so set it yourself (for example at 80% and over).',
+    },
     { name: 'color', type: 'string', description: 'Any CSS colour or token. Wins over tone.' },
     { name: 'height', type: '6 | 8', default: '6', description: 'Bar height in px.' },
     { name: 'track', type: '"component" | "well"', default: '"component"', description: 'Track fill.' },
@@ -132,7 +138,10 @@ export const doc: ComponentDoc = {
       'Use the ramp for usage. Use color only for a share that is not usage.',
       'Give the bar a label (aria-label or UsageBarLabel) when no text next to it says what it measures.',
     ],
-    dont: ['Do not use green or amber for usage. Red is only for 100% and over.', 'Do not animate the fill again on every update.'],
+    dont: [
+      'Do not use green for usage. Red is only for 100% and over. Use the warning tone only where a near-limit quota must stand out.',
+      'Do not animate the fill again on every update.',
+    ],
   },
   notes: [
     'Code-only: Usage Bar has no specimen on the Wonder Design System page. The Dashboard "Anggaran" panel uses it; values come from UsageBar.svelte and lib/usage-tone.ts.',
@@ -140,5 +149,6 @@ export const doc: ComponentDoc = {
     'The app takes value + max or percent. This port takes value, min and max (percent = value with max 100).',
     'The ramp colours p1–p3 are color-mix of primary and surface (45 / 65 / 82%), as in the app; there is no theme token for them.',
     'The fill uses animate-bar-fill once on mount; --motion-bar-fill is 0ms under reduced motion.',
+    'The app code is final (decision, 12 Nov 2026). The warning tone is a port extra: the app ramp (lib/usage-tone.ts) is "never amber", and the Sidebar plan quota uses the blue ramp (red at 100%). The tone is opt-in and the default ramp is unchanged.',
   ],
 }

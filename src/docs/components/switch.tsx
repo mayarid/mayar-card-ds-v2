@@ -104,8 +104,8 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder was not reachable while this port was made. Values come from Switch.svelte, which was built from the Wonder Switch Block; check them against Wonder.',
-    'The app animates the thumb with keyframes (1px overshoot at 55%). This port uses one translate transition on ease-toggle (cubic-bezier(0.34, 1.35, 0.64, 1)), which overshoots by itself, so no new keyframes are needed in theme.css.',
+    'The shipped app (Switch.svelte) is the source of truth; Wonder is the visual reference. Where they differ, the app wins.',
+    'The app animates the thumb with keyframes (1px overshoot at 55%, only after the first user change). This port uses one translate transition on ease-toggle (cubic-bezier(0.34, 1.35, 0.64, 1)). Its overshoot is about 1px, and a CSS transition does not run on first paint, so the result is the same without new keyframes in theme.css.',
     'The track colour changes at once (the app sets its transition to 0ms).',
     'The app requires a label. Here the label is optional, but a switch without one must have an aria-label.',
   ],

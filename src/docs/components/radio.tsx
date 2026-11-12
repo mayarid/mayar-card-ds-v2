@@ -131,8 +131,8 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder was not reachable while this port was made. Values come from Radio.svelte, which was built from the Wonder specimen; check them against Wonder.',
+    'The shipped app (Radio.svelte) is the source of truth; Wonder is the visual reference. Where they differ, the app wins.',
     'The app groups radios by a shared name and syncs peers with a document listener. Here Base UI RadioGroup owns the value, roving focus and arrow keys.',
-    'A disabled checked radio paints its dot in disabled-foreground (the app keeps it white on the grey fill).',
+    'A disabled checked radio keeps a white dot on the grey disabled fill, as in the app.',
   ],
 }

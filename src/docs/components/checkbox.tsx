@@ -139,11 +139,11 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder was not reachable while this port was made. Values come from Checkbox.svelte, which was built from the Wonder specimen; check them against Wonder.',
+    'The shipped app (Checkbox.svelte) is the source of truth; Wonder is the visual reference. Where they differ, the app wins.',
     'The box shadow is a 1px ring plus a 1px drop (no ambient layer), as in the app, so it is not shadow-control.',
     'The tick uses pathLength="1" for the stroke-dashoffset draw, so the app\'s getTotalLength() measure is not necessary.',
     'The app gates the draw behind an "is-init" class. Here a CSS transition does not run on first paint, so a checked box mounts drawn without a gate.',
-    'The tile variant comes from the app (KYC revision grid) and is not on the Wonder page.',
+    'The tile variant comes from the app (KYC revision grid) and is not on the Wonder page. Its focus outline sits 2px outside the tile, as in the app.',
     'Props and ref go to the Base UI checkbox (the app put rest props on the label and ref on the native input).',
   ],
 }

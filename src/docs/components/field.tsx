@@ -135,13 +135,14 @@ export const doc: ComponentDoc = {
   ],
   examples: [
     { id: 'field/basic', title: 'Label, marker and description', description: 'Required, optional and disabled.' },
-    { id: 'field/validation', title: 'Validation on submit', description: 'Set invalid and render FieldError after a submit.' },
+    { id: 'field/validation', title: 'Validation on submit', description: 'Set invalid, render FieldError and change shakeSignal after a submit. The field shakes once.' },
     { id: 'field/pair', title: 'Inline pair', description: 'Two fields that answer one question, with a shared description.' },
     { id: 'field/with-counter', title: 'Counter in the label row', description: 'FieldHeader puts content at the end of the label row.', codeOnly: true },
     { id: 'input/amount', title: 'Amount', description: 'Input with the "Rp" prefix.' },
   ],
   props: [
     { name: 'Field · invalid', type: 'boolean', description: 'Marks the control invalid (aria-invalid and the invalid paint).' },
+    { name: 'Field · shakeSignal', type: 'number | string', description: 'Opt-in error shake. Change it after a failed submit or blur: the control and error shake once if the field is invalid. The label stays still. Never on mount or typing.' },
     { name: 'Field · disabled', type: 'boolean', default: 'false', description: 'Disables the control.' },
     { name: 'Field · name / validate / validationMode', type: 'Base UI Field.Root', description: 'Base UI validation. See the Base UI Field docs.' },
     { name: 'FieldLabel · required', type: 'boolean', default: 'false', description: 'A red "*" (hidden from assistive tech). Also set required on the control.' },
@@ -149,7 +150,7 @@ export const doc: ComponentDoc = {
     { name: 'FieldLabel · optionalLabel', type: 'string', default: '"(opsional)"', description: 'Text of the optional marker.' },
     { name: 'FieldError · match', type: 'boolean | keyof ValidityState', default: 'true with children', description: 'When it shows. With children and no match it always shows.' },
     { name: 'FieldHeader', type: 'div', description: 'Label row with content at its end (a counter, a badge).' },
-    { name: 'FieldPair / FieldPairLegend', type: 'Base UI Fieldset', description: 'Two fields in a two-column grid, named by the legend.' },
+    { name: 'FieldPair / FieldPairLegend', type: 'Base UI Fieldset', description: 'Two fields in a two-column grid, named by the legend. FieldPair also takes shakeSignal.' },
   ],
   guidelines: {
     do: [
@@ -160,10 +161,11 @@ export const doc: ComponentDoc = {
     dont: ['Do not show a form error as a toast.', 'Do not put a description and an error at the same time; the error replaces it.'],
   },
   notes: [
-    'The Wonder canvas could not be read while this port was made (the Wonder tools did not answer). Values come from Field.svelte. Check them again against the canvas.',
+    'The shipped app code (Field.svelte) is the source of truth (decision, 12 Nov 2026). Wonder is the visual reference.',
     'Field.svelte took label, helper and error as props and gave the child snippet { id, describedBy, invalid }. This port uses compound parts on Base UI Field, so ids and aria-describedby are automatic.',
     'The Svelte "aside" snippet is FieldHeader here and is code-only (KYC / Register v2).',
     'The Svelte pair put one helper or error under the grid for both controls. Here a FieldPair takes any element after the two fields across both columns; link it with aria-describedby on the FieldPair.',
-    'The Svelte Field shook the control and error on a "shakeSignal" bump. Here the control shakes itself when it turns invalid.',
+    'As in the app, the shake is opt-in: change shakeSignal after a failed submit. The control and message rows shake (280ms: 2 × shake-a + 2 × shake-b, smooth-out); the label does not. A change of invalid alone does not shake.',
+    'In the app, "(opsional)" sits outside the <label>. Here it is inside FieldLabel, so it is part of the accessible name.',
   ],
 }

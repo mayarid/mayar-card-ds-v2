@@ -32,7 +32,7 @@ export default function ComboboxBasic() {
         <ComboboxValue placeholder="Pilih tim" />
       </ComboboxTrigger>
       <ComboboxContent>
-        <ComboboxInput placeholder="Cari tim" aria-label="Cari tim" />
+        <ComboboxInput aria-label="Cari tim" />
         <ComboboxEmpty>
           <ComboboxEmptyTitle>Tim tidak ditemukan</ComboboxEmptyTitle>
           <ComboboxEmptyDescription>Periksa ejaan atau buat tim baru.</ComboboxEmptyDescription>

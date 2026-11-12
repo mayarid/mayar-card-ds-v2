@@ -1,29 +1,31 @@
 import { Select as SelectPrimitive } from '@base-ui/react/select'
 import { ArrowDown01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { cva, type VariantProps } from 'class-variance-authority'
+import type { ComponentProps } from 'react'
 
 import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Select. Wonder "Mayar Forms Inputs Guide" › Select / Combobox.
+ * Mayar v2 Select. Source: the app's Select.svelte (Wonder "Mayar Forms Inputs Guide" › Select / Combobox is the visual reference).
  * The trigger has the Input chrome: SM 28 / MD 32 / LG 36 (default) / XL 40, radius lg (SM/MD) and
  * xl (LG/XL), text body-sm / body-sm / body-base / body-lg (body-lg on a coarse pointer, so iOS does
  * not zoom). Variants: default (surface + control shadow) and ghost. States: hover (canvas), focus
- * (1px border-focus ring), invalid (danger-subtle + danger ring), disabled, active filter tone.
- * Popup: radius xl, 4px padding, popover shadow, max 320px tall, 32px rows (44px on a coarse pointer),
+ * (1px border-focus ring on any focus), invalid (danger-subtle + danger ring), disabled, active filter tone.
+ * Popup: as wide as the trigger, radius xl, 4px padding, popover shadow, max 320px tall, 32px rows (44px on a coarse pointer),
  * a tick on the selected row. Motion: animate-menu-in on open, a 0.99 scale + fade on close.
  */
 const selectTriggerVariants = cva(
   [
-    'group/select-trigger relative hit-44 flex w-full min-w-0 cursor-pointer items-center text-left font-sans font-normal text-ink',
+    'group/select-trigger relative hit-44 flex w-full min-w-0 items-center text-left font-sans font-normal text-ink',
     'outline-none select-none touch-manipulation pointer-coarse:text-body-lg',
-    'transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
     '[&_svg]:pointer-events-none [&_svg]:shrink-0',
+    // A leading part (icon, initials disc) pulls the start padding in to 8px, like the app.
+    'has-data-[slot=select-leading]:pl-2',
     // Invalid: from aria-invalid or from Field.Root.
     'aria-invalid:bg-danger-subtle aria-invalid:shadow-[0_0_0_1px_var(--color-danger)]',
     'data-invalid:bg-danger-subtle data-invalid:shadow-[0_0_0_1px_var(--color-danger)]',
-    'data-disabled:cursor-not-allowed data-disabled:bg-disabled data-disabled:text-disabled-foreground data-disabled:shadow-ring',
+    'data-disabled:bg-disabled data-disabled:text-disabled-foreground data-disabled:shadow-ring',
   ],
   {
     variants: {
@@ -31,10 +33,13 @@ const selectTriggerVariants = cva(
         default: [
           'bg-surface shadow-control',
           'hover-fine:not-aria-invalid:not-data-invalid:not-focus:not-data-[tone=active]:bg-canvas',
+          // The app rings the control on any focus (:focus-within), not only keyboard focus.
+          'focus:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
           'focus-ring:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
         ],
         ghost: [
           'bg-transparent shadow-none',
+          'focus:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus)]',
           'focus-ring:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus)]',
           'data-disabled:bg-transparent data-disabled:shadow-none',
         ],
@@ -49,7 +54,7 @@ const selectTriggerVariants = cva(
         default: '',
         // A filter that is set (code-only).
         active:
-          'not-data-disabled:not-aria-invalid:bg-primary-tint not-data-disabled:not-aria-invalid:text-primary font-medium not-data-disabled:not-aria-invalid:shadow-[0_0_0_1px_var(--color-primary),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)] not-data-disabled:[&_svg]:text-primary',
+          'not-data-disabled:not-aria-invalid:bg-primary-tint not-data-disabled:not-aria-invalid:text-primary font-medium not-data-disabled:not-aria-invalid:shadow-[0_0_0_1px_var(--color-primary),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)] not-data-disabled:[&_svg]:text-primary not-data-disabled:[&_[data-slot=select-leading]]:text-primary',
       },
     },
     defaultVariants: { variant: 'default', size: 'lg', tone: 'default' },
@@ -58,7 +63,7 @@ const selectTriggerVariants = cva(
 
 /** Popup surface. Exported so a doc or test can draw the open menu without opening it. */
 const selectPopupClassName = cn(
-  'flex max-h-[min(320px,var(--available-height,320px))] min-w-(--anchor-width) flex-col overflow-y-auto overscroll-contain',
+  'flex max-h-[min(320px,var(--available-height,320px))] w-(--anchor-width) min-w-0 flex-col overflow-y-auto overscroll-contain',
   'rounded-xl bg-surface p-1 font-sans text-ink shadow-popover outline-none',
   'origin-(--transform-origin) animate-menu-in',
   'transition-[opacity,scale] duration-(--motion-dropdown-close) ease-smooth-out data-ending-style:scale-[0.99] data-ending-style:opacity-0',
@@ -104,7 +109,7 @@ interface SelectTriggerProps
   className?: string
 }
 
-/** The closed control. Put a leading icon before `SelectValue`; the chevron is added at the end. */
+/** The closed control. Put a `SelectLeading` before `SelectValue`; the chevron is added at the end. */
 function SelectTrigger({ className, variant, size, tone, children, ...props }: SelectTriggerProps) {
   return (
     <SelectPrimitive.Trigger
@@ -141,6 +146,21 @@ function SelectValue({ className, ...props }: SelectValueProps) {
     <SelectPrimitive.Value
       data-slot="select-value"
       className={cn('min-w-0 flex-1 truncate data-placeholder:text-placeholder', className)}
+      {...props}
+    />
+  )
+}
+
+/**
+ * Content before the value in the closed control: an icon, or the picked member's initials disc.
+ * Decorative (hidden from assistive tech); the trigger keeps its own name. Code-only.
+ */
+function SelectLeading({ className, ...props }: ComponentProps<'span'>) {
+  return (
+    <span
+      data-slot="select-leading"
+      aria-hidden
+      className={cn('pointer-events-none inline-flex shrink-0 items-center text-ink-2', className)}
       {...props}
     />
   )
@@ -197,7 +217,7 @@ function SelectItem({ className, tone, children, ...props }: SelectItemProps) {
   return (
     <SelectPrimitive.Item data-slot="select-item" className={cn(selectItemVariants({ tone }), className)} {...props}>
       <SelectPrimitive.ItemText className="min-w-0 flex-1 truncate">{children}</SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator data-slot="select-item-indicator" className="flex text-ink">
+      <SelectPrimitive.ItemIndicator data-slot="select-item-indicator" className="flex">
         <Icon icon={Tick02Icon} />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
@@ -241,6 +261,7 @@ export {
   SelectGroup,
   SelectGroupLabel,
   SelectItem,
+  SelectLeading,
   SelectSeparator,
   SelectTrigger,
   SelectValue,

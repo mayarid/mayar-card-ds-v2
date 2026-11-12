@@ -314,9 +314,11 @@ function DialogHeader({ className, media, aside, below, children, ...props }: Di
     <div
       data-slot="dialog-header"
       className={cn(
-        'flex shrink-0 items-center justify-between gap-3 py-3 pr-3 pl-6',
-        'has-data-[slot=dialog-description]:items-start has-data-[slot=dialog-description]:pt-4 has-data-[slot=dialog-description]:pb-1',
-        header === 'divided' && 'border-b border-border-subtle py-3.5 pr-4',
+        'flex shrink-0 items-center justify-between gap-3 pl-6 has-data-[slot=dialog-description]:items-start',
+        // The app keeps the divided padding (14 16 14 24) when a description is present.
+        header === 'divided'
+          ? 'border-b border-border-subtle py-3.5 pr-4'
+          : 'py-3 pr-3 has-data-[slot=dialog-description]:pt-4 has-data-[slot=dialog-description]:pb-1',
         className,
       )}
       {...props}

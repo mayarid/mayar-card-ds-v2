@@ -1,6 +1,5 @@
 import {
   Combobox,
-  ComboboxClear,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxEmptyDescription,
@@ -11,6 +10,7 @@ import {
   ComboboxStatus,
   ComboboxTrigger,
   ComboboxValue,
+  comboboxPopupClassName,
 } from '@/components/ui/combobox'
 import { selectPopupClassName } from '@/components/ui/select'
 import type { ComponentDoc, MatrixAxisItem, PropValue } from '@/docs/types'
@@ -49,7 +49,7 @@ const TRIGGER_DEFAULTS = { variant: 'default', size: 'lg' }
 function Popup({ loading }: { loading?: boolean }) {
   return (
     <>
-      <ComboboxInput placeholder="Cari tim" aria-label="Cari tim" trailing={<ComboboxClear />} />
+      <ComboboxInput aria-label="Cari tim" />
       {loading ? (
         <ComboboxStatus>Memuat hasil…</ComboboxStatus>
       ) : (
@@ -106,7 +106,7 @@ function code(props: Record<string, PropValue>) {
     : '<ComboboxEmpty>\n  <ComboboxEmptyTitle>Tim tidak ditemukan</ComboboxEmptyTitle>\n  <ComboboxEmptyDescription>Periksa ejaan atau buat tim baru.</ComboboxEmptyDescription>\n</ComboboxEmpty>'
   const list =
     '<ComboboxList>\n  {(team) => (\n    <ComboboxItem key={team.value} value={team}>\n      {team.label}\n    </ComboboxItem>\n  )}\n</ComboboxList>'
-  const content = `<ComboboxContent>\n${indent(`<ComboboxInput placeholder="Cari tim" aria-label="Cari tim" />\n${state}\n${list}`)}\n</ComboboxContent>`
+  const content = `<ComboboxContent>\n${indent(`<ComboboxInput aria-label="Cari tim" />\n${state}\n${list}`)}\n</ComboboxContent>`
   const root = `<Combobox items={teams}${empty ? '' : ' defaultValue={teams[0]}'}${disabled ? ' disabled' : ''}>`
   return `${root}\n${indent(`${trigger}\n${content}`)}\n</Combobox>`
 }
@@ -115,7 +115,7 @@ function code(props: Record<string, PropValue>) {
 function PopupSpecimen({ query, loading }: { query: string; loading?: boolean }) {
   return (
     <Combobox items={loading ? [] : TEAMS} inline open defaultInputValue={query} defaultValue={TEAMS[0]}>
-      <div className={cn(selectPopupClassName, 'w-60 animate-none overflow-hidden')}>
+      <div className={cn(selectPopupClassName, comboboxPopupClassName, 'w-60 animate-none')}>
         <Popup loading={loading} />
       </div>
     </Combobox>
@@ -170,7 +170,7 @@ export const doc: ComponentDoc = {
     {
       title: 'Popup states',
       description:
-        'Open: every team. Combobox: "Mar" filters to Marketing and Marketplace. Empty: no match. Loading: an async search. Each state swaps in with animate-state-swap.',
+        'Open: every team. Combobox: "Mar" filters to Marketing and Marketplace. Empty: no match. Loading: an async search. Empty and loading fade in (opacity only).',
       rows: [{ label: 'Popup' }],
       columns: [
         { label: 'Open', props: { query: '' } },
@@ -194,6 +194,7 @@ export const doc: ComponentDoc = {
     { name: 'Combobox value / defaultValue', type: 'Item | null', description: 'Controlled / uncontrolled value.' },
     { name: 'Combobox onValueChange', type: '(value, details) => void', description: 'Called with the picked item.' },
     { name: 'Combobox inputValue / onInputValueChange', type: 'string', description: 'The search text, for an async search.' },
+    { name: 'Combobox loopFocus / autoHighlight', type: 'boolean', default: 'false / true', description: 'Like the app: arrow keys stop at the ends, and the first match is highlighted while typing.' },
     { name: 'Combobox filter', type: '(item, query) => boolean | null', description: 'Custom match; null turns filtering off (server results).' },
     { name: 'Combobox name / disabled / required', type: 'string / boolean', description: 'Form props.' },
     { name: 'ComboboxTrigger variant / size', type: '"default" | "ghost" / "sm" … "xl"', default: '"default" / "lg"', description: 'Same as SelectTrigger.' },
@@ -212,10 +213,13 @@ export const doc: ComponentDoc = {
     dont: ['Do not put a Create button in the popup.', 'Do not use Combobox for free text. Use Input.'],
   },
   notes: [
-    'Wonder was not reachable while this port was made. Values come from Combobox.svelte, which was built from the Wonder specimens; check them against Wonder.',
-    'The app hand-rolled the listbox (filtering, highlight, flip, close timers, empty debounce). This port uses Base UI Combobox with the input inside the popup, so combobox-logic.ts is not ported: Base UI filters by label (case-insensitive), skips disabled items and positions the popup.',
+    'The shipped app is the source of truth (decision, 12 Nov 2026). Every value here comes from Combobox.svelte; Wonder is the visual reference.',
+    'The app hand-rolled the listbox (filtering, highlight, flip, close timers, empty debounce). This port uses Base UI Combobox with the input inside the popup, so combobox-logic.ts is not ported: Base UI filters by label (case-insensitive), skips disabled items, positions and flips the popup. loopFocus={false} and autoHighlight match the app\'s moveEnabledIndex (stop at the ends) and its first-match highlight while typing.',
+    'The popup is exactly as wide as the trigger. Its shadow is the app\'s own (ring, 0 12px 32px -8px drop colour, 0 4px 8px -2px ambient): softer than shadow-popover, which uses the modal colour.',
+    'The search row has no placeholder in the app, only the search icon. Its name is "Cari" by default; the app uses "Cari " + the trigger name, so pass that as aria-label.',
+    'The app\'s default empty copy is "Tim tidak ditemukan" / "Periksa ejaan atau buat tim baru." and its loading copy "Memuat hasil…". Here the copy is the children of ComboboxEmpty and ComboboxStatus.',
     'The menu uses z-(--z-modal) like the app, so it paints over a Dialog or Popover.',
-    'The app swaps status with an opacity-only keyframe. This port uses the theme animate-state-swap (4px rise + 2px blur + fade).',
+    'The trigger keeps the focus ring and drops the hover wash while the popup is open, like the app.',
     'ComboboxClear is code-only: neither the app nor Wonder has a clear button in the search row.',
   ],
 }

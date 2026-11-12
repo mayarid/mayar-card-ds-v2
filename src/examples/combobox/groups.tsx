@@ -47,7 +47,7 @@ export default function ComboboxGroups() {
         <ComboboxValue placeholder="Pilih pemegang kartu" />
       </ComboboxTrigger>
       <ComboboxContent>
-        <ComboboxInput placeholder="Cari nama" aria-label="Cari nama" />
+        <ComboboxInput aria-label="Cari nama" />
         <ComboboxEmpty>
           <ComboboxEmptyTitle>Nama tidak ditemukan</ComboboxEmptyTitle>
         </ComboboxEmpty>

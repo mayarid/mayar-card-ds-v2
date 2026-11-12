@@ -45,7 +45,7 @@ function Teams({
         <ComboboxValue placeholder="Pilih tim" />
       </ComboboxTrigger>
       <ComboboxContent>
-        <ComboboxInput placeholder="Cari tim" aria-label="Cari tim" trailing={<ComboboxClear />} />
+        <ComboboxInput aria-label="Cari tim" trailing={<ComboboxClear />} />
         {loading ? (
           <ComboboxStatus>Memuat hasil…</ComboboxStatus>
         ) : (
@@ -114,6 +114,24 @@ describe('Combobox', () => {
     expect(onValueChange.mock.calls[0]?.[0]).toEqual(TEAMS[3])
     await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
     expect(trigger.textContent).toContain('Finance')
+  })
+
+  it('highlights the first match while typing, and Enter picks it', async () => {
+    const onValueChange = vi.fn()
+    render(<Teams onValueChange={onValueChange} />)
+    await open()
+    await userEvent.keyboard('mar')
+    await userEvent.keyboard('{Enter}')
+    expect(onValueChange.mock.calls[0]?.[0]).toEqual(TEAMS[0])
+  })
+
+  it('arrow keys stop at the last match (no loop)', async () => {
+    const onValueChange = vi.fn()
+    render(<Teams onValueChange={onValueChange} />)
+    await open()
+    await userEvent.keyboard('mar')
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}')
+    expect(onValueChange.mock.calls[0]?.[0]).toEqual(TEAMS[1])
   })
 
   it('picks with a click and works controlled', async () => {

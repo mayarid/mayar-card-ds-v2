@@ -56,6 +56,14 @@ describe('UsageBar', () => {
     expect(fill.className).toContain('bg-danger')
   })
 
+  it('paints the warning fill only when the tone is set', () => {
+    const { container } = render(<UsageBar value={85} tone="warning" aria-label="Kuota kartu" />)
+    const fill = container.querySelector('[data-slot="usage-bar-fill"]') as HTMLElement
+    expect(screen.getByRole('meter', { name: 'Kuota kartu' }).dataset.tone).toBe('warning')
+    expect(fill.className).toContain('bg-warning')
+    expect(getUsageTone(85)).toBe('p3')
+  })
+
   it('color wins over the tone; height and track change the track', () => {
     const { container } = render(
       <UsageBar value={40} color="var(--color-chart-3)" height={8} track="well" aria-label="Belanja" />,

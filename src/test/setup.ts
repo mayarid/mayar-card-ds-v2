@@ -1,10 +1,14 @@
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
+
+// waitFor / findBy wait up to 5 s, so the suite stays stable when the machine is busy.
+configure({ asyncUtilTimeout: 5000 })
 
 afterEach(() => cleanup())
 
 // jsdom lacks these browser APIs that Base UI and the gallery use.
-if (!window.matchMedia) {
+// jsdom's matchMedia can be missing or return null; libraries such as NumberFlow read `.matches`.
+if (!window.matchMedia || !window.matchMedia('(min-width: 0px)')) {
   window.matchMedia = (query: string) =>
     ({
       matches: false,

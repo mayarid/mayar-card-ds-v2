@@ -63,7 +63,7 @@ export default function ComboboxAsync() {
         <ComboboxValue placeholder="Pilih merchant" />
       </ComboboxTrigger>
       <ComboboxContent>
-        <ComboboxInput placeholder="Cari merchant" aria-label="Cari merchant" />
+        <ComboboxInput aria-label="Cari merchant" />
         {loading ? (
           <ComboboxStatus>Memuat hasil…</ComboboxStatus>
         ) : (

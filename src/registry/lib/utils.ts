@@ -24,7 +24,7 @@ const twMerge = extendTailwindMerge({
           ],
         },
       ],
-      shadow: [{ shadow: ['control', 'raised', 'popover', 'toast', 'card', 'ring', 'dialog', 'drawer'] }],
+      shadow: [{ shadow: ['control', 'raised', 'popover', 'toast', 'card', 'ring', 'dialog', 'drawer', 'combobox'] }],
       rounded: [{ rounded: ['card', 'media', 'panel', 'pill', 'btn'] }],
     },
   },

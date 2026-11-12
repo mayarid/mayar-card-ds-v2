@@ -7,7 +7,17 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { expectNoAxeViolations } from '@/test/axe'
 
-import { Select, SelectContent, SelectGroup, SelectGroupLabel, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from './select'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectGroupLabel,
+  SelectItem,
+  SelectLeading,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from './select'
 
 const PERIODS = [
   { value: 'harian', label: 'Harian' },
@@ -182,6 +192,19 @@ describe('Select', () => {
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
     expect(screen.getByRole('dialog')).toBeTruthy()
+  })
+
+  it('a leading part is decorative and keeps the trigger name', () => {
+    render(
+      <Select items={PERIODS} defaultValue="harian">
+        <SelectTrigger aria-label="Periode">
+          <SelectLeading data-testid="lead">AP</SelectLeading>
+          <SelectValue />
+        </SelectTrigger>
+      </Select>,
+    )
+    expect(screen.getByTestId('lead').getAttribute('aria-hidden')).toBe('true')
+    expect(screen.getByRole('combobox', { name: 'Periode' }).textContent).toContain('Harian')
   })
 
   it('has no axe violations (closed and open)', async () => {

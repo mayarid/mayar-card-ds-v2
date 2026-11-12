@@ -6,7 +6,7 @@ import type { ComponentDoc, PropValue } from '@/docs/types'
 import { toJsx } from '@/gallery/jsx'
 import source from '@/registry/ui/icon-disc.tsx?raw'
 
-const SIZES = ['24', '32', '36', '40', '44', '48', '56'] as const
+const SIZES = ['24', '28', '32', '36', '40', '44', '48', '56'] as const
 const TONES = [
   'neutral',
   'well',
@@ -96,7 +96,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Sizes × shapes (Primary)',
-      description: 'The glyph size follows the disc: 14 / 16 / 18 / 20 / 20 / 20 / 24.',
+      description: 'The glyph size follows the disc: 14 / 16 / 16 / 18 / 20 / 20 / 20 / 24.',
       rows: SIZES.map((s) => ({ label: s, props: { size: s, tone: 'primary' }, codeOnly: true })),
       columns: [
         { label: 'Circle', props: { shape: 'circle' } },
@@ -116,9 +116,15 @@ export const doc: ComponentDoc = {
     },
   ],
   props: [
-    { name: 'size', type: '24 | 32 | 36 | 40 | 44 | 48 | 56', default: '40', description: 'Diameter in px. A child svg gets the matching glyph size.' },
+    {
+      name: 'size',
+      type: '24 | 28 | 32 | 36 | 40 | 44 | 48 | 56',
+      default: '40',
+      description:
+        'Diameter in px. A child svg gets the matching glyph size (24→14, 28→16, 32→16, 36→18, 40/44/48→20, 56→24). 28 is the small row disc: the step dot of the request-access tracker and the Plan Badge row (pass className="[&_svg]:size-[15px]" for its 15px sparkles glyph).',
+    },
     { name: 'tone', type: TONES.map((t) => `"${t}"`).join(' | '), default: '"neutral"', description: 'Fill and glyph colour.' },
-    { name: 'shape', type: '"circle" | "square"', default: '"circle"', description: 'Square uses radius md to 3xl, by size.' },
+    { name: 'shape', type: '"circle" | "square"', default: '"circle"', description: 'Square uses radius md (24, 28) to 3xl (56), by size.' },
     { name: 'aria-hidden', type: 'boolean', default: 'true', description: 'Pass false (with role="img" and aria-label) only when the disc stands alone.' },
     { name: 'render', type: 'ReactElement | (props, state) => ReactElement', description: 'Render another element.' },
   ],
@@ -131,7 +137,8 @@ export const doc: ComponentDoc = {
     dont: ['Do not use a disc as a button. It is not interactive.', 'Do not put text or two icons in one disc.'],
   },
   notes: [
-    'Code-only: Icon Disc has no specimen on the Wonder Design System page. Values come from the shipped app (IconDisc.svelte).',
+    'Code-only: Icon Disc has no specimen on the Wonder Design System page. Values come from the shipped app (IconDisc.svelte); the app code is final (decision, 12 Nov 2026).',
+    'Size 28 is not in the app IconDisc scale. The app draws 28px discs by hand: the request-access and KYC tracker dots (circle, 16px glyph) and the budget category chip (radius md). This port adds 28 so those and the Plan Badge row can use the primitive.',
     'The app passes the glyph size by hand; this port also sizes a child svg from the disc size, so the Icon default (16px) is overridden.',
     'Tone ring uses a 1px Tailwind ring in primary-light; the app uses the same 0 0 0 1px box-shadow.',
   ],

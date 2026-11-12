@@ -115,8 +115,8 @@ export const doc: ComponentDoc = {
     dont: ['Do not make a badge clickable. Use a Button or a Toggle Group chip.', 'Do not use a badge as a nav count. Use TabsCount.'],
   },
   notes: [
-    'Wonder could not be read during this port (the Wonder endpoint did not answer). The values come from the shipped Svelte component (Wonder one.aaa geometry). Check them against Wonder again.',
-    'well is code-only (the console "Belum" chip).',
-    'The app had an icon prop (12 or 14px). This port takes the icon in children; the start padding shrinks by 2px when the first child is an svg.',
+    'The shipped app code is final (decision, 12 Nov 2026). Every value here comes from the app Badge.svelte; Wonder is the visual reference.',
+    'well is code-only: the console "Belum" (not started) chip. Wonder does not show it.',
+    'The app has an icon prop (12px, or 14px for the review status chip). This port takes the icon in children; the start padding shrinks by 2px when the first child is an svg. For the 14px chip, add className="[&_svg]:size-3.5".',
   ],
 }

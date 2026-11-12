@@ -13,8 +13,9 @@ import { cn } from '@/lib/utils'
 const buttonVariants = cva(
   [
     'relative hit-44 inline-flex min-w-0 shrink-0 items-center justify-center whitespace-nowrap',
-    'font-sans text-body-sm font-medium no-underline outline-none select-none',
-    'transition-[background-color,box-shadow,color] duration-(--motion-quick) ease-smooth-out',
+    'font-sans text-body-sm font-medium no-underline outline-none',
+    // Release eases with the standard curve; hover and open ease out (as in the app).
+    'transition-[background-color,border-color,box-shadow,color] duration-(--motion-quick) ease-standard hover-fine:ease-smooth-out opened:ease-smooth-out',
     'focus-ring:outline-focus',
     '[&_svg]:pointer-events-none [&_svg]:shrink-0',
     // Disabled. Loading keeps the variant paint.
@@ -76,7 +77,10 @@ interface ButtonProps extends useRender.ComponentProps<'button'>, ButtonVariantP
  *
  * Put icons in `children`: `<Button><Icon icon={Add01Icon} />Add card</Button>`.
  * Use `size="icon-md"` (and an `aria-label`) for an icon-only button.
- * Use `render={<a href="/x" />}` to render a link with the same look.
+ * Use `render={<a href="/x" />}` to render a link with the same look. A disabled or loading link
+ * gets `aria-disabled` and does not navigate. `aria-disabled` on a button is a soft disable: it stays
+ * focusable (pair it with `title`) but does not call `onClick`. `aria-pressed` makes it a toggle
+ * that shows the hover/open fill while on.
  */
 function Button({
   className,
@@ -88,9 +92,21 @@ function Button({
   disabled,
   render,
   children,
+  onClick,
   ...props
 }: ButtonProps) {
   const isNativeButton = render === undefined
+  // Soft disable: a native button with aria-disabled stays focusable but does not act.
+  const softDisabled = isNativeButton && (props['aria-disabled'] === true || props['aria-disabled'] === 'true')
+  // A disabled or busy link does not navigate.
+  const linkOff = !isNativeButton && (Boolean(disabled) || loading)
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+    if (softDisabled || linkOff) {
+      event.preventDefault()
+      return
+    }
+    onClick?.(event)
+  }
   const content = (
     <>
       {loading ? (
@@ -116,12 +132,13 @@ function Button({
   const defaultProps: useRender.ElementProps<'button'> = {
     'data-slot': 'button',
     ...(isNativeButton ? { type: 'button', disabled: disabled || loading } : {}),
-    ...(!isNativeButton && (disabled || loading) ? { 'aria-disabled': true } : {}),
+    ...(linkOff ? { 'aria-disabled': true, role: 'link' } : {}),
     'aria-busy': loading || undefined,
     'data-loading': loading ? '' : undefined,
     'data-variant': variant ?? 'primary',
     className: cn(buttonVariants({ variant, size, shape }), className),
     children: content,
+    onClick: handleClick,
   } as useRender.ElementProps<'button'>
 
   return useRender({

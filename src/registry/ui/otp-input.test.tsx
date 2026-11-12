@@ -24,7 +24,7 @@ describe('OtpInput', () => {
     render(<Labelled />)
     expect(slots()).toHaveLength(6)
     expect(screen.getByRole('textbox', { name: 'Kode verifikasi' })).toBe(slots()[0])
-    expect(screen.getByRole('textbox', { name: 'Digit 2 dari 6' })).toBe(slots()[1])
+    expect(screen.getByRole('textbox', { name: 'Digit 2 of 6' })).toBe(slots()[1])
     expect(slots()[0]?.getAttribute('autocomplete')).toBe('one-time-code')
     expect(slots()[0]?.getAttribute('inputmode')).toBe('numeric')
     expect(document.querySelectorAll('[data-slot=otp-input-separator]')).toHaveLength(1)
@@ -117,5 +117,24 @@ describe('OtpInput', () => {
       </div>,
     )
     await expectNoAxeViolations(container)
+  })
+
+  it('autoFocus focuses the first slot, and again when a controlled value clears', async () => {
+    function Retry() {
+      const [value, setValue] = useState('')
+      return (
+        <>
+          <Labelled length={4} autoFocus value={value} onValueChange={setValue} />
+          <button type="button" onClick={() => setValue('')}>
+            Ulangi
+          </button>
+        </>
+      )
+    }
+    render(<Retry />)
+    expect(document.activeElement).toBe(slots()[0])
+    await userEvent.keyboard('12')
+    await userEvent.click(screen.getByRole('button', { name: 'Ulangi' }))
+    expect(document.activeElement).toBe(slots()[0])
   })
 })

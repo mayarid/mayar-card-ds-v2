@@ -39,7 +39,17 @@ describe('IconDisc', () => {
 
   it('maps disc sizes to glyph sizes', () => {
     expect(iconDiscIconSize[24]).toBe(14)
+    expect(iconDiscIconSize[28]).toBe(16)
     expect(iconDiscIconSize[56]).toBe(24)
+  })
+
+  it('has a 28px size with a 16px glyph and a radius md square', () => {
+    const { getByTestId } = render(<IconDisc size={28} shape="square" data-testid="d" />)
+    const disc = getByTestId('d')
+    expect(disc.dataset.size).toBe('28')
+    expect(disc.className).toContain('size-7')
+    expect(disc.className).toContain('[&_svg]:size-4')
+    expect(disc.className).toContain('data-[shape=square]:rounded-md')
   })
 
   it('forwards the ref', () => {

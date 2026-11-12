@@ -165,9 +165,10 @@ export const doc: ComponentDoc = {
     dont: ['Do not use it for more than about 6 options; use ChoiceCardList rows or a Select.', 'Do not change the title weight when selected.'],
   },
   notes: [
-    'Wonder could not be read during this port (the Wonder endpoint did not answer). The values come from the shipped Svelte component. Check them against Wonder again.',
+    'The shipped app (ChoiceCard.svelte) is the source of truth; Wonder is the visual reference. Where they differ, the app wins.',
     'The app used native radios inside a <label>. This port uses Base UI RadioGroup + Radio (render as a <div>), with a hidden native input for forms.',
     'The app soft-disable (aria-disabled, focusable) is not ported: use disabled, or readOnly on the card (Base UI) for a focusable card that cannot be picked.',
+    'The app ChoiceCardPair takes an items array and a legend. Here the pair is a layout part: put ChoiceCard children in it, and name the group on ChoiceCardGroup (aria-label or a <fieldset> + <legend>).',
     'leading, icon, method and list are code-only (Top Up v2, KYC v2 and card actions screens).',
   ],
 }

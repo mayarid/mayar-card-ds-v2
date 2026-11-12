@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils'
  * Source: the shipped app (foundations/UsageBar.svelte, lib/usage-tone.ts).
  * One blue ramp: the fill gets darker as usage grows and turns red at 100% or more.
  * Height 6 (default) or 8. Track component (default) or well. The fill grows from the left once.
+ * `warning` (theme warning fill) is a port extra for a near-limit quota; the ramp never picks it.
  */
 
-type UsageTone = 'none' | 'p1' | 'p2' | 'p3' | 'p4' | 'over'
+type UsageTone = 'none' | 'p1' | 'p2' | 'p3' | 'p4' | 'over' | 'warning'
 
 /** The ramp bucket for a usage percent (`null` = nothing to measure). */
 function getUsageTone(percent: number | null): UsageTone {
@@ -29,6 +30,7 @@ const toneClass: Record<UsageTone, string> = {
   p3: 'bg-[color-mix(in_oklch,var(--color-primary)_82%,var(--color-surface))]',
   p4: 'bg-primary',
   over: 'bg-danger',
+  warning: 'bg-warning',
 }
 
 interface UsageBarContextValue {
@@ -46,7 +48,10 @@ const UsageBarContext = createContext<UsageBarContextValue>({
 })
 
 interface UsageBarProps extends Omit<Meter.Root.Props, 'color'> {
-  /** Ramp bucket override. Default: from the percent (`p4` = flat primary, `over` = danger). */
+  /**
+   * Ramp bucket override. Default: from the percent (`p4` = flat primary, `over` = danger).
+   * `warning` paints the theme warning fill for a near-limit quota; set it yourself, the ramp never does.
+   */
   tone?: UsageTone
   /** Fill colour override, e.g. `var(--color-chart-3)` for a share bar. Wins over `tone`. */
   color?: string

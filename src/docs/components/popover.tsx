@@ -221,7 +221,9 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Code-only: no Popover specimen on the Wonder Design System page. Values come from the shipped app (Popover.svelte).',
+    'Code-only: no Popover specimen on the Wonder Design System page. The shipped app code is the source of truth (decision, 12 Nov 2026); every value comes from Popover.svelte.',
+    'The app takes a `width` prop in px (capped at the viewport minus 32px). Here, set className="w-[280px]" on PopoverContent; the max-w-[calc(100vw-32px)] cap stays.',
+    'The app requires a `label` (the panel is role="dialog" with aria-label). Here, give PopoverContent an aria-label or render a PopoverTitle.',
     'The app positions the panel by hand (absolute / fixed strategy, flip, nudge into the viewport) and closes a fixed panel on scroll. Base UI Popover positions it with Floating UI: it flips, shifts and follows scroll, so it does not close on scroll.',
     'canvas-anchor.ts in the app turns a control on a CSS-scaled canvas into a virtual anchor. Base UI measures the real client rect, which includes CSS transforms; pass anchor= (an element or a virtual element) if you need another anchor.',
     'placement="bottom-end" in the app is side="bottom" align="end" here (the default).',

@@ -8,6 +8,26 @@ import { expectNoAxeViolations } from '@/test/axe'
 import { Field, FieldDescription, FieldError, FieldHeader, FieldLabel, FieldPair, FieldPairLegend } from './field'
 
 describe('Field', () => {
+  it('shakeSignal shakes the control and error, not the label, only when invalid and the signal changes', () => {
+    const view = (signal: number, invalid: boolean) => (
+      <Field invalid={invalid} shakeSignal={signal}>
+        <FieldLabel>Email</FieldLabel>
+        <Input />
+        {invalid ? <FieldError>Email tidak valid.</FieldError> : null}
+      </Field>
+    )
+    const { rerender } = render(view(0, true))
+    const label = screen.getByText('Email').closest('[data-slot=field-label]') as HTMLElement
+    const box = () => document.querySelector('[data-slot=input-box]') as HTMLElement
+    expect(box().hasAttribute('data-shaking')).toBe(false)
+    rerender(view(1, false))
+    expect(box().hasAttribute('data-shaking')).toBe(false)
+    rerender(view(2, true))
+    expect(box().hasAttribute('data-shaking')).toBe(true)
+    expect(screen.getByRole('alert').hasAttribute('data-shaking')).toBe(true)
+    expect(label.hasAttribute('data-shaking')).toBe(false)
+  })
+
   it('labels the control and links the description', async () => {
     render(
       <Field>

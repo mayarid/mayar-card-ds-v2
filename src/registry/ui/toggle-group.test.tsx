@@ -7,9 +7,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { expectNoAxeViolations } from '@/test/axe'
 
 import { Icon } from './icon'
-import { ToggleGroup, ToggleGroupItem } from './toggle-group'
+import { ToggleGroup, ToggleGroupItem, type ToggleGroupSingleProps } from './toggle-group'
 
-function Period(props: React.ComponentProps<typeof ToggleGroup>) {
+function Period(props: Omit<ToggleGroupSingleProps, 'children'>) {
   return (
     <ToggleGroup aria-label="Periode" defaultValue="7" {...props}>
       <ToggleGroupItem value="7">7 hari</ToggleGroupItem>
@@ -84,6 +84,91 @@ describe('ToggleGroup', () => {
     const { container } = render(<Period variant="track" />)
     const pill = container.querySelector('[data-slot="toggle-group-pill"]')
     expect(pill?.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('Tab into the group lands on the pressed item', async () => {
+    render(
+      <>
+        <button type="button">Sebelum</button>
+        <Period defaultValue="30" />
+      </>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Sebelum' }))
+    await userEvent.tab()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '30 hari' }))
+  })
+
+  it('names an icon-only item in its title too', () => {
+    render(
+      <ToggleGroup aria-label="Tampilan" size="icon" defaultValue="grid">
+        <ToggleGroupItem value="grid" aria-label="Grid">
+          <Icon icon={GridViewIcon} />
+        </ToggleGroupItem>
+      </ToggleGroup>,
+    )
+    expect(screen.getByRole('button', { name: 'Grid' }).getAttribute('title')).toBe('Grid')
+  })
+
+  describe('multiple', () => {
+    function Status(props: { defaultValue?: string[]; value?: string[]; onValueChange?: (value: string[]) => void }) {
+      return (
+        <ToggleGroup aria-label="Status" multiple size="sm" {...props}>
+          <ToggleGroupItem value="success">Berhasil</ToggleGroupItem>
+          <ToggleGroupItem value="pending">Tertunda</ToggleGroupItem>
+          <ToggleGroupItem value="failed">Gagal</ToggleGroupItem>
+        </ToggleGroup>
+      )
+    }
+
+    it('presses several items and calls onValueChange with an array', async () => {
+      const onValueChange = vi.fn()
+      render(<Status defaultValue={['success']} onValueChange={onValueChange} />)
+      await userEvent.click(screen.getByRole('button', { name: 'Gagal' }))
+      expect(onValueChange).toHaveBeenLastCalledWith(['success', 'failed'])
+      expect(pressed('Berhasil')).toBe('true')
+      expect(pressed('Gagal')).toBe('true')
+    })
+
+    it('can release every item', async () => {
+      const onValueChange = vi.fn()
+      render(<Status defaultValue={['pending']} onValueChange={onValueChange} />)
+      await userEvent.click(screen.getByRole('button', { name: 'Tertunda' }))
+      expect(onValueChange).toHaveBeenLastCalledWith([])
+      expect(pressed('Tertunda')).toBe('false')
+    })
+
+    it('works controlled', async () => {
+      function Controlled() {
+        const [value, setValue] = useState<string[]>([])
+        return (
+          <>
+            <span data-testid="v">{value.join(',')}</span>
+            <Status value={value} onValueChange={setValue} />
+          </>
+        )
+      }
+      render(<Controlled />)
+      await userEvent.click(screen.getByRole('button', { name: 'Berhasil' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Tertunda' }))
+      expect(screen.getByTestId('v').textContent).toBe('success,pending')
+      await userEvent.click(screen.getByRole('button', { name: 'Berhasil' }))
+      expect(screen.getByTestId('v').textContent).toBe('pending')
+    })
+
+    it('a track in multiple mode has no sliding pill', () => {
+      const { container } = render(
+        <ToggleGroup aria-label="Status" variant="track" multiple defaultValue={['a']}>
+          <ToggleGroupItem value="a">A</ToggleGroupItem>
+          <ToggleGroupItem value="b">B</ToggleGroupItem>
+        </ToggleGroup>,
+      )
+      expect(container.querySelector('[data-slot="toggle-group-pill"]')).toBeNull()
+    })
+
+    it('has no axe violations', async () => {
+      const { container } = render(<Status defaultValue={['success', 'failed']} />)
+      await expectNoAxeViolations(container)
+    })
   })
 
   it('has no axe violations', async () => {

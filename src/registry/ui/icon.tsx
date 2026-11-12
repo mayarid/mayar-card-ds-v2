@@ -10,6 +10,8 @@ export type IconProps = HugeiconsIconProps
  *
  * @example <Icon icon={Add01Icon} />
  */
+// The app's Icon defaults to 20px, but most app call sites pass 14 or 16 by hand. This port uses 16 as
+// the default and passes other sizes at the call site, so each icon still matches the app.
 function Icon({ size = 16, strokeWidth = 1.5, className, ...props }: IconProps) {
   return (
     <HugeiconsIcon

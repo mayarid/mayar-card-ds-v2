@@ -43,7 +43,7 @@ export const doc: ComponentDoc = {
   name: 'Animated Number',
   group: 'Display',
   description:
-    'A summary figure (a balance, a total, a stat tile) that moves to its new value when it changes, in tabular monospaced digits.',
+    'A summary figure (a balance, a total, a stat tile) that moves to its new value when it changes, in tabular digits.',
   spec: 'code-only',
   registry: 'animated-number',
   source: [{ path: 'components/ui/animated-number.tsx', code: source }],
@@ -86,7 +86,6 @@ export const doc: ComponentDoc = {
     { name: 'suffix', type: 'string', default: '""', description: 'Text after the number, e.g. "%".' },
     { name: 'format', type: 'Intl.NumberFormatOptions', description: 'Default: grouped, up to 3 fraction digits.' },
     { name: 'locale', type: 'Intl.LocalesArgument', default: '"id-ID"', description: 'Number locale.' },
-    { name: 'duration', type: 'number', default: '350', description: 'Tween length in ms (--motion-medium). 0 snaps.' },
     { name: 'hidden', type: 'boolean', default: 'false', description: 'Masks the value.' },
     { name: 'hiddenText', type: 'string', default: '"•••"', description: 'The mask.' },
     { name: 'hiddenLabel', type: 'string', description: 'Spoken in place of the mask.' },
@@ -102,9 +101,9 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Code-only: Animated Number has no specimen on the Wonder Design System page. Behaviour comes from AnimatedNumber.svelte.',
-    'The app uses NumberFlow (an odometer that rolls each changed digit). This port has no extra package: useTweenedNumber (in the same file) tweens the value with requestAnimationFrame over 350ms. To match the app exactly, add @number-flow/react.',
-    'This port sets font-mono and tabular-nums; the app sets tabular-nums on the inherited font.',
+    'Code-only: Animated Number has no specimen on the Wonder Design System page. Behaviour comes from AnimatedNumber.svelte; the app code is final (decision, 12 Nov 2026).',
+    'Same as the app: NumberFlow (@number-flow/react) rolls each changed digit, with transform and spin timing 350ms and opacity 150ms on the smooth-out curve. Where NumberFlow cannot animate, the same text renders in a plain span.',
+    'Digits use tabular-nums on the inherited font, as in the app (no monospace font).',
     'Screen readers get the final value once (an sr-only copy), and the moving text is aria-hidden. Under reduced motion the value snaps.',
   ],
 }

@@ -5,6 +5,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectLeading,
   SelectTrigger,
   SelectValue,
   selectGroupLabelClassName,
@@ -55,7 +56,11 @@ function render(props: Record<string, PropValue>, force?: string) {
         aria-invalid={props.invalid ? true : undefined}
         data-force-state={force}
       >
-        {props.leading ? <Icon icon={Calendar03Icon} className="text-ink-2" /> : null}
+        {props.leading ? (
+          <SelectLeading>
+            <Icon icon={Calendar03Icon} />
+          </SelectLeading>
+        ) : null}
         <SelectValue placeholder={String(props.placeholder ?? 'Pilih periode')} />
       </SelectTrigger>
       <SelectContent>
@@ -74,7 +79,7 @@ function code(props: Record<string, PropValue>) {
   const trigger = toJsx(
     'SelectTrigger',
     { 'aria-label': 'Periode', variant, size, tone, 'aria-invalid': invalid },
-    [leading ? '<Icon icon={Calendar03Icon} />' : '', toJsx('SelectValue', { placeholder })].filter(Boolean).join('\n'),
+    [leading ? '<SelectLeading>\n  <Icon icon={Calendar03Icon} />\n</SelectLeading>' : '', toJsx('SelectValue', { placeholder })].filter(Boolean).join('\n'),
     TRIGGER_DEFAULTS,
   )
   const content = toJsx(
@@ -107,7 +112,7 @@ function StaticItem({
       data-disabled={disabled ? '' : undefined}
     >
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      {selected ? <Icon icon={Tick02Icon} className="text-ink" /> : null}
+      {selected ? <Icon icon={Tick02Icon} /> : null}
     </div>
   )
 }
@@ -187,7 +192,7 @@ export const doc: ComponentDoc = {
         { label: 'Default', props: { variant: 'default' } },
         { label: 'Ghost', props: { variant: 'ghost' } },
         { label: 'Active filter', props: { tone: 'active' }, codeOnly: true },
-        { label: 'Leading icon', props: { leading: true }, codeOnly: true },
+        { label: 'Leading', props: { leading: true }, codeOnly: true },
       ],
       columns: STATES,
       render,
@@ -197,7 +202,7 @@ export const doc: ComponentDoc = {
     {
       title: 'Open menu',
       description:
-        'A static drawing of the popup: radius xl, 4px padding, popover shadow, 32px rows, a tick on the selected row, a wash on the highlighted row.',
+        'A static drawing of the popup: as wide as the trigger, radius xl, 4px padding, popover shadow, 32px rows, a tick on the selected row, a wash on the highlighted row.',
       rows: [
         { label: 'List', props: { kind: 'list' } },
         { label: 'Groups + separator', props: { kind: 'grouped' } },
@@ -230,6 +235,7 @@ export const doc: ComponentDoc = {
     { name: 'SelectTrigger size', type: '"sm" | "md" | "lg" | "xl"', default: '"lg"', description: 'Height 28 / 32 / 36 / 40.' },
     { name: 'SelectTrigger tone', type: '"default" | "active"', default: '"default"', description: 'Active paints a filter that is set (code-only).' },
     { name: 'SelectTrigger aria-invalid', type: 'boolean', description: 'Error: danger-subtle fill and danger ring. Field.Root invalid does the same.' },
+    { name: 'SelectLeading', type: 'children', description: 'Content before the value (icon or initials disc). Decorative; pulls the start padding in to 8px and turns primary in the active tone (code-only).' },
     { name: 'SelectValue placeholder', type: 'ReactNode', description: 'Text when there is no value.' },
     { name: 'SelectValue children', type: 'ReactNode | (value) => ReactNode', description: 'Other closed text, e.g. "Paket: Business".' },
     { name: 'SelectContent side / align / sideOffset', type: 'Base UI Positioner', default: '"bottom" / "start" / 4', description: 'Placement.' },
@@ -245,12 +251,14 @@ export const doc: ComponentDoc = {
     dont: ['Do not use a native <select> or <datalist>.', 'Do not show a form error as a toast. Use the invalid state and the Field error.'],
   },
   notes: [
-    'Wonder was not reachable while this port was made. Values come from Select.svelte, which was built from the Wonder specimen; check them against Wonder.',
+    'The shipped app is the source of truth (decision, 12 Nov 2026). Every value here comes from Select.svelte; Wonder is the visual reference.',
+    'The focus ring shows on any focus of the trigger (the app uses :focus-within), not only on keyboard focus.',
+    'The menu is exactly as wide as the trigger, like the app.',
     'The menu uses z-(--z-modal) like the app (design/forms.md: "Select / Combobox menus --v2-z-modal"), not --z-dropdown: a menu in a Dialog (z-modal) or Popover (z-popover) must paint over it.',
     'The app portals the menu into an open <dialog>. With Base UI the menu portals to <body> and Base UI nests it in the Dialog\'s floating tree, so outside click and Esc close only the menu.',
-    'invalid is aria-invalid on the trigger (or Field.Root invalid), not a separate prop.',
+    'invalid is aria-invalid on the trigger (or Field.Root invalid), not a separate prop. displayLabel is SelectValue children.',
     'The app shakes the Select on an invalid submit (is-shaking). This port leaves that to the Field; use animate-shake on the trigger if you need it.',
-    'The active tone, the action row and the leading icon come from the app and are not on the Wonder page.',
+    'The active tone, the action row and SelectLeading come from the app and are not on the Wonder page.',
     'The app test helpers (pickSelectOption, readSelectOptions) are ported into select.test.tsx.',
   ],
 }

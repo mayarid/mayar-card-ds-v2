@@ -7,8 +7,10 @@ import { cn } from '@/lib/utils'
 /*
  * Mayar v2 IconDisc. Code-only: no specimen on the Wonder Design System page.
  * Source: the shipped app (foundations/IconDisc.svelte).
- * Sizes 24 / 32 / 36 / 40 / 44 / 48 / 56. The glyph inside gets 14 / 16 / 18 / 20 / 20 / 20 / 24.
- * The square shape uses radius md / lg / xl / xl / xl / 2xl / 3xl.
+ * Sizes 24 / 28 / 32 / 36 / 40 / 44 / 48 / 56. The glyph inside gets 14 / 16 / 16 / 18 / 20 / 20 / 20 / 24.
+ * The square shape uses radius md / md / lg / xl / xl / xl / 2xl / 3xl.
+ * 28 is the app's step dot (request-access tracker, KYC track: 16px glyph) and the budget category
+ * chip (radius md); the Plan Badge row disc uses it too.
  */
 const iconDiscVariants = cva(
   [
@@ -19,6 +21,7 @@ const iconDiscVariants = cva(
     variants: {
       size: {
         '24': 'size-6 data-[shape=square]:rounded-md [&_svg]:size-3.5',
+        '28': 'size-7 data-[shape=square]:rounded-md [&_svg]:size-4',
         '32': 'size-8 data-[shape=square]:rounded-lg [&_svg]:size-4',
         '36': 'size-9 data-[shape=square]:rounded-xl [&_svg]:size-4.5',
         '40': 'size-10 data-[shape=square]:rounded-xl [&_svg]:size-5',
@@ -42,12 +45,12 @@ const iconDiscVariants = cva(
   },
 )
 
-type IconDiscSize = 24 | 32 | 36 | 40 | 44 | 48 | 56
+type IconDiscSize = 24 | 28 | 32 | 36 | 40 | 44 | 48 | 56
 type IconDiscTone = 'neutral' | 'well' | 'primary' | 'tint' | 'success' | 'warning' | 'danger' | 'ring' | 'surface'
 type IconDiscShape = 'circle' | 'square'
 
 /** The glyph size (px) that fits each disc size. The disc also sizes a child `<svg>` for you. */
-const iconDiscIconSize: Record<IconDiscSize, number> = { 24: 14, 32: 16, 36: 18, 40: 20, 44: 20, 48: 20, 56: 24 }
+const iconDiscIconSize: Record<IconDiscSize, number> = { 24: 14, 28: 16, 32: 16, 36: 18, 40: 20, 44: 20, 48: 20, 56: 24 }
 
 interface IconDiscProps extends useRender.ComponentProps<'span'> {
   /** Diameter in px. */

@@ -125,9 +125,9 @@ export const doc: ComponentDoc = {
     dont: ['Do not rebuild the bank card face with Surface.', 'Do not nest when the gap is more than 24px; the child keeps its own radius.'],
   },
   notes: [
-    'Wonder could not be read during this port (the Wonder endpoint did not answer). The values come from the shipped Svelte component (Wonder one.mop). Check them against Wonder again.',
+    'The shipped app code is final (decision, 12 Nov 2026). Every value here comes from the app Surface.svelte; Wonder is the visual reference.',
     'variant="container" paints the white surface, not the code-only `container` colour token.',
     'The related ring is requested on the child (nested.ring) and drawn by the parent with :has().',
-    'The app deprecated `surface` prop alias is not ported.',
+    'The app also accepts `surface` as a deprecated alias of `variant`. This port keeps only `variant`.',
   ],
 }

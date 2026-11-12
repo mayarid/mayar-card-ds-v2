@@ -45,9 +45,10 @@ const checkboxRowVariants = cva(
           'hover-fine:not-has-data-checked:inset-ring-border has-[[data-slot=checkbox][data-force-state~=hover]]:not-has-data-checked:inset-ring-border',
           // The unchecked box stands out from the tile at 3:1: a muted ring.
           '[&_[data-slot=checkbox]:not([data-checked],[data-indeterminate],[data-disabled])]:shadow-[inset_0_0_0_1.5px_var(--color-muted)]',
-          // The focus outline goes round the tile, not the box.
+          // The focus outline goes round the tile (2px offset, as in the app), not the box.
           '[&_[data-slot=checkbox]]:outline-none!',
           'has-[[data-slot=checkbox]:focus-visible]:outline-focus has-[[data-slot=checkbox][data-force-state~=focus]]:outline-focus',
+          'has-[[data-slot=checkbox]:focus-visible]:outline-offset-2! has-[[data-slot=checkbox][data-force-state~=focus]]:outline-offset-2!',
         ],
       },
     },

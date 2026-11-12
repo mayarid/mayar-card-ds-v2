@@ -267,6 +267,8 @@
     0 24px 48px -12px var(--color-shadow-drop), 0 48px 96px -24px var(--color-shadow-modal);
   --shadow-dialog: 0 0 0 1px var(--color-shadow-ring), 0 24px 64px -12px var(--color-shadow-modal);
   --shadow-drawer: 0 0 0 1px var(--color-shadow-ring), 0 24px 48px var(--color-shadow-modal);
+  --shadow-combobox: 0 0 0 1px var(--color-shadow-ring), 0 12px 32px -8px var(--color-shadow-drop),
+    0 4px 8px -2px var(--color-shadow-ambient);
   --shadow-ring: 0 0 0 1px var(--color-shadow-ring);
   --inset-shadow-highlight: inset 0 1px 0 var(--color-highlight-inset);
 
@@ -283,7 +285,7 @@
   --animate-dialog-in: dialog-in var(--motion-dialog-open) var(--ease-smooth-out) both;
   --animate-drawer-in: drawer-in var(--motion-dialog-open) var(--ease-smooth-out) both;
   --animate-fade-in: fade-in var(--motion-dialog-open) var(--ease-smooth-out) both;
-  --animate-shake: shake calc(var(--motion-shake-a) * 2 + var(--motion-shake-b) * 3) both;
+  --animate-shake: shake calc(var(--motion-shake-a) * 2 + var(--motion-shake-b) * 2) both;
   --animate-bar-fill: bar-fill var(--motion-bar-fill) var(--ease-smooth-out) both;
   --animate-state-swap: state-swap var(--motion-state-swap) var(--ease-smooth-out) both;
   --animate-shimmer: shimmer 1.6s linear infinite;
@@ -326,15 +328,19 @@
   @keyframes shake {
     0% {
       transform: translateX(0);
+      animation-timing-function: var(--ease-smooth-out);
     }
     28.57% {
       transform: translateX(var(--motion-shake-distance));
+      animation-timing-function: var(--ease-smooth-out);
     }
     57.14% {
       transform: translateX(calc(var(--motion-shake-distance) * -1));
+      animation-timing-function: var(--ease-smooth-out);
     }
     78.57% {
       transform: translateX(var(--motion-shake-overshoot));
+      animation-timing-function: var(--ease-smooth-out);
     }
     100% {
       transform: translateX(0);

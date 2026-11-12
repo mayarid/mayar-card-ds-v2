@@ -89,7 +89,7 @@ export const doc: ComponentDoc = {
   props: [
     { name: 'variant', type: '"default" | "ghost"', default: '"default"', description: 'Ghost is transparent until focus.' },
     { name: 'size', type: '"md" | "lg" | "xl"', default: '"lg"', description: 'Text 13 / 14 / 16 px.' },
-    { name: 'invalid', type: 'boolean', default: 'false', description: 'Danger-subtle fill, danger ring, aria-invalid. Shakes once when it turns true.' },
+    { name: 'invalid', type: 'boolean', default: 'false', description: 'Danger-subtle fill, danger ring, aria-invalid.' },
     { name: 'rows', type: 'number', default: '3', description: 'Visible lines. The user can resize it vertically.' },
     { name: 'value / defaultValue', type: 'string', description: 'Controlled or uncontrolled text.' },
     { name: 'onValueChange', type: '(value: string) => void', description: 'Called with the new text.' },
@@ -100,8 +100,9 @@ export const doc: ComponentDoc = {
     dont: ['Do not use a textarea for one line of text. Use Input.'],
   },
   notes: [
-    'The Wonder canvas could not be read while this port was made (the Wonder tools did not answer). Values come from Textarea.svelte. Check them again against the canvas.',
-    'Textarea.svelte has sizes MD / LG / XL and no ghost. This port adds the ghost variant from the Forms guide (transparent, border-focus ring on focus, the same as Input ghost) and marks MD and XL as code-only.',
+    'The shipped app code (Textarea.svelte) is the source of truth (decision, 12 Nov 2026). Wonder is the visual reference.',
+    'The app has sizes MD / LG / XL and no ghost. Wonder shows a ghost Textarea; this port keeps it (transparent, border-focus ring on focus, as Input ghost). The app does not use it. MD and XL are not on the Wonder page.',
+    'As in the app: no paint transition, no shake, and the disabled field keeps the control shadow.',
     'Built on Base UI Field.Control with render={<textarea />}, so it takes its label, description and invalid state from a Field.',
   ],
 }

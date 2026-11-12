@@ -33,7 +33,7 @@ export default function ComboboxInField() {
           <ComboboxValue placeholder="Pilih kota" />
         </ComboboxTrigger>
         <ComboboxContent>
-          <ComboboxInput placeholder="Cari kota" aria-label="Cari kota" />
+          <ComboboxInput aria-label="Cari kota" />
           <ComboboxEmpty>
             <ComboboxEmptyTitle>Kota tidak ditemukan</ComboboxEmptyTitle>
           </ComboboxEmpty>

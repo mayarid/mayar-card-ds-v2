@@ -145,6 +145,8 @@ export const doc: ComponentDoc = {
     { name: 'loading', type: 'boolean', default: 'false', description: 'Spinner overlay, aria-busy, no clicks.' },
     { name: 'loadingLabel', type: 'string', description: 'Text next to the spinner while loading.' },
     { name: 'disabled', type: 'boolean', default: 'false', description: 'Native disabled. On a rendered link it sets aria-disabled.' },
+    { name: 'aria-disabled', type: 'boolean', description: 'Soft disable: disabled look, still focusable, onClick is not called. Pair it with title.' },
+    { name: 'aria-pressed', type: 'boolean', description: 'Makes it a toggle. While true it shows the hover/open fill.' },
     { name: 'render', type: 'ReactElement | (props, state) => ReactElement', description: 'Render another element, e.g. <a href="…" />.' },
   ],
   guidelines: {
@@ -156,8 +158,11 @@ export const doc: ComponentDoc = {
     dont: ['Do not put two primary buttons next to each other.', 'Do not use link buttons for form submit.'],
   },
   notes: [
-    'Wonder has an r-btn token of 12px, but every Button specimen uses 8px (SM/MD) and 10px (LG). The specimens win.',
-    'success-subtle, link-muted and XL come from the shipped app and are not on the Wonder page yet.',
+    'The shipped app code is the source of truth (decision, 12 Nov 2026). Wonder is the visual reference.',
+    'Wonder has an r-btn token of 12px; the app uses 8px (SM, MD, XL) and 10px (LG), as the Wonder specimens do.',
+    'success-subtle, link-muted and XL come from the app and are not on the Wonder page.',
+    'As in the app, aria-disabled on a button is a soft disable (focusable, no click), and a disabled or loading link does not navigate.',
+    'The app takes icon and iconPosition props; this port puts icons in children. The app sets aria-pressed with a pressed prop; here you set aria-pressed directly.',
     'Every button has a hit area of at least 44×44 (an invisible ::before), so touch targets pass without a change to the visible size.',
   ],
 }

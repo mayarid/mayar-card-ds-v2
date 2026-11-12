@@ -60,6 +60,7 @@ export const doc: ComponentDoc = {
   },
   notes: [
     'Renders a native <kbd>. Size: 20px tall, min-width 20px, 6px side padding, radius sm, caption-sm 11/16 medium.',
-    'The Wonder canvas could not be read while this port was made (the Wonder tools did not answer). The values come from Kbd.svelte, which was built from the Wonder specimens. Check them again against the canvas.',
+    'Values come from the shipped app (Kbd.svelte), which is the source of truth (decision, 12 Nov 2026). Wonder is the visual reference.',
+    'The app takes the text as a keys prop or children; this port takes children only.',
   ],
 }

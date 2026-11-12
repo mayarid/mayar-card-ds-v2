@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils'
  * Mayar v2 Input. Wonder "Mayar Forms Inputs Guide" › Input.
  * Variants: default, ghost, inline. Sizes: SM 28 / MD 32 / LG 36 (default) / XL 40.
  * Radius lg 8px (SM, MD) and xl 10px (LG, XL). Text 13 (SM, MD), 14 (LG), 16 (XL); 16 under a coarse pointer.
- * States: placeholder, filled, hover (canvas), focus (border-focus ring), invalid (danger-subtle + danger ring,
- * one shake when it turns invalid), disabled.
+ * States: placeholder, filled, hover (canvas), focus (border-focus ring), invalid (danger-subtle + danger ring),
+ * disabled. The shake on a failed submit belongs to `Field` (`shakeSignal`), as in the app.
  * Code-only: tone "danger" (danger focus ring for a type-to-confirm field) and the clear button.
  */
 
@@ -27,14 +27,13 @@ const inputVariants = cva(
     'has-disabled:cursor-not-allowed has-disabled:bg-disabled has-disabled:text-disabled-foreground has-disabled:shadow-ring',
     // A text prefix ("Rp") turns on tabular digits.
     '[&:has([data-slot=input-prefix])_input]:tabular-nums',
-    'data-shaking:motion-safe:animate-shake',
   ],
   {
     variants: {
       variant: {
         default: [
           'bg-surface shadow-control',
-          'transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
+          'transition-[background-color] duration-(--motion-quick) ease-smooth-out',
           'hover-fine:not-has-disabled:not-focus-within:not-has-[[aria-invalid=true]]:bg-canvas',
           // Focus: real focus inside the box, or a forced focus state.
           'not-has-[[aria-invalid=true]]:focus-within:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
@@ -163,14 +162,11 @@ function Input({
   'data-force-state': forceState,
   ...props
 }: InputProps) {
-  const boxRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uncontrolledFilled, setUncontrolledFilled] = useState(
     defaultValue !== undefined && String(defaultValue) !== '',
   )
   const filled = value !== undefined ? String(value) !== '' : uncontrolledFilled
-
-  useInvalidShake(boxRef, () => inputRef.current?.getAttribute('aria-invalid') === 'true')
 
   function clear() {
     const input = inputRef.current
@@ -189,7 +185,6 @@ function Input({
 
   return (
     <div
-      ref={boxRef}
       data-slot="input-box"
       data-variant={variant ?? 'default'}
       data-size={size ?? 'lg'}
@@ -243,7 +238,7 @@ function Input({
             'transition-colors duration-(--motion-quick) ease-smooth-out hover-fine:text-ink focus-ring:outline-focus',
           )}
         >
-          <Icon icon={CancelCircleIcon} />
+          <Icon icon={CancelCircleIcon} className="size-4!" />
         </button>
       ) : null}
       {trailing ? (

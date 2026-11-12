@@ -144,7 +144,7 @@ export const doc: ComponentDoc = {
   examples: [
     { id: 'input/search', title: 'Search with a shortcut', description: 'Leading icon and an end Kbd. A click on the Kbd focuses the field.' },
     { id: 'input/amount', title: 'Amount', description: 'InputPrefix "Rp" turns on tabular digits.' },
-    { id: 'input/invalid', title: 'Invalid after submit', description: 'Set invalid on the Field after a submit. The field shakes once when it turns invalid.' },
+    { id: 'input/invalid', title: 'Invalid after submit', description: 'Set invalid on the Field after a submit and change shakeSignal, so the field shakes once.' },
     { id: 'input/clearable', title: 'Clear button', description: 'onClear shows a "×" while there is text.', codeOnly: true },
     { id: 'input/variants', title: 'Variants' },
     { id: 'input/confirm-delete', title: 'Type to confirm', description: 'tone="danger" paints only the focus ring.', codeOnly: true },
@@ -176,10 +176,11 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'The Wonder canvas could not be read while this port was made (the Wonder tools did not answer). Values come from Input.svelte, which was built from the Wonder specimens. Check them again against the canvas.',
-    'tone="danger" and the clear button come from the shipped app (Pengaturan v2 and Admin Pengguna v2) and are code-only.',
+    'The shipped app code (Input.svelte) is the source of truth (decision, 12 Nov 2026). Wonder is the visual reference.',
+    'tone="danger" and the clear button come from the app (Pengaturan v2 and Admin Pengguna v2) and are not on the Wonder page.',
+    'As in the app, only the background (hover) has a transition; the focus ring changes at once. The clear icon is 16px at every size.',
     'Under a coarse pointer the text is 16px for every size, so iOS does not zoom.',
-    'The shake (theme animate-shake) plays once when the field turns invalid after the first render, and never on mount. Reduced motion turns it off. The Svelte Field shook on a "shakeSignal" bump; this port shakes the control itself when it turns invalid.',
+    'Input does not shake by itself, as in the app. Use shakeSignal on the Field after a failed submit.',
     'The Svelte "prefix" prop is the InputPrefix part here, given to leading. "icon" and "kbd" are the leading and trailing slots.',
   ],
 }

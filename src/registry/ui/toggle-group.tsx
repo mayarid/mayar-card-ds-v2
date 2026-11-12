@@ -12,21 +12,24 @@ import {
   useState,
   type ComponentProps,
   type CSSProperties,
+  type FocusEvent,
   type Ref,
 } from 'react'
 
 import { cn } from '@/lib/utils'
 
 /*
- * Mayar v2 Toggle Group. Wonder "Mayar Card Design System" › Selection › Toggle Group (Chips).
+ * Mayar v2 Toggle Group. Values from the shipped app (`ToggleGroup.svelte`); Wonder
+ * "Mayar Card Design System" › Selection › Toggle Group (Chips) is the visual reference.
  * chips: 32px pill chips, 8px gap, wraps; selected = primary tint + 1px primary ring + primary text.
- *   SM: 28px radius md, caption-lg text, hairline ring; selected fill primary-light.
- * segmented (code-only): equal grid columns, 6px gap, radius lg items on component; selected white
- *   + control shadow.
- * track (code-only): the Tabs Segmented look for a filter: one component track, a white pill slides
+ *   SM: 28px radius md, caption-lg text, hairline ring; selected fill primary-light; rows 12px apart.
+ * segmented: equal grid columns, 6px gap, 32px radius lg items on component; selected white
+ *   + control shadow. It has one size.
+ * track: the Tabs Segmented look for a filter: one component track, a white pill slides
  *   to the pressed item with `--motion-tabs`.
- * icon size (code-only): 28px square icon items (the grid/list view switch).
- * Exactly one item stays pressed: a press on the pressed item does nothing.
+ * icon size: 28px square icon items (the grid/list view switch).
+ * Single (default): exactly one item stays pressed; a press on the pressed item does nothing.
+ * `multiple`: any number of items, none included; the value is a `string[]`.
  */
 type ToggleGroupVariant = 'chips' | 'segmented' | 'track'
 type ToggleGroupSize = 'md' | 'sm' | 'icon'
@@ -39,9 +42,12 @@ const ToggleGroupContext = createContext<{ variant: ToggleGroupVariant; size: To
 const groupVariants = cva('relative min-w-0', {
   variants: {
     variant: {
-      chips: 'inline-flex flex-wrap items-center gap-2',
+      chips: 'inline-flex flex-wrap items-center gap-2 data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch',
       segmented: 'grid w-full grid-cols-[repeat(var(--toggle-columns),minmax(0,1fr))] gap-1.5',
-      track: 'inline-flex flex-nowrap items-center gap-0.5 bg-component p-0.5',
+      track: [
+        'inline-flex flex-nowrap items-center gap-0.5 bg-component p-0.5',
+        'data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch',
+      ],
     },
     size: { md: '', sm: '', icon: '' },
     fill: { true: '', false: '' },
@@ -85,6 +91,8 @@ const itemVariants = cva(
           'before:h-[calc(100%+8px)]! before:w-full!',
           'hover-fine:text-ink data-pressed:text-ink',
           'data-disabled:text-disabled-foreground!',
+          // `multiple` has no sliding pill: each pressed item carries the pill look itself.
+          'group-data-multiple/toggle:data-pressed:bg-surface group-data-multiple/toggle:data-pressed:shadow-control',
         ],
       },
       size: {
@@ -104,7 +112,8 @@ const itemVariants = cva(
         ],
       },
       { variant: 'chips', size: 'icon', className: 'rounded-md' },
-      { variant: 'segmented', size: 'sm', className: 'rounded-md' },
+      // The app has no small segmented item: SM keeps the 32px radius-lg item.
+      { variant: 'segmented', size: 'sm', className: 'h-8' },
       { variant: 'track', size: 'md', className: 'rounded-lg px-3' },
       { variant: 'track', size: 'sm', className: 'rounded-md px-2.5' },
       { variant: 'track', size: 'icon', className: 'not-data-pressed:not-data-disabled:text-muted hover-fine:text-ink!' },
@@ -112,22 +121,44 @@ const itemVariants = cva(
   },
 )
 
-interface ToggleGroupProps
-  extends Omit<ComponentProps<typeof BaseToggleGroup>, 'value' | 'defaultValue' | 'onValueChange' | 'multiple'> {
+type BaseGroupProps = Omit<
+  ComponentProps<typeof BaseToggleGroup>,
+  'value' | 'defaultValue' | 'onValueChange' | 'multiple'
+>
+
+interface ToggleGroupSharedProps extends BaseGroupProps {
   variant?: ToggleGroupVariant
   /** `icon`: 28px square items for icon-only views (give each item an `aria-label`). */
   size?: ToggleGroupSize
   /** Track only: the track spans its container and the items share it equally. */
   fill?: boolean
+  /** Name the group: what does it filter? */
+  'aria-label'?: string
+}
+
+interface ToggleGroupSingleProps extends ToggleGroupSharedProps {
+  /** `false` (default): exactly one item stays pressed. */
+  multiple?: false
   /** The pressed item (controlled). */
   value?: string
   /** The pressed item at first render (uncontrolled). */
   defaultValue?: string
   /** Called with the newly pressed item. A press on the pressed item does not call it. */
   onValueChange?: (value: string) => void
-  /** Name the group: what does it filter? */
-  'aria-label'?: string
 }
+
+interface ToggleGroupMultipleProps extends ToggleGroupSharedProps {
+  /** `true`: any number of items can be pressed, none included. */
+  multiple: true
+  /** The pressed items (controlled). */
+  value?: string[]
+  /** The pressed items at first render (uncontrolled). */
+  defaultValue?: string[]
+  /** Called with every pressed item. An empty array means none is pressed. */
+  onValueChange?: (value: string[]) => void
+}
+
+type ToggleGroupProps = ToggleGroupSingleProps | ToggleGroupMultipleProps
 
 function mergeRefs<T>(...refs: (Ref<T> | undefined)[]) {
   return (node: T | null) => {
@@ -180,35 +211,61 @@ function useTrackPill(enabled: boolean, value: string | undefined) {
   return { rootRef, ready }
 }
 
+const EMPTY: string[] = []
+
+/** The app's focus hand-off: Tab into the group lands on a pressed item, not on the first one. */
+function focusPressedItem(event: FocusEvent<HTMLDivElement>) {
+  const root = event.currentTarget
+  const from = event.relatedTarget
+  if (from instanceof Node && root.contains(from)) return
+  const target = event.target
+  if (target.hasAttribute('data-pressed')) return
+  const pressedItem = root.querySelector<HTMLElement>('[data-slot="toggle-group-item"][data-pressed]:not([data-disabled])')
+  if (pressedItem && pressedItem !== target) pressedItem.focus()
+}
+
 /**
- * A single-select set of toggle buttons for a filter, a period or a view switch.
+ * A set of toggle buttons for a filter, a period or a view switch.
  *
- * Compose `ToggleGroupItem`s. Exactly one item stays pressed. For panels use `Tabs`.
+ * Compose `ToggleGroupItem`s. By default exactly one item stays pressed; `multiple` lets any
+ * number be pressed and takes a `string[]` value. For panels use `Tabs`.
  */
-function ToggleGroup({
-  className,
-  variant = 'chips',
-  size = 'md',
-  fill = false,
-  value,
-  defaultValue,
-  onValueChange,
-  children,
-  style,
-  ref,
-  ...props
-}: ToggleGroupProps) {
-  const [innerValue, setInnerValue] = useState(defaultValue)
-  const current = value !== undefined ? value : innerValue
-  const isTrack = variant === 'track'
-  const { rootRef, ready } = useTrackPill(isTrack, current)
+function ToggleGroup(props: ToggleGroupProps) {
+  const {
+    className,
+    variant = 'chips',
+    size = 'md',
+    fill = false,
+    multiple = false,
+    value,
+    defaultValue,
+    onValueChange,
+    children,
+    style,
+    onFocus,
+    ref,
+    ...rest
+  } = props
+  const [innerValue, setInnerValue] = useState<string[]>(() =>
+    defaultValue === undefined ? EMPTY : Array.isArray(defaultValue) ? defaultValue : [defaultValue],
+  )
+  const controlled = value !== undefined
+  const current = controlled ? (Array.isArray(value) ? value : [value]) : innerValue
+  const single = current[0]
+  const hasPill = variant === 'track' && !multiple
+  const { rootRef, ready } = useTrackPill(hasPill, single)
 
   function handleValueChange(next: string[]) {
-    const picked = next.find((v) => v !== current)
+    if (multiple) {
+      if (!controlled) setInnerValue(next)
+      ;(onValueChange as ToggleGroupMultipleProps['onValueChange'])?.(next)
+      return
+    }
+    const picked = next.find((v) => v !== single)
     // Pressing the pressed item empties the array: keep it pressed.
     if (picked === undefined) return
-    if (value === undefined) setInnerValue(picked)
-    onValueChange?.(picked)
+    if (!controlled) setInnerValue([picked])
+    ;(onValueChange as ToggleGroupSingleProps['onValueChange'])?.(picked)
   }
 
   const context = useMemo(() => ({ variant, size }), [variant, size])
@@ -222,13 +279,18 @@ function ToggleGroup({
         data-size={size}
         data-ready={ready ? '' : undefined}
         ref={mergeRefs(ref, rootRef)}
-        value={current !== undefined ? [current] : []}
+        multiple={multiple}
+        value={current}
         onValueChange={handleValueChange}
-        className={cn('group/toggle', groupVariants({ variant, size, fill: fill && isTrack }), className)}
+        onFocus={(event) => {
+          onFocus?.(event)
+          focusPressedItem(event)
+        }}
+        className={cn('group/toggle', groupVariants({ variant, size, fill: fill && variant === 'track' }), className)}
         style={typeof style === 'function' ? style : { ...(variant === 'segmented' ? columns : {}), ...style }}
-        {...props}
+        {...rest}
       >
-        {isTrack ? (
+        {hasPill ? (
           <span
             data-slot="toggle-group-pill"
             aria-hidden
@@ -251,15 +313,24 @@ interface ToggleGroupItemProps extends Omit<ComponentProps<typeof Toggle>, 'valu
 }
 
 /** One option. Text in `children`, or an `<Icon />` plus an `aria-label` for an icon-only item. */
-function ToggleGroupItem({ className, ...props }: ToggleGroupItemProps) {
+function ToggleGroupItem({ className, title, ...props }: ToggleGroupItemProps) {
   const { variant, size } = useContext(ToggleGroupContext)
   return (
     <Toggle
       data-slot="toggle-group-item"
+      // As in the app, an icon-only item's name is also its hover title.
+      title={title ?? props['aria-label']}
       className={cn(itemVariants({ variant, size }), className)}
       {...props}
     />
   )
 }
 
-export { ToggleGroup, ToggleGroupItem, type ToggleGroupProps, type ToggleGroupItemProps }
+export {
+  ToggleGroup,
+  ToggleGroupItem,
+  type ToggleGroupProps,
+  type ToggleGroupSingleProps,
+  type ToggleGroupMultipleProps,
+  type ToggleGroupItemProps,
+}

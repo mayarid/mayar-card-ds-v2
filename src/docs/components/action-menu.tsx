@@ -231,11 +231,13 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Code-only: no Action Menu specimen on the Wonder Design System page. Values come from the shipped app (ActionMenu.svelte).',
+    'Code-only: no Action Menu specimen on the Wonder Design System page. The shipped app code is the source of truth (decision, 12 Nov 2026); every value comes from ActionMenu.svelte.',
+    'The app defaults the trigger label to "Aksi lain" and the menu width to 260px. Here the label is the trigger children (or its aria-label on the icon variants); the panel is 260px, and className sets another width.',
     'The app takes an items array (label, icon, tone, separated, href). This port composes items as children: ActionMenuItem, ActionMenuLinkItem, ActionMenuSeparator, ActionMenuHeader.',
     'Keyboard, focus and outside press come from Base UI Menu. Base UI highlights items (data-highlighted) and keeps focus on the menu, where the app moves DOM focus to each item; the paint is the same.',
     'The app positions a fixed menu by hand and closes it on scroll. Base UI positions it with Floating UI (flip, shift) and keeps it open on scroll.',
     'z-index: --z-dropdown (40) in every case. The app uses --z-sticky for its in-flow (absolute) menu, which a portal does not need.',
-    'The app menu enters with its own keyframe at --motion-quick. This port uses the theme menu-in at --motion-quick.',
+    'The app menu enters with its own keyframe (opacity + scale --motion-dropdown-pre-scale 0.97) at --motion-quick. The theme menu-in is the same keyframe; this port sets its duration to --motion-quick.',
+    'The app rail menu (side="right") sits 12px from the trigger with the bottom edges aligned. Here: side="right" align="end" sideOffset={12}.',
   ],
 }

@@ -1,6 +1,6 @@
 import { OTPField } from '@base-ui/react/otp-field'
 import { cva } from 'class-variance-authority'
-import { Fragment, useRef } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 
 import { useInvalidShake } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -57,6 +57,8 @@ interface OtpInputProps extends Omit<OTPField.Root.Props, 'length' | 'mask'> {
   invalid?: boolean
   /** Accessible name of slots 2…n. The first slot takes the field label. */
   slotLabel?: (index: number, length: number) => string
+  /** Focuses the first slot on mount, and again when a controlled `value` clears (a PIN retry). */
+  autoFocus?: boolean
   /** Forces an interaction state on the active slot in docs and QA pages. */
   'data-force-state'?: string
 }
@@ -75,13 +77,20 @@ function OtpInput({
   mask = false,
   invalid = false,
   inputMode = 'numeric',
-  slotLabel = (index, total) => `Digit ${index + 1} dari ${total}`,
+  slotLabel = (index, total) => `Digit ${index + 1} of ${total}`,
+  autoFocus = false,
   'data-force-state': forceState,
   ref,
   ...props
 }: OtpInputProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
   useInvalidShake(rootRef, () => rootRef.current?.querySelector('[aria-invalid=true]') != null)
+
+  const cleared = (props.value ?? '') === ''
+  useEffect(() => {
+    if (!autoFocus || !cleared) return
+    rootRef.current?.querySelector<HTMLInputElement>('[data-slot=otp-input-slot]')?.focus()
+  }, [autoFocus, cleared])
 
   const forcedIndex = Math.min(String(props.value ?? props.defaultValue ?? '').length, length - 1)
   const grouped = size === 'md' && length === 6

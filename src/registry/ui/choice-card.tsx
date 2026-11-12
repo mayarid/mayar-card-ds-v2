@@ -70,7 +70,7 @@ const titleVariants = cva(`font-sans font-semibold text-ink group-data-disabled/
       leading: 'text-body-sm',
       icon: 'text-body-sm',
       method: `text-body-sm group-data-disabled/choice:text-ink-2`,
-      list: 'text-body-sm font-medium wrap-anywhere text-inherit',
+      list: 'text-body-sm font-medium wrap-anywhere text-inherit group-data-disabled/choice:text-inherit',
     },
   },
 })

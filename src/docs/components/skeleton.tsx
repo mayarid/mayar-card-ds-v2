@@ -105,6 +105,6 @@ export const doc: ComponentDoc = {
   },
   notes: [
     'Code-only: Skeleton has no specimen on the Wonder Design System page. Values come from Skeleton.svelte.',
-    'Every app skeleton is static. The shimmer prop is an addition of this port (animate-shimmer, motion-safe only); the default stays static.',
+    'Every app skeleton is static, and the app code is final (decision, 12 Nov 2026). The shimmer prop is an opt-in addition of this port (animate-shimmer, motion-safe only). It is off by default, so a default bone equals the app bone.',
   ],
 }

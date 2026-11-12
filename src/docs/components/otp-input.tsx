@@ -93,7 +93,8 @@ export const doc: ComponentDoc = {
     { name: 'onValueChange', type: '(value: string, details) => void', description: 'Called with the joined digits.' },
     { name: 'onValueComplete', type: '(value: string, details) => void', description: 'Called when every slot is filled.' },
     { name: 'autoComplete', type: 'string', default: '"one-time-code"', description: 'On the first slot. Use "off" for a PIN.' },
-    { name: 'slotLabel', type: '(index, length) => string', default: '"Digit n dari N"', description: 'Accessible name of slots 2…n. The first slot takes the field label.' },
+    { name: 'slotLabel', type: '(index, length) => string', default: '"Digit n of N"', description: 'Accessible name of slots 2…n. The first slot takes the field label.' },
+    { name: 'autoFocus', type: 'boolean', default: 'false', description: 'Focuses the first slot on mount, and again when a controlled value clears (a PIN retry).' },
     { name: 'autoSubmit, name, required, disabled, readOnly', type: 'Base UI OTPField.Root', description: 'Passed to Base UI.' },
   ],
   guidelines: {
@@ -105,10 +106,11 @@ export const doc: ComponentDoc = {
     dont: ['Do not mask a one-time code. Mask only a PIN.', 'Do not show a wrong code as a toast.'],
   },
   notes: [
-    'The Wonder canvas could not be read while this port was made (the Wonder tools did not answer). Values come from OtpInput.svelte. Check them again against the canvas.',
+    'The shipped app (OtpInput.svelte) is the source of truth; Wonder is the visual reference. Where they differ, the app wins.',
     'LG (44×52, focus halo, dot) is the PIN gate from the shipped app (Kartu Actions v2) and is code-only, as is the 4-digit length.',
-    'Built on Base UI OTPField (it exists in Base UI 1.9), which gives digit-only input, paste, arrow keys, Backspace and autocomplete="one-time-code". The Svelte version used one native input per slot with its own key handling.',
-    'Slot names are Indonesian here ("Digit 2 dari 6"); the Svelte default was English ("Digit 2 of 6"). The first slot takes the field label, as Base UI requires.',
-    'The Svelte "autofocus" prop (focus the first slot when the value clears) is not ported. Focus the first slot yourself after a wrong PIN.',
+    'Built on Base UI OTPField, which gives digit-only input, paste, arrow keys, Backspace and autocomplete="one-time-code". The app used one native input per slot with its own key handling.',
+    'Slot names are the app default ("Digit 2 of 6"). The first slot takes the field label, because Base UI ignores aria-label on the first slot. The app labelled the group "One-time code" and every slot with a digit name.',
+    'autoFocus is the app "autofocus": it focuses the first slot on mount and when a controlled value clears after a wrong PIN.',
+    'The app shake runs for 2 × shake-a + 2 × shake-b (280ms) with ease-smooth-out on each step; the theme animate-shake runs for 2 × a + 3 × b (340ms).',
   ],
 }
