@@ -9,7 +9,7 @@ type Size = keyof typeof SIZES
 
 const SAMPLE = { last4: '4821', number: '5412751234564821', expiry: '08/29', holder: 'RINA WULANDARI' }
 
-const DEFAULTS: Record<string, PropValue> = { skin: 'midnight', status: 'active', width: 420, expiry: '••/••' }
+const DEFAULTS: Record<string, PropValue> = { skin: 'midnight', status: 'active', width: 420, expiry: '••/••', freezeEffect: 'webgl' }
 
 const STATE_COLUMNS: MatrixAxisItem[] = [
   { label: 'Active (masked)', props: { status: 'active' } },
@@ -33,9 +33,13 @@ function render(props: Record<string, PropValue>) {
       closedLabel={props.closedLabel ? String(props.closedLabel) : null}
       width={width}
       elevated={Boolean(props.elevated)}
+      freezeEffect={props.freezeEffect === 'css' ? 'css' : 'webgl'}
     />
   )
 }
+
+/* Matrices stay static: the CSS frost, so a grid of frozen cells opens no WebGL context. */
+const renderStatic = (props: Record<string, PropValue>) => render({ ...props, freezeEffect: 'css' })
 
 function code(props: Record<string, PropValue>) {
   const width = typeof props.width === 'number' ? props.width : SIZES[(props.size as Size) ?? 'hero']
@@ -52,6 +56,7 @@ function code(props: Record<string, PropValue>) {
       closedLabel: props.closedLabel,
       width,
       elevated: props.elevated,
+      freezeEffect: props.freezeEffect,
     },
     undefined,
     DEFAULTS,
@@ -74,6 +79,7 @@ export const doc: ComponentDoc = {
       { name: 'size', type: 'select', options: ['hero', 'tile', 'thumb'], default: 'hero' },
       { name: 'revealed', type: 'boolean', default: false },
       { name: 'elevated', type: 'boolean', default: true },
+      { name: 'freezeEffect', type: 'select', options: ['webgl', 'css'], default: 'webgl' },
       { name: 'holder', type: 'text', default: SAMPLE.holder },
       { name: 'last4', type: 'text', default: SAMPLE.last4 },
     ],
@@ -87,8 +93,8 @@ export const doc: ComponentDoc = {
         'All nine skins in every state. 300px is the smallest width with the full overlay (icon, title and body).',
       rows: CARD_SKINS.map((skin) => ({ label: CARD_SKIN_LABELS[skin], props: { skin } })),
       columns: STATE_COLUMNS,
-      render: (props) => render({ ...props, width: 300 }),
-      code: (props) => code({ ...props, width: 300 }),
+      render: (props) => renderStatic({ ...props, width: 300 }),
+      code: (props) => code({ ...props, width: 300, freezeEffect: 'css' }),
       cellWidth: 316,
     },
     {
@@ -101,8 +107,8 @@ export const doc: ComponentDoc = {
         { label: 'Thumb 48', props: { size: 'thumb' }, codeOnly: true },
       ],
       columns: [...STATE_COLUMNS, { label: 'Loading', props: { loading: true } }],
-      render,
-      code,
+      render: renderStatic,
+      code: (props) => code({ ...props, freezeEffect: 'css' }),
       cellWidth: 436,
     },
   ],
@@ -121,7 +127,15 @@ export const doc: ComponentDoc = {
     {
       id: 'card-face/freeze',
       title: 'Freeze and unfreeze',
-      description: 'With animated, the frost grows in on freeze and fades on unfreeze. Reduced motion shows the end state at once.',
+      description:
+        'With animated, the WebGL ice grows in on freeze (water to ice) and melts on unfreeze. Without WebGL the CSS frost does the same. Reduced motion shows the end state at once.',
+      codeOnly: true,
+    },
+    {
+      id: 'card-face/hammer',
+      title: 'Interactive: hammer to unfreeze',
+      description:
+        'onShatter makes the ice breakable. Hit it with the hammer cursor: cracks run along the plates, plates fall out as shards, and at about 70% the rest collapses and onShatter fires. Keyboard: focus the card, then Enter or Space three times.',
       codeOnly: true,
     },
     { id: 'card-face/skins', title: 'All skins' },
@@ -140,6 +154,17 @@ export const doc: ComponentDoc = {
     { name: 'width', type: 'number | "auto"', default: '420', description: 'Width in px; the height follows 420:264. "auto" fills the parent.' },
     { name: 'elevated', type: 'boolean', default: 'false', description: 'The floating hero shadow of Detail Kartu.' },
     { name: 'animated', type: 'boolean', default: 'false', description: 'Play the freeze / thaw motion when status changes after mount.' },
+    {
+      name: 'freezeEffect',
+      type: '"webgl" | "css"',
+      default: '"webgl"',
+      description: 'How a frozen card looks: the WebGL ice (the CSS frost shows until it is ready, and without WebGL), or the CSS frost only. Thumbnails below 120px always use CSS.',
+    },
+    {
+      name: 'onShatter',
+      type: '() => void',
+      description: 'Makes the frozen ice breakable (hammer, or three Enter / Space hits on its control). Called once it breaks: set the card active. The card is then a named group, not an image.',
+    },
     { name: 'CardFaceSkeleton width', type: 'number | "auto"', default: '420', description: 'The loading bone with the same size and corner.' },
   ],
   guidelines: {
@@ -148,6 +173,8 @@ export const doc: ComponentDoc = {
       'Put the reveal and copy controls next to the card, as buttons with their own names.',
       'Give the card a nickname with label, so the name reads "Kartu Langganan SaaS, berakhiran 4821".',
       'Use width="auto" in a grid track and a fixed width for the hero.',
+      'Use freezeEffect="css" in long lists and static grids. Keep at most a few WebGL cards on one screen.',
+      'Set onShatter only on the Detail Kartu hero, together with animated, and move focus to a sensible place (the freeze button) after the card unfreezes.',
     ],
     dont: [
       'Do not put buttons or links inside the card face. It is one image for assistive tech.',
@@ -162,7 +189,11 @@ export const doc: ComponentDoc = {
     'Hero shadow: Wonder 0 6px 16px -6px and 0 1px 3px in #0e0f1a; the app uses a larger ink + primary float. This port follows Wonder (built from the overlay token).',
     'Frozen veil: Wonder skin/midnight-1 at 62%, snowflake primary-300 36px, title body-base, body "Transaksi baru ditolak sampai kartu dibuka". The app: ink 55%, #9db7ff 34px, 15px, "Transaksi untuk sementara ditolak". This port follows Wonder.',
     'Pending veil: Wonder skin/royal-3 at 55% with Loading03; the app ink 55% (hero) and primary-deep 55% (tile). This port follows Wonder. Closed veil: ink 55% + grayscale in both.',
-    'Code-only: the frost layer over the frozen veil and the freeze / thaw motion. The app has a WebGL ice sheet that the holder can break with a hammer, procedural frost ferns and an idle shimmer; this port keeps the CSS frost (corners, cold tint, sheen) and leaves out WebGL, the hammer, ferns and shimmer.',
+    'Code-only: the WebGL ice of the app (card-freeze-effect). It refracts a snapshot of the face (html-to-image) through procedural ice (fbm noise and voronoi plates): the ice grows in on freeze, melts on thaw, and with onShatter the holder can hammer it apart. Same shader, timings (1500ms freeze, 1600ms thaw) and break rules as the app.',
+    'While the WebGL ice is on screen, the veil and the "Kartu dibekukan" label are not shown, as in the app. The card name still ends in "dibekukan". The CSS frost and label show before the snapshot is ready, without WebGL, when the shader fails or the context is lost, in matrices (freezeEffect="css") and on thumbnails.',
+    'Code-only, not in the app: a keyboard path for the hammer. The breakable card has a "Pecahkan es untuk membuka kartu" control; Enter or Space is one hit, and three hits break the ice (also without WebGL). A polite status line counts the hits.',
+    'Code-only: the CSS frost (corners, cold tint, sheen) is the fallback for the WebGL ice. The app fallback also draws frost ferns, an idle shimmer and an animated hammer; this port leaves those out.',
+    'WebGL budget: a breakable card holds one live context while it is frozen. Look-only frozen cards share at most 4 short-lived contexts on the page, and each one is released when its ice settles.',
     'Code-only: the 48px thumbnail, width="auto", and the closed tile (grey at 70% opacity, no overlay). The app has no expired state, so there is none here.',
     'The Wonder skin specimens leave out the number text-shadow that the master has. This port keeps it (master and app).',
   ],

@@ -10,7 +10,7 @@ export default function CardFaceFreeze() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* animated: the frost grows on freeze and fades on unfreeze. Reduced motion skips it. */}
+      {/* animated: the WebGL ice grows in on freeze and melts on unfreeze (CSS frost without WebGL). */}
       <CardFace
         skin="emerald"
         label="Operasional Gudang"

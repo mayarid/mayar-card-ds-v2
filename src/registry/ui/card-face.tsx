@@ -1,6 +1,7 @@
 import { CancelCircleIcon, Loading03Icon, SnowIcon } from '@hugeicons/core-free-icons'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { CardFreezeEffect } from '@/components/ui/card-freeze-effect'
 import { Icon } from '@/components/ui/icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -13,8 +14,9 @@ import { cn } from '@/lib/utils'
  * every value in Wonder stays as it is at every size. The status overlay is NOT scaled: its text
  * stays readable on a small tile.
  *
- * Code-only (from the shipped app): the frost layer over the frozen veil, the freeze / thaw motion,
- * the compact tile overlay for "closed", the 48px thumbnail and the fluid `width="auto"`.
+ * Code-only (from the shipped app): the WebGL ice of a frozen card (`card-freeze-effect`), the CSS
+ * frost that stands in for it, the freeze / thaw motion, the compact tile overlay for "closed", the
+ * 48px thumbnail and the fluid `width="auto"`.
  */
 
 /** The nine card designs, in the order of the app picker. */
@@ -22,6 +24,7 @@ const CARD_SKINS = ['midnight', 'royal', 'magenta', 'emerald', 'graphite', 'silv
 
 type CardSkin = (typeof CARD_SKINS)[number]
 type CardStatus = 'active' | 'frozen' | 'pending' | 'closed'
+type CardFreezeLook = 'webgl' | 'css'
 
 const CARD_SKIN_LABELS: Record<CardSkin, string> = {
   midnight: 'Midnight',
@@ -156,6 +159,18 @@ interface CardFaceProps extends Omit<React.ComponentProps<'div'>, 'children'> {
   elevated?: boolean
   /** Play the freeze / thaw motion when `status` changes after mount. Off, so a grid never animates on load. */
   animated?: boolean
+  /**
+   * How a frozen card looks. `webgl` (default): the app's WebGL ice that refracts the face. The CSS
+   * frost shows until the ice is ready and when WebGL is not available. `css`: the CSS frost only
+   * (use it in long lists and static grids). Thumbnails below 120px always use the CSS frost.
+   */
+  freezeEffect?: CardFreezeLook
+  /**
+   * Makes the frozen WebGL ice breakable: the holder hammers it apart (pointer, or Enter / Space on
+   * the "Pecahkan es untuk membuka kartu" control, three hits). Called once the ice has broken. Set
+   * the card active here. Use it with `animated`, so the ice melts away after the break.
+   */
+  onShatter?: () => void
 }
 
 /**
@@ -178,6 +193,8 @@ function CardFace({
   width = BASE_WIDTH,
   elevated = false,
   animated = false,
+  freezeEffect = 'webgl',
+  onShatter,
   className,
   style,
   ref,
@@ -200,6 +217,16 @@ function CardFace({
 
   const frozen = status === 'frozen'
   const overlayRef = useRef<HTMLDivElement>(null)
+  const artRef = useRef<HTMLDivElement>(null)
+
+  // WebGL ice. `glFailed` sticks: once WebGL has failed on this card, the CSS frost takes over.
+  const wantsGl = freezeEffect === 'webgl' && density !== 'bare'
+  const breakable = wantsGl && onShatter !== undefined
+  const [glFailed, setGlFailed] = useState(false)
+  const [glReady, setGlReady] = useState(false)
+  const [glThawing, setGlThawing] = useState(false)
+  const [glAppear, setGlAppear] = useState(false)
+  const glPath = wantsGl && !glFailed
 
   // Track status flips during render (not on mount), so a thawing veil never unmounts for a frame.
   const [lastFrozen, setLastFrozen] = useState(frozen)
@@ -208,9 +235,30 @@ function CardFace({
   if (lastFrozen !== frozen) {
     setLastFrozen(frozen)
     const motion = animated && !prefersReducedMotion()
-    setFreezing(frozen && motion)
-    setThawing(!frozen && motion)
+    const glOnScreen = glPath && glReady
+    if (frozen) {
+      // Mid-thaw the ice is still mounted and ready; else it starts again from a fresh snapshot.
+      if (!glThawing) {
+        setGlReady(false)
+        setGlAppear(motion)
+      }
+      setGlThawing(false)
+      setFreezing(motion)
+      setThawing(false)
+    } else {
+      // The ice melts itself; the CSS veil thaws only when it is what the holder sees.
+      setGlThawing(motion && glOnScreen)
+      if (!(motion && glOnScreen)) setGlReady(false)
+      setFreezing(false)
+      setThawing(motion && !glOnScreen)
+    }
   }
+
+  const effectMounted = wantsGl && (frozen || glThawing) && (glPath || breakable)
+  const glShowing = glPath && effectMounted && glReady
+  // While the ice grows in from a status flip, no frost covers the card until it is ready.
+  const glWaitingToAppear = glPath && effectMounted && frozen && glAppear && !glReady
+  const cssFrost = (frozen || thawing) && !glShowing && !glWaitingToAppear
 
   // Freeze: the veil fades in, the frost settles and creeps in from the corners, a sheen crosses it.
   useEffect(() => {
@@ -241,7 +289,7 @@ function CardFace({
       ),
     ]
     return () => animations.forEach((a) => a?.cancel())
-  }, [freezing])
+  }, [freezing, cssFrost])
 
   // Thaw: the veil stays mounted while it fades out, then unmounts.
   useEffect(() => {
@@ -256,14 +304,15 @@ function CardFace({
     return () => animation.cancel()
   }, [thawing])
 
-  const overlayStatus: CardStatus = frozen || thawing ? 'frozen' : status
+  const overlayStatus: CardStatus = frozen || thawing ? (cssFrost ? 'frozen' : 'active') : status
   const name = cardFaceLabel({ skin, label, last4, number, expiry, status, closedLabel })
   const pan = number ? formatCardNumber(number) : `••••  ••••  ••••  ${last4}`
 
   return (
     <div
       ref={setRef}
-      role="img"
+      // With the hammer control inside, the card is a named group (an image cannot hold a control).
+      role={breakable && effectMounted ? 'group' : 'img'}
       aria-label={name}
       data-slot="card-face"
       data-skin={skin}
@@ -281,6 +330,7 @@ function CardFace({
       }}
     >
       <div
+        ref={artRef}
         data-slot="card-face-art"
         aria-hidden
         className={cn(
@@ -370,6 +420,26 @@ function CardFace({
       {overlayStatus !== 'active' && !(overlayStatus === 'closed' && density !== 'full') ? (
         <CardFaceOverlay ref={overlayRef} status={overlayStatus} density={density} closedLabel={closedLabel} />
       ) : null}
+
+      {effectMounted ? (
+        <CardFreezeEffect
+          frozen={frozen}
+          interactive={breakable}
+          appear={glAppear}
+          renderScale={scale}
+          targetRef={artRef}
+          pan={pan}
+          holder={holder}
+          expiry={expiry}
+          onShatter={onShatter}
+          onReady={() => setGlReady(true)}
+          onFail={() => setGlFailed(true)}
+          onThawEnd={() => {
+            setGlThawing(false)
+            setGlReady(false)
+          }}
+        />
+      ) : null}
     </div>
   )
 }
@@ -401,6 +471,7 @@ function CardFaceOverlay({
       ref={ref}
       aria-hidden
       data-slot="card-face-overlay"
+      data-freeze-ignore=""
       data-status={status}
       className={cn(
         'absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 backdrop-blur-[3px]',
@@ -499,6 +570,7 @@ export {
   cardFaceLabel,
   formatCardNumber,
   type CardFaceProps,
+  type CardFreezeLook,
   type CardFaceSkeletonProps,
   type CardSkin,
   type CardStatus,

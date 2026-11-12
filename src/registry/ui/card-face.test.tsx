@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
 import { expectNoAxeViolations } from '@/test/axe'
 
@@ -82,6 +83,31 @@ describe('CardFace', () => {
     expect(document.querySelector('[data-slot="card-face-overlay"]')).toBeNull()
   })
 
+  it('without WebGL a frozen card falls back to the CSS frost', () => {
+    render(<CardFace {...base} status="frozen" />)
+    expect(document.querySelector('[data-slot="card-face-overlay"] [data-frost]')).not.toBeNull()
+    // The effect stays out of the DOM once WebGL has failed and the ice is not breakable.
+    expect(document.querySelector('[data-slot="card-freeze-effect"]')).toBeNull()
+  })
+
+  it('freezeEffect="css" never mounts the WebGL effect', () => {
+    render(<CardFace {...base} status="frozen" freezeEffect="css" onShatter={() => {}} />)
+    expect(document.querySelector('[data-slot="card-freeze-effect"]')).toBeNull()
+    expect(screen.getByRole('img').getAttribute('aria-label')).toContain('dibekukan')
+  })
+
+  it('onShatter: the frozen card is a named group with a hammer control that keyboard hits break', async () => {
+    const user = userEvent.setup()
+    const onShatter = vi.fn()
+    render(<CardFace {...base} status="frozen" onShatter={onShatter} animated />)
+    expect(screen.getByRole('group', { name: 'Kartu Midnight, berakhiran 4821, dibekukan' })).toBeTruthy()
+    // WebGL is not there in jsdom: the CSS frost shows, and the keyboard path still works.
+    expect(document.querySelector('[data-slot="card-face-overlay"]')).not.toBeNull()
+    screen.getByRole('button', { name: 'Pecahkan es untuk membuka kartu' }).focus()
+    await user.keyboard('{Enter}{Enter}{Enter}')
+    expect(onShatter).toHaveBeenCalledTimes(1)
+  })
+
   it('spreads props, forwards the ref and lets aria-label win', () => {
     let node: HTMLDivElement | null = null
     render(<CardFace {...base} ref={(el) => void (node = el)} data-testid="c" aria-label="Kartu utama" className="m-2" />)
@@ -108,6 +134,7 @@ describe('CardFace', () => {
         <CardFace {...base} skin="emerald" elevated />
         <CardFace {...base} status="frozen" width={250} />
         <CardFace {...base} status="closed" closedLabel="28 Okt 2026" />
+        <CardFace {...base} status="frozen" onShatter={() => {}} />
         <CardFaceSkeleton width={250} />
       </div>,
     )
