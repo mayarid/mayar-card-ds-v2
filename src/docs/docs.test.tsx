@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest'
 import { getExample } from '@/gallery/examples'
 import { expectNoAxeViolations } from '@/test/axe'
 
-import { componentDocs, foundationDocs } from '.'
+import { componentList, foundationList } from '.'
+import { componentDocs, foundationDocs } from './all'
 
 describe('component docs', () => {
   it('every UI file in the registry has a doc page', () => {
@@ -17,6 +18,22 @@ describe('component docs', () => {
     const documented = new Set(componentDocs.map((d) => d.registry))
     const missing = files.filter((f) => !internal.has(f) && !documented.has(f))
     expect(missing).toEqual([])
+  })
+
+  it('the manifest matches the doc files', () => {
+    for (const doc of componentDocs) {
+      const entry = componentList.find((e) => e.slug === doc.slug)
+      expect(entry, doc.slug).toBeDefined()
+      expect(entry?.name).toBe(doc.name)
+      expect(entry?.group).toBe(doc.group)
+      expect(entry?.spec).toBe(doc.spec)
+      expect(entry?.description).toBe(doc.description)
+    }
+    for (const doc of foundationDocs) {
+      const entry = foundationList.find((e) => e.slug === doc.slug)
+      expect(entry?.name, doc.slug).toBe(doc.name)
+      expect(entry?.order).toBe(doc.order)
+    }
   })
 
   it('slugs are unique', () => {

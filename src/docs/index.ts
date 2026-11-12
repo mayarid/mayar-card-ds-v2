@@ -1,31 +1,49 @@
-import type { ComponentDoc, ComponentGroup, FoundationDoc } from './types'
+import manifest from 'virtual:docs-manifest'
 
-/* Each file in ./components exports `doc`. Add a file to add a page. */
-const modules = import.meta.glob<{ doc: ComponentDoc }>('./components/*.tsx', { eager: true })
+import type { ComponentDoc, ComponentGroup, FoundationDoc, SpecSource } from './types'
 
-export const componentDocs: ComponentDoc[] = Object.values(modules)
-  .map((mod) => mod.doc)
-  .sort((a, b) => a.name.localeCompare(b.name))
+/* Each file in ./components and ./foundations exports `doc`. Add a file to add a page. Pages load on demand. */
+const componentLoaders = import.meta.glob<{ doc: ComponentDoc }>('./components/*.tsx')
+const foundationLoaders = import.meta.glob<{ doc: FoundationDoc }>(['./foundations/*.tsx', '!./foundations/*.test.tsx'])
+
+export interface ComponentEntry {
+  slug: string
+  name: string
+  group: ComponentGroup
+  spec: SpecSource
+  description: string
+}
+
+export interface FoundationEntry {
+  slug: string
+  name: string
+  description: string
+  order: number
+}
 
 export const GROUP_ORDER: ComponentGroup[] = ['Actions', 'Forms', 'Selection', 'Surfaces', 'Feedback', 'Overlays', 'Display']
 
-export function getComponentDoc(slug: string) {
-  return componentDocs.find((doc) => doc.slug === slug)
-}
+export const componentList: ComponentEntry[] = manifest.components
+  .map((c) => ({ ...c, group: (c.group ?? 'Display') as ComponentGroup, spec: (c.spec ?? 'wonder') as SpecSource }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+
+export const foundationList: FoundationEntry[] = manifest.foundations
+  .map((f) => ({ ...f, order: f.order ?? 99 }))
+  .sort((a, b) => a.order - b.order)
 
 export function componentsByGroup() {
   return GROUP_ORDER.map((group) => ({
     group,
-    items: componentDocs.filter((doc) => doc.group === group),
+    items: componentList.filter((doc) => doc.group === group),
   })).filter((g) => g.items.length > 0)
 }
 
-const foundationModules = import.meta.glob<{ doc: FoundationDoc }>('./foundations/*.tsx', { eager: true })
+export async function loadComponentDoc(slug: string): Promise<ComponentDoc | undefined> {
+  const load = componentLoaders[`./components/${slug}.tsx`]
+  return load ? (await load()).doc : undefined
+}
 
-export const foundationDocs: FoundationDoc[] = Object.values(foundationModules)
-  .map((mod) => mod.doc)
-  .sort((a, b) => a.order - b.order)
-
-export function getFoundationDoc(slug: string) {
-  return foundationDocs.find((doc) => doc.slug === slug)
+export async function loadFoundationDoc(slug: string): Promise<FoundationDoc | undefined> {
+  const load = foundationLoaders[`./foundations/${slug}.tsx`]
+  return load ? (await load()).doc : undefined
 }

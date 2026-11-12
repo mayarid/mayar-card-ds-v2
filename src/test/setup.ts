@@ -27,3 +27,6 @@ class NoopObserver {
 }
 globalThis.ResizeObserver ??= NoopObserver as unknown as typeof ResizeObserver
 globalThis.IntersectionObserver ??= NoopObserver as unknown as typeof IntersectionObserver
+
+// axe probes <canvas>; jsdom has no canvas. Return null quietly instead of logging an error.
+HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext

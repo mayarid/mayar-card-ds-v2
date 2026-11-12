@@ -216,6 +216,8 @@
     0 2px 4px var(--color-shadow-ambient);
   --shadow-card: 0 0 0 1px var(--color-shadow-ring), 0 2px 4px var(--color-shadow-ambient),
     0 24px 48px -12px var(--color-shadow-drop), 0 48px 96px -24px var(--color-shadow-modal);
+  --shadow-dialog: 0 0 0 1px var(--color-shadow-ring), 0 24px 64px -12px var(--color-shadow-modal);
+  --shadow-drawer: 0 0 0 1px var(--color-shadow-ring), 0 24px 48px var(--color-shadow-modal);
   --shadow-ring: 0 0 0 1px var(--color-shadow-ring);
   --inset-shadow-highlight: inset 0 1px 0 var(--color-highlight-inset);
 
@@ -318,6 +320,8 @@
   --motion-toast-close: 250ms;
   --motion-toast-distance: 16px;
   --motion-toast-scale: 0.97;
+  --motion-toast-blur: 2px;
+  --motion-toast-spin: 1s;
   --motion-dialog-open: 200ms;
   --motion-dialog-scale: 0.96;
   --motion-drawer-x: 24px;
@@ -353,6 +357,9 @@
     --motion-dialog-open: 0ms;
     --motion-bar-fill: 0ms;
     --motion-state-swap: 0ms;
+    --motion-toast-open: 0ms;
+    --motion-toast-close: 0ms;
+    --motion-toast-blur: 0px;
   }
 }
 

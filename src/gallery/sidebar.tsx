@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 
 import { Icon } from '@/components/ui/icon'
-import { componentsByGroup, foundationDocs } from '@/docs'
+import { componentsByGroup, foundationList } from '@/docs'
 import { cn } from '@/lib/utils'
 
 const linkClass = cn(
@@ -27,7 +27,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         .filter((g) => g.items.length > 0),
     [q],
   )
-  const foundations = foundationDocs.filter((d) => !q || d.name.toLowerCase().includes(q))
+  const foundations = foundationList.filter((d) => !q || d.name.toLowerCase().includes(q))
 
   return (
     <nav aria-label="Design system" className="flex flex-col pb-10">

@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
-import { componentDocs, componentsByGroup, foundationDocs } from '@/docs'
+import { componentList, componentsByGroup, foundationList } from '@/docs'
 import { DocPage } from '@/gallery/page'
 
 export const Route = createFileRoute('/')({ component: Overview })
 
 function Overview() {
-  const wonderCount = componentDocs.filter((d) => d.spec === 'wonder').length
+  const wonderCount = componentList.filter((d) => d.spec === 'wonder').length
   return (
     <DocPage>
       <title>Mayar Card Design System v2</title>
@@ -18,8 +18,8 @@ function Overview() {
         </p>
         <dl className="mt-2 flex flex-wrap gap-x-8 gap-y-3">
           {[
-            [String(foundationDocs.length), 'Foundations'],
-            [String(componentDocs.length), 'Components'],
+            [String(foundationList.length), 'Foundations'],
+            [String(componentList.length), 'Components'],
             [String(wonderCount), 'From the Wonder spec'],
           ].map(([value, label]) => (
             <div key={label} className="flex flex-col">
@@ -33,7 +33,7 @@ function Overview() {
       <section aria-labelledby="foundations-title" className="flex flex-col gap-4">
         <h2 id="foundations-title" className="text-title-md text-ink">Foundations</h2>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {foundationDocs.map((doc) => (
+          {foundationList.map((doc) => (
             <li key={doc.slug}>
               <Link
                 to="/foundations/$slug"
