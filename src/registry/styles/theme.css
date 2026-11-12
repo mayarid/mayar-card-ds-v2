@@ -1,0 +1,433 @@
+/*
+ * Mayar Card Design System v2 — theme.
+ *
+ * Source of truth: Wonder file "Mayar Card Dashboard", page "Design System".
+ * Values come from the Wonder tokens and specimens. Tokens that Wonder does not have yet
+ * (elevation composites, motion, z-index) come from the shipped Mayar Card app and are
+ * marked "code-only".
+ *
+ * Light only. The `dark/*` tokens in Wonder are reference values and are not in use.
+ *
+ * Import once, after Tailwind:
+ *   @import "tailwindcss";
+ *   @import "./theme.css";
+ */
+
+/* ── Fonts ───────────────────────────────────────────────────────────────── */
+
+/* Paper Mono v1.000, SIL OFL 1.1. Put PaperMono-wght.woff2 in /public/fonts/paper-mono/. */
+@font-face {
+  font-family: 'Paper Mono';
+  src: url('/fonts/paper-mono/PaperMono-wght.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Metric-matched fallback, so Paper Mono loads without a layout shift. */
+@font-face {
+  font-family: 'Paper Mono Fallback';
+  src: local('Liberation Mono'), local('Courier New'), local('Courier');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100.983564%;
+  ascent-override: 94.569845%;
+  descent-override: 24.261374%;
+  line-gap-override: 0%;
+}
+
+/* ── Theme ───────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Only design-system values. The Tailwind default palette, type scale, radii and shadows are off. */
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+
+  /* Brand / primary */
+  --color-primary: #253ce2;
+  --color-primary-hover: #2136cb;
+  --color-primary-active: #1b2db8;
+  --color-primary-deep: #1b2db8;
+  --color-primary-light: #e3e7fc;
+  --color-primary-light-hover: #d4d9fa;
+  --color-primary-tint: #f2f3fd;
+  --color-primary-300: #8ba8f4;
+  --color-primary-400: #789af5;
+  --color-primary-500: #476def;
+  --color-on-primary: #ffffff;
+  --color-on-brand: #ffffff;
+  --color-brand-blue: #0c52ef;
+  --color-brand-pink: #ed1e79;
+
+  /* Text */
+  --color-ink: #111111;
+  --color-ink-2: #5b6272;
+  --color-muted: #6b7280;
+  --color-placeholder: #9ca0aa;
+
+  /* Inverted */
+  --color-inverted: #111111;
+  --color-on-inverted: #ffffff;
+  --color-inverted-hover: #2b2b2b;
+  --color-inverted-active: #3d3d3d;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-canvas: #fafafa;
+  --color-sunken: #f2f2f2;
+  --color-well: #f4f5f9;
+  --color-card: #0c111e06;
+  --color-container: #0c111e14; /* code-only */
+  --color-surface-strong: #14171f; /* code-only (same value as Wonder dark/surface) */
+  --color-component: #0c111e0f;
+  --color-component-hover: #0c111e17;
+  --color-component-active: #0c111e1f;
+  --color-overlay: #0e0f1a66;
+
+  /* Borders and focus */
+  --color-border: #e8e8ec;
+  --color-border-subtle: #0c111e14;
+  --color-border-focus: #253ce2a1;
+  --color-focus-ring: #253ce2a1;
+
+  /* Interaction washes */
+  --color-state-hover: #0c111e0a;
+  --color-state-pressed: #0c111e14;
+  --color-ghost-hover-bg: #fcfcfd;
+  --color-ghost-hover-border: #d6d7de;
+
+  /* Disabled */
+  --color-disabled: #0c111e0f;
+  --color-disabled-foreground: #0c111e45;
+
+  /* Feedback */
+  --color-danger: #c92f33;
+  --color-danger-hover: #b82a2e;
+  --color-danger-active: #a72629;
+  --color-danger-text: #a72629;
+  --color-danger-subtle: #fef4f3;
+  --color-danger-light: #fce1de;
+  --color-danger-light-hover: #fce1de;
+  --color-danger-light-active: #f9cac6;
+  --color-on-danger: #ffffff;
+  --color-success: #2a8553;
+  --color-success-text: #226e44;
+  --color-success-light: #d4f1dd;
+  --color-warning: #faac1b;
+  --color-warning-text: #8b5f10;
+  --color-warning-light: #feebd3;
+  --color-info: #253ce2;
+  --color-pink-light: #fde7f1;
+  --color-pink-text: #b0125b;
+
+  /* Controls */
+  --color-switch-off: #d4d6dd;
+  --color-highlight-inset: #ffffff2e;
+
+  /* Shadow colours (used inside the shadow composites below) */
+  --color-shadow-ring: #0c111e14;
+  --color-shadow-drop: #0c111e1a;
+  --color-shadow-ambient: #0c111e0d;
+  --color-shadow-modal: #0e0f1a2e;
+
+  /* Chart palette */
+  --color-chart-1: #f12f8c;
+  --color-chart-2: #5287f4;
+  --color-chart-3: #a166f4;
+  --color-chart-4: #be7c26;
+  --color-chart-5: #2a9f9a;
+  --color-chart-6: #828d9f;
+
+  /* Typography — Wonder font, mono, card/mono */
+  --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Paper Mono', 'Paper Mono Fallback', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono--font-feature-settings: 'liga' 0, 'calt' 0, 'ss01' 0, 'ss02' 0;
+  --font-card: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale — Wonder text/*, leading/*, tracking/* (tracking in em) */
+  --text-display: 32px;
+  --text-display--line-height: 40px;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 600;
+  --text-title-lg: 24px;
+  --text-title-lg--line-height: 32px;
+  --text-title-lg--letter-spacing: -0.015em;
+  --text-title-lg--font-weight: 600;
+  --text-title-md: 20px;
+  --text-title-md--line-height: 28px;
+  --text-title-md--letter-spacing: -0.01em;
+  --text-title-md--font-weight: 600;
+  --text-title-sm: 16px;
+  --text-title-sm--line-height: 24px;
+  --text-title-sm--font-weight: 600;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body-base: 14px;
+  --text-body-base--line-height: 20px;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 20px;
+  --text-caption-lg: 12px;
+  --text-caption-lg--line-height: 16px;
+  --text-caption-sm: 11px;
+  --text-caption-sm--line-height: 16px;
+  --text-caption-sm--letter-spacing: 0.01em;
+  --text-caption-sm--font-weight: 500;
+  --text-overline: 12px;
+  --text-overline--line-height: 16px;
+  --text-overline--letter-spacing: 0.06em;
+  --text-overline--font-weight: 600;
+
+  /* Weights — only these three */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Radius — Wonder radius/* and r-* */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 16px;
+  --radius-card: 16px;
+  --radius-media: 20px;
+  --radius-panel: 24px;
+  --radius-pill: 999px;
+  /* Wonder r-btn. The button specimens use lg (SM/MD) and xl (LG), so components do not use it. */
+  --radius-btn: 12px;
+
+  /* Elevation — code-only composites built from the Wonder shadow colours */
+  --shadow-control: 0 0 0 1px var(--color-shadow-ring), 0 1px 1px -1px var(--color-shadow-drop),
+    0 1px 2px var(--color-shadow-ambient);
+  --shadow-raised: 0 0 0 1px var(--color-shadow-ring), 0 10px 16px -2px var(--color-shadow-drop),
+    0 2px 8px var(--color-shadow-ambient);
+  --shadow-popover: 0 0 0 1px var(--color-shadow-ring), 0 12px 32px -8px var(--color-shadow-modal),
+    0 4px 8px -2px var(--color-shadow-ambient);
+  --shadow-toast: 0 0 0 1px var(--color-shadow-ring), 0 8px 24px -6px var(--color-shadow-modal),
+    0 2px 4px var(--color-shadow-ambient);
+  --shadow-card: 0 0 0 1px var(--color-shadow-ring), 0 2px 4px var(--color-shadow-ambient),
+    0 24px 48px -12px var(--color-shadow-drop), 0 48px 96px -24px var(--color-shadow-modal);
+  --shadow-ring: 0 0 0 1px var(--color-shadow-ring);
+  --inset-shadow-highlight: inset 0 1px 0 var(--color-highlight-inset);
+
+  /* Layout — Wonder container (1280px, renamed to avoid the colour clash) and gutter */
+  --container-layout: 1280px;
+  --spacing-gutter: 40px;
+
+  /* Motion — code-only */
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-toggle: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --animate-menu-in: menu-in var(--motion-dropdown-open) var(--ease-smooth-out) both;
+  --animate-dialog-in: dialog-in var(--motion-dialog-open) var(--ease-smooth-out) both;
+  --animate-drawer-in: drawer-in var(--motion-dialog-open) var(--ease-smooth-out) both;
+  --animate-fade-in: fade-in var(--motion-dialog-open) var(--ease-smooth-out) both;
+  --animate-shake: shake calc(var(--motion-shake-a) * 2 + var(--motion-shake-b) * 3) both;
+  --animate-bar-fill: bar-fill var(--motion-bar-fill) var(--ease-smooth-out) both;
+  --animate-state-swap: state-swap var(--motion-state-swap) var(--ease-smooth-out) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes menu-in {
+    from {
+      transform: scale(var(--motion-dropdown-pre-scale));
+      opacity: 0;
+    }
+  }
+  @keyframes dialog-in {
+    from {
+      transform: scale(var(--motion-dialog-scale));
+      opacity: 0;
+    }
+  }
+  @keyframes drawer-in {
+    from {
+      transform: translateX(var(--motion-drawer-x));
+      opacity: 0;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes bar-fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes state-swap {
+    from {
+      transform: translateY(var(--motion-state-swap-y));
+      filter: blur(var(--motion-state-swap-blur));
+      opacity: 0;
+    }
+  }
+  @keyframes shake {
+    0% {
+      transform: translateX(0);
+    }
+    28.57% {
+      transform: translateX(var(--motion-shake-distance));
+    }
+    57.14% {
+      transform: translateX(calc(var(--motion-shake-distance) * -1));
+    }
+    78.57% {
+      transform: translateX(var(--motion-shake-overshoot));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+/* Motion and stacking tokens — code-only. Plain variables: use them as `duration-(--motion-quick)`. */
+:root {
+  --motion-micro: 80ms;
+  --motion-quick: 150ms;
+  --motion-fast: 250ms;
+  --motion-medium: 350ms;
+
+  --motion-switch: 350ms;
+  --motion-check-box: 150ms;
+  --motion-check-draw: 350ms;
+  --motion-dropdown-open: 250ms;
+  --motion-dropdown-close: 150ms;
+  --motion-dropdown-pre-scale: 0.97;
+  --motion-tabs: 250ms;
+  --motion-choice-pop: 200ms;
+  --motion-toast-open: 350ms;
+  --motion-toast-close: 250ms;
+  --motion-toast-distance: 16px;
+  --motion-toast-scale: 0.97;
+  --motion-dialog-open: 200ms;
+  --motion-dialog-scale: 0.96;
+  --motion-drawer-x: 24px;
+  --motion-bar-fill: 200ms;
+  --motion-state-swap: 150ms;
+  --motion-state-swap-y: 4px;
+  --motion-state-swap-blur: 2px;
+  --motion-shake-distance: 6px;
+  --motion-shake-overshoot: 4px;
+  --motion-shake-a: 80ms;
+  --motion-shake-b: 60ms;
+
+  --z-raised: 10;
+  --z-sticky: 20;
+  --z-dropdown: 40;
+  --z-popover: 50;
+  --z-overlay: 60;
+  --z-modal: 100;
+  --z-toast: 300;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-quick: 0ms;
+    --motion-fast: 0ms;
+    --motion-switch: 0ms;
+    --motion-check-box: 0ms;
+    --motion-check-draw: 0ms;
+    --motion-dropdown-open: 0ms;
+    --motion-dropdown-close: 0ms;
+    --motion-tabs: 0ms;
+    --motion-choice-pop: 0ms;
+    --motion-dialog-open: 0ms;
+    --motion-bar-fill: 0ms;
+    --motion-state-swap: 0ms;
+  }
+}
+
+/* ── State variants ──────────────────────────────────────────────────────── */
+/*
+ * Each interaction variant also matches `data-force-state`. Docs and QA pages use it to show a
+ * state without a pointer, e.g. <Button data-force-state="hover" />. Apps never need to set it.
+ */
+
+/* Hover only on devices with a real pointer, and never on a disabled control. */
+@custom-variant hover-fine {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled, [aria-disabled='true'], [data-disabled]) {
+      @slot;
+    }
+  }
+  &[data-force-state~='hover'] {
+    @slot;
+  }
+}
+
+@custom-variant pressed {
+  &:active:not(:disabled, [aria-disabled='true'], [data-disabled]) {
+    @slot;
+  }
+  &[data-force-state~='pressed'] {
+    @slot;
+  }
+}
+
+@custom-variant focus-ring {
+  &:focus-visible {
+    @slot;
+  }
+  &[data-force-state~='focus'] {
+    @slot;
+  }
+}
+
+/* A trigger whose popup is open, or a toggle that is on. */
+@custom-variant opened {
+  &[data-popup-open],
+  &[aria-pressed='true'],
+  &[data-force-state~='open'] {
+    @slot;
+  }
+}
+
+/* ── Utilities ───────────────────────────────────────────────────────────── */
+
+/* Focus outline — Wonder border-focus, 1px, 1px offset. */
+@utility outline-focus {
+  outline: 1px solid var(--color-border-focus);
+  outline-offset: 1px;
+}
+
+/* A hit area of at least 44×44 without a change to the visible box. Needs `relative`. */
+@utility hit-44 {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
