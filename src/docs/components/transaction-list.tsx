@@ -255,7 +255,7 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Wonder shows the row status as caption-lg medium text ("Pending", "Gagal") in warning-text / danger-text. The app renders a Badge with "Menunggu" / "Ditolak". This port uses the Wonder look (TransactionRowStatus) with the app labels, which follow the later V2 vocabulary decision. The badge stays as TransactionStatusBadge for the drawer.',
+    'Wonder shows the row status as caption-lg medium text ("Pending", "Gagal") in warning-text / danger-text. The app renders a Badge with "Menunggu" / "Ditolak". This port uses the Wonder look (TransactionRowStatus) with the app labels. Decision (2026-11-12): keep the app labels "Menunggu" / "Ditolak", not the Wonder labels "Pending" / "Gagal". The badge stays as TransactionStatusBadge for the drawer.',
     'Wonder has one truncating meta line; the app keeps the time out of the truncation. Same look, this port follows the app.',
     'REVERSED ("Dibalik"), hover, pressed, focus, selected and the day-cards layout come from the app; Wonder has no feed specimen for them.',
     'Pressed (sunken) and selected (primary tint) are additions of this port; the app has hover (canvas) and a highlight tint on the QRIS cards.',

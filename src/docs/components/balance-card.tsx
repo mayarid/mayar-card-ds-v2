@@ -263,7 +263,7 @@ export const doc: ComponentDoc = {
   notes: [
     'Wonder shows the value and its delta row 6px apart inside the 12px tile gap; the caption pulls up 6px after the value.',
     'Wonder: the hide toggle is 32px with radius md and a muted glyph. It renders the ghost Button with rounded-md text-muted.',
-    'Wonder prints short figures ("Rp 48,25 jt"); the app and this port print the full figure ("Rp 48.250.000") with tabular digits.',
+    'Wonder prints short figures ("Rp 48,25 jt"). Decision (2026-11-12): keep the app format, the full figure ("Rp 48.250.000") with tabular digits, on every balance and budget amount.',
     'The strip variant, the neutral delta, the low-balance warning and the loading bones come from the app (top-up page, Beranda), not from a Wonder specimen.',
     'The app animates with NumberFlow; this port uses the AnimatedNumber primitive (tween, no count-up on mount, reduced motion snaps).',
     'Tiles as tabs: the app wires role="tab", arrow keys and the chart panel itself. This pattern styles aria-selected and leaves the tab logic to the page (or the Tabs primitive).',
