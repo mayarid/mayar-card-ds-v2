@@ -4,11 +4,12 @@ This repo is a React port of the Mayar Card v2 design system plus the gallery th
 
 ## Sources of truth
 
-1. **Wonder** — file "Mayar Card Dashboard", page "Design System". Its tokens and specimens set the values.
-2. **The shipped Mayar Card app** (Svelte, `apps/frontend/src/lib/foundations/`). It adds what Wonder does not have yet:
-   extra variants, motion, z-index, elevation, and components with no specimen. Mark these as **code-only**.
+1. **The shipped Mayar Card app (v2 design)** — Svelte, `apps/frontend/src/lib/foundations/` and
+   `src/lib/components/`. Its code is final. It sets every value, variant, state and copy.
+2. **Wonder** — file "Mayar Card Dashboard", page "Design System" (and the Dashboard page for Patterns).
+   The visual reference. Anything with no Wonder specimen is marked **code-only**.
 
-When the two differ, Wonder wins. Write the difference in the doc's `notes`.
+When the two differ, **the code wins** (decision, 12 Nov 2026). Write the difference in the doc's `notes`.
 
 ## Layout
 

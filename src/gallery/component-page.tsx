@@ -155,7 +155,7 @@ export function ComponentPage({ doc }: { doc: ComponentDoc }) {
         <Section
           id="notes"
           title="Wonder vs code"
-          description="Where the Wonder page and the shipped app differ, and what this port does."
+          description="Where the Wonder page and the shipped app differ. The shipped code wins; Wonder is the visual reference."
         >
           <ul className="flex flex-col gap-2 rounded-2xl bg-surface p-5 shadow-ring">
             {doc.notes.map((note) => (

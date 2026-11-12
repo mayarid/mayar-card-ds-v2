@@ -30,10 +30,10 @@ See the Installation page for fonts and manual setup.
 
 ## Sources of truth
 
-1. The Wonder file **Mayar Card Dashboard**, page **Design System** — tokens and specimens.
-2. The shipped Mayar Card app — for what Wonder does not specify yet (motion, z-index, elevation composites, some variants and components). The gallery marks these **code-only**.
+1. The shipped Mayar Card app (v2 design). Its code is final and sets the values.
+2. The Wonder file **Mayar Card Dashboard** — the visual reference. Parts with no Wonder specimen are marked **code-only**.
 
-Where the two differ, Wonder wins, and the component page lists the difference under "Wonder vs code".
+Where the two differ, the code wins, and the component page lists the difference under "Wonder vs code".
 
 Light theme only.
 
