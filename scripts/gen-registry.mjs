@@ -60,7 +60,6 @@ const items = [
     registryDependencies: [url('utils')],
     dependencies: [
       `@fontsource-variable/plus-jakarta-sans@${versions['@fontsource-variable/plus-jakarta-sans']}`,
-      `@fontsource-variable/jetbrains-mono@${versions['@fontsource-variable/jetbrains-mono']}`,
     ],
     files: [{ path: 'src/registry/styles/theme.css', type: 'registry:file', target: '~/src/styles/mayar-theme.css' }],
   },

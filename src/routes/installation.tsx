@@ -52,12 +52,12 @@ function Installation() {
         <p className="text-body-base text-ink-2">
           Plus Jakarta Sans is the UI font. Paper Mono is for numbers, codes and labels in tables.
         </p>
-        <CodeBlock lang="bash" code={`npm install @fontsource-variable/plus-jakarta-sans @fontsource-variable/jetbrains-mono`} />
-        <CodeBlock lang="css" code={`@import "@fontsource-variable/plus-jakarta-sans";\n@import "@fontsource-variable/jetbrains-mono"; /* card number (Card Face) */`} />
+        <CodeBlock lang="bash" code={`npm install @fontsource-variable/plus-jakarta-sans`} />
+        <CodeBlock lang="css" code={`@import "@fontsource-variable/plus-jakarta-sans";`} />
         <p className="text-body-sm text-ink-2">
-          Download Paper Mono (SIL OFL 1.1) from{' '}
-          <a className="text-primary underline underline-offset-2" href="https://github.com/paper-design/paper-mono/releases/tag/v1.000">
-            paper-design/paper-mono
+          Paper Mono is the only mono font, also for the card number. Download it (v1.000, SIL OFL 1.1) from{' '}
+          <a className="text-primary underline underline-offset-2" href="https://paper.design/mono">
+            paper.design/mono
           </a>{' '}
           and put <code className="font-mono text-caption-lg">PaperMono-wght.woff2</code> in{' '}
           <code className="font-mono text-caption-lg">public/fonts/paper-mono/</code>.

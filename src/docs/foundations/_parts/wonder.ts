@@ -49,7 +49,7 @@ export const PATTERN_TOKENS: ReferenceToken[] = [
 ]
 
 /** Pattern token families that are not colours. */
-export const PATTERN_FAMILIES_PENDING = ['card/mono (font: JetBrains Mono)']
+export const PATTERN_FAMILIES_PENDING = ['card/mono (Wonder: JetBrains Mono; this system uses Paper Mono for all mono text)']
 
 /**
  * Wonder token names where they differ from the theme name. Every other colour has the same

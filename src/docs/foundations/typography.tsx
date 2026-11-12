@@ -123,15 +123,7 @@ function TypographyPage() {
             family="font-mono"
             className="font-mono tabular-nums"
             sample="4291 0820 1337"
-            role="Card numbers and codes. Ligatures, calt, ss01 and ss02 are off. A metric-matched fallback avoids layout shift."
-          />
-          <FontCard
-            name="JetBrains Mono"
-            family="font-card"
-            className="font-card"
-            sample="4291 0820"
-            role="Wonder card/mono, for the payment card face (phase 2 pattern). Not loaded by the gallery."
-            tag="reference"
+            role="The only mono font (paper.design/mono): card numbers, codes, amounts in tables. Ligatures, calt, ss01 and ss02 are off. A metric-matched fallback avoids layout shift."
           />
         </div>
         <SubHeading description="Amounts, counts, tables, OTP and timers. Digits keep one width, so values do not jitter.">Tabular numbers</SubHeading>

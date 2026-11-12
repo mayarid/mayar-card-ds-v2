@@ -335,7 +335,7 @@ function CardFace({
           <div className="flex flex-col">
             <span
               data-slot="card-face-number"
-              className="font-card text-[21px] leading-[1.33333] font-medium tracking-[0.1em] whitespace-pre text-on-brand text-shadow-[0_1px_2px_color-mix(in_srgb,var(--color-ink)_30%,transparent)]"
+              className="font-mono text-[21px] leading-[1.33333] font-medium tracking-[0.1em] whitespace-pre text-on-brand text-shadow-[0_1px_2px_color-mix(in_srgb,var(--color-ink)_30%,transparent)]"
             >
               {pan}
             </span>
@@ -353,7 +353,7 @@ function CardFace({
                 <span className="text-[8px] leading-snug font-semibold tracking-[0.12em] text-on-brand/50">BERLAKU</span>
                 <span
                   data-slot="card-face-expiry"
-                  className="font-card text-[13px] leading-[1.30769] font-semibold tracking-[0.04em] text-on-brand"
+                  className="font-mono text-[13px] leading-[1.30769] font-semibold tracking-[0.04em] text-on-brand"
                 >
                   {expiry}
                 </span>

@@ -156,7 +156,7 @@ export const doc: ComponentDoc = {
     ],
   },
   notes: [
-    'Number and expiry use font-card (Wonder card/mono = JetBrains Mono). The app uses Paper Mono. The JetBrains Mono font file is not loaded yet, so the stack falls back to ui-monospace.',
+    'Number and expiry use font-mono (Paper Mono), the one mono font of the system. Wonder card/mono names JetBrains Mono; by decision, Paper Mono replaces it, as in the shipped app.',
     'Mastercard mark: Wonder draws two circles (card/mc-red, card/mc-orange at 90%). The app uses the real mastercard.svg. This port follows Wonder.',
     'Chip lines: Wonder skin/gold-3 at 60%; the app rgba(120,90,30,0.5). Mayar swoosh: Wonder brand/pink; the app #E91E78. This port follows Wonder.',
     'Hero shadow: Wonder 0 6px 16px -6px and 0 1px 3px in #0e0f1a; the app uses a larger ink + primary float. This port follows Wonder (built from the overlay token).',

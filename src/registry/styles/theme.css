@@ -197,11 +197,10 @@
   --color-story-4: #eae9f6;
   --color-story-5: #e7e5f4;
 
-  /* Typography — Wonder font, mono, card/mono */
+  /* Typography — Wonder font and mono. Paper Mono (paper.design/mono) is the only mono font, also for the card face. */
   --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Paper Mono', 'Paper Mono Fallback', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-mono--font-feature-settings: 'liga' 0, 'calt' 0, 'ss01' 0, 'ss02' 0;
-  --font-card: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Type scale — Wonder text/*, leading/*, tracking/* (tracking in em) */
   --text-display: 32px;
