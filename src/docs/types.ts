@@ -1,6 +1,15 @@
 import type { ComponentType, ReactNode } from 'react'
 
-export type ComponentGroup = 'Actions' | 'Forms' | 'Selection' | 'Surfaces' | 'Feedback' | 'Overlays' | 'Display'
+export type ComponentGroup =
+  | 'Actions'
+  | 'Forms'
+  | 'Selection'
+  | 'Surfaces'
+  | 'Feedback'
+  | 'Overlays'
+  | 'Display'
+  /** Mayar product parts built from the primitives. */
+  | 'Patterns'
 
 /** "wonder": specified on the Wonder Design System page. "code-only": comes from the shipped app. */
 export type SpecSource = 'wonder' | 'code-only'

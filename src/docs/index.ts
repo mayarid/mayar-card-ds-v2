@@ -21,7 +21,7 @@ export interface FoundationEntry {
   order: number
 }
 
-export const GROUP_ORDER: ComponentGroup[] = ['Actions', 'Forms', 'Selection', 'Surfaces', 'Feedback', 'Overlays', 'Display']
+export const GROUP_ORDER: ComponentGroup[] = ['Actions', 'Forms', 'Selection', 'Surfaces', 'Feedback', 'Overlays', 'Display', 'Patterns']
 
 export const componentList: ComponentEntry[] = manifest.components
   .map((c) => ({ ...c, group: (c.group ?? 'Display') as ComponentGroup, spec: (c.spec ?? 'wonder') as SpecSource }))

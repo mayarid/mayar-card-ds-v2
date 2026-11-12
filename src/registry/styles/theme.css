@@ -147,6 +147,56 @@
   --color-chart-5: #2a9f9a;
   --color-chart-6: #828d9f;
 
+  /* Card skins — Wonder skin/* (three gradient stops each; chroma has four) */
+  --color-skin-royal-1: #3a4bf0;
+  --color-skin-royal-2: #1e2db0;
+  --color-skin-royal-3: #16208a;
+  --color-skin-midnight-1: #1f2235;
+  --color-skin-midnight-2: #0e0f1a;
+  --color-skin-midnight-3: #15162a;
+  --color-skin-emerald-1: #16b57a;
+  --color-skin-emerald-2: #0e8f5e;
+  --color-skin-emerald-3: #0a6e49;
+  --color-skin-gold-1: #e8c66b;
+  --color-skin-gold-2: #b8923e;
+  --color-skin-gold-3: #7e601f;
+  --color-skin-silver-1: #aeb4c2;
+  --color-skin-silver-2: #7a8092;
+  --color-skin-silver-3: #565c6e;
+  --color-skin-graphite-1: #4a4f63;
+  --color-skin-graphite-2: #2a2d3c;
+  --color-skin-graphite-3: #1d1f2b;
+  --color-skin-magenta-1: #f0568f;
+  --color-skin-magenta-2: #c9156a;
+  --color-skin-magenta-3: #9e1457;
+  --color-skin-chroma-1: #6a5cf0;
+  --color-skin-chroma-2: #c13be0;
+  --color-skin-chroma-3: #f0568f;
+  --color-skin-chroma-4: #22b5c9;
+  --color-skin-matrix-1: #0f3322;
+  --color-skin-matrix-2: #06160e;
+  --color-skin-matrix-3: #0a2e1e;
+
+  /* Card face — Wonder card/* */
+  --color-card-chip-1: #f6dc9a;
+  --color-card-chip-2: #d8b65e;
+  --color-card-chip-3: #b8923e;
+  --color-card-mc-red: #eb001b;
+  --color-card-mc-orange: #f79e1b;
+
+  /* Auth hero and story backgrounds — Wonder hero/*, story/* */
+  --color-hero-1: #f6f7fe;
+  --color-hero-2: #eff0fd;
+  --color-hero-3: #cfd3fa;
+  --color-hero-4: #9c9cf0;
+  --color-hero-5: #5b4fd6;
+  --color-hero-lead: #3e4556;
+  --color-story-1: #f8f9fc;
+  --color-story-2: #f3f4fb;
+  --color-story-3: #eeeff9;
+  --color-story-4: #eae9f6;
+  --color-story-5: #e7e5f4;
+
   /* Typography — Wonder font, mono, card/mono */
   --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Paper Mono', 'Paper Mono Fallback', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
