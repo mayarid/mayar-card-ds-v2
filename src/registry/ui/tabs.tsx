@@ -1,6 +1,6 @@
 import { Tabs as BaseTabs } from '@base-ui/react/tabs'
 import { cva } from 'class-variance-authority'
-import { createContext, useContext, type ComponentProps, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ComponentProps, type ReactNode } from 'react'
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -63,8 +63,9 @@ function Tabs({
   fill = false,
   ...props
 }: TabsProps) {
+  const context = useMemo(() => ({ variant, size, tone, countTone, fill }), [variant, size, tone, countTone, fill])
   return (
-    <TabsContext.Provider value={{ variant, size, tone, countTone, fill }}>
+    <TabsContext.Provider value={context}>
       <BaseTabs.Root
         data-slot="tabs"
         data-variant={variant}

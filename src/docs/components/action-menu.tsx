@@ -194,7 +194,7 @@ export const doc: ComponentDoc = {
             {props.icons ? <Icon icon={Copy01Icon} /> : null}
             Salin nomor kartu
           </div>
-          <div role="separator" className="mx-1 my-1.5 h-px bg-border-subtle" />
+          <hr className="mx-1 my-1.5 h-px border-0 bg-border-subtle" />
           <StaticItem props={{ withIcon: props.icons, tone: 'danger' }} />
         </ActionMenuPanel>
       ),

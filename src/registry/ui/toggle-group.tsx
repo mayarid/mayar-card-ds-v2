@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentProps,
@@ -210,10 +211,11 @@ function ToggleGroup({
     onValueChange?.(picked)
   }
 
+  const context = useMemo(() => ({ variant, size }), [variant, size])
   const columns = { '--toggle-columns': Children.count(children) } as CSSProperties
 
   return (
-    <ToggleGroupContext.Provider value={{ variant, size }}>
+    <ToggleGroupContext.Provider value={context}>
       <BaseToggleGroup
         data-slot="toggle-group"
         data-variant={variant}

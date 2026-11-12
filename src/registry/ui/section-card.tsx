@@ -1,6 +1,6 @@
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-import { createContext, useContext, useId, type ComponentProps } from 'react'
+import { createContext, useContext, useId, useMemo, type ComponentProps } from 'react'
 
 import { Surface } from '@/components/ui/surface'
 import { cn } from '@/lib/utils'
@@ -27,8 +27,9 @@ type SectionCardProps = Omit<ComponentProps<typeof Surface>, 'variant' | 'paddin
  */
 function SectionCard({ className, elevated = true, children, ...props }: SectionCardProps) {
   const titleId = useId()
+  const context = useMemo(() => ({ titleId }), [titleId])
   return (
-    <SectionCardContext.Provider value={{ titleId }}>
+    <SectionCardContext.Provider value={context}>
       <Surface
         role="region"
         aria-labelledby={titleId}

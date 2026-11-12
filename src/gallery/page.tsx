@@ -5,7 +5,9 @@ import { cn } from '@/lib/utils'
 import { Toc, type TocItem } from './toc'
 
 /** Page frame: content column plus an "On this page" rail on wide screens. */
-export function DocPage({ children, toc = [] }: { children: ReactNode; toc?: TocItem[] }) {
+const NO_TOC: TocItem[] = []
+
+export function DocPage({ children, toc = NO_TOC }: { children: ReactNode; toc?: TocItem[] }) {
   return (
     <div className="mx-auto flex w-full max-w-[1200px] gap-12 px-5 pt-8 pb-24 md:px-10 md:pt-12">
       <article className="flex min-w-0 flex-1 flex-col gap-14">{children}</article>

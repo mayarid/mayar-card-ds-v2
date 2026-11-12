@@ -1,5 +1,5 @@
 import { Meter } from '@base-ui/react/meter'
-import { createContext, use } from 'react'
+import { createContext, use, useMemo } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -77,10 +77,11 @@ function UsageBar({
 }: UsageBarProps) {
   const percent = Number.isFinite(value) && max > min ? ((value - min) / (max - min)) * 100 : null
   const resolvedTone = tone ?? getUsageTone(percent)
+  const context = useMemo(() => ({ tone: resolvedTone, color, height, track }), [resolvedTone, color, height, track])
   const decorative = children === undefined && !props['aria-label'] && !props['aria-labelledby']
 
   return (
-    <UsageBarContext value={{ tone: resolvedTone, color, height, track }}>
+    <UsageBarContext value={context}>
       <Meter.Root
         data-slot="usage-bar"
         data-tone={resolvedTone}

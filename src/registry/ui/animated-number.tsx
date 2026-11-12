@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -103,7 +103,10 @@ function AnimatedNumber({
   ...props
 }: AnimatedNumberProps) {
   const shown = useTweenedNumber(value, duration)
-  const formatter = new Intl.NumberFormat(locale, format)
+  // `format` is often an inline object; key the cache on its contents, not its identity.
+  const formatKey = JSON.stringify(format ?? null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const formatter = useMemo(() => new Intl.NumberFormat(locale, format), [locale, formatKey])
   const text = (n: number) => `${prefix}${formatter.format(n)}${suffix}`
 
   return (
