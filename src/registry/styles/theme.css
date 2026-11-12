@@ -201,7 +201,7 @@
   --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Paper Mono', 'Paper Mono Fallback', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-mono--font-feature-settings: 'liga' 0, 'calt' 0, 'ss01' 0, 'ss02' 0;
-  --font-card: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-card: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Type scale — Wonder text/*, leading/*, tracking/* (tracking in em) */
   --text-display: 32px;

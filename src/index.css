@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/jetbrains-mono';
 @import './registry/styles/theme.css';
 
 /* Gallery-only styles. Components never depend on these. */
