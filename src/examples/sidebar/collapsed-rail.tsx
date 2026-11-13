@@ -7,6 +7,8 @@ import {
 } from '@hugeicons/core-free-icons'
 import { useState } from 'react'
 
+import mayarEmblem from '@/assets/brand/mayar-emblem.svg'
+import mayarWordmark from '@/assets/brand/mayar-wordmark-compact.svg'
 import { Icon } from '@/components/ui/icon'
 import {
   Sidebar,
@@ -33,10 +35,10 @@ export default function SidebarCollapsedRail() {
       <Sidebar layout="static" collapsed={collapsed} onCollapsedChange={setCollapsed}>
         <SidebarHeader>
           <SidebarExpandedOnly>
-            <span className="text-title-md text-primary">mayar</span>
+            <img src={mayarWordmark} alt="Mayar" width={61} height={20} className="h-5 w-auto" />
           </SidebarExpandedOnly>
           <SidebarRailOnly>
-            <span aria-hidden className="text-title-md text-primary">m</span>
+            <img src={mayarEmblem} alt="" width={30} height={24} className="h-6 w-auto" />
           </SidebarRailOnly>
           <SidebarActions>
             <SidebarCollapseTrigger />

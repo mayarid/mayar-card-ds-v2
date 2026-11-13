@@ -8,6 +8,8 @@ import {
   UserGroupIcon,
 } from '@hugeicons/core-free-icons'
 
+import mayarEmblem from '@/assets/brand/mayar-emblem.svg'
+import mayarWordmark from '@/assets/brand/mayar-wordmark-compact.svg'
 import { Icon } from '@/components/ui/icon'
 import {
   PlanQuota,
@@ -112,12 +114,10 @@ function SidebarSpecimen(props: Record<string, PropValue>) {
       <Sidebar layout="static" collapsed={Boolean(props.collapsed)} className="h-full">
         <SidebarHeader>
           <SidebarExpandedOnly>
-            <span className="text-title-md text-primary">mayar</span>
+            <img src={mayarWordmark} alt="Mayar" width={61} height={20} className="h-5 w-auto" />
           </SidebarExpandedOnly>
           <SidebarRailOnly>
-            <span aria-hidden className="text-title-md text-primary">
-              m
-            </span>
+            <img src={mayarEmblem} alt="" width={30} height={24} className="h-6 w-auto" />
           </SidebarRailOnly>
           <SidebarActions>
             <SidebarIconButton label="Notifikasi" dot={Boolean(props.badge)}>
@@ -167,8 +167,8 @@ function sidebarCode(props: Record<string, PropValue>) {
   const rootAttrs = toJsx('Sidebar', { collapsed: props.collapsed }, 'x').split('>')[0]
   return `${rootAttrs}>
   <SidebarHeader>
-    <SidebarExpandedOnly><img src="/mayar-logo.png" alt="Mayar" /></SidebarExpandedOnly>
-    <SidebarRailOnly><img src="/mayar-icon.png" alt="" /></SidebarRailOnly>
+    <SidebarExpandedOnly><img src={mayarWordmark} alt="Mayar" width={61} height={20} className="h-5 w-auto" /></SidebarExpandedOnly>
+    <SidebarRailOnly><img src={mayarEmblem} alt="" width={30} height={24} className="h-6 w-auto" /></SidebarRailOnly>
     <SidebarActions>
       <SidebarIconButton label="Notifikasi"${props.badge ? ' dot' : ''}><Icon icon={Notification03Icon} size={18} /></SidebarIconButton>
       <SidebarCollapseTrigger />
