@@ -233,14 +233,14 @@ export const doc: ComponentDoc = {
     { name: 'Select name / disabled / required', type: 'string / boolean', description: 'Form props.' },
     { name: 'SelectTrigger variant', type: '"default" | "ghost"', default: '"default"', description: 'Ghost has no fill and no ring until focus.' },
     { name: 'SelectTrigger size', type: '"sm" | "md" | "lg" | "xl"', default: '"lg"', description: 'Height 28 / 32 / 36 / 40.' },
-    { name: 'SelectTrigger tone', type: '"default" | "active"', default: '"default"', description: 'Active paints a filter that is set (code-only).' },
+    { name: 'SelectTrigger tone', type: '"default" | "active"', default: '"default"', description: 'Active paints a filter that is set.' },
     { name: 'SelectTrigger aria-invalid', type: 'boolean', description: 'Error: danger-subtle fill and danger ring. Field.Root invalid does the same.' },
-    { name: 'SelectLeading', type: 'children', description: 'Content before the value (icon or initials disc). Decorative; pulls the start padding in to 8px and turns primary in the active tone (code-only).' },
+    { name: 'SelectLeading', type: 'children', description: 'Content before the value (icon or initials disc). Decorative; pulls the start padding in to 8px and turns primary in the active tone.' },
     { name: 'SelectValue placeholder', type: 'ReactNode', description: 'Text when there is no value.' },
     { name: 'SelectValue children', type: 'ReactNode | (value) => ReactNode', description: 'Other closed text, e.g. "Paket: Business".' },
     { name: 'SelectContent side / align / sideOffset', type: 'Base UI Positioner', default: '"bottom" / "start" / 4', description: 'Placement.' },
     { name: 'SelectContent alignItemWithTrigger', type: 'boolean', default: 'false', description: 'Overlap the trigger like a native select.' },
-    { name: 'SelectItem tone', type: '"default" | "action"', default: '"default"', description: 'Action paints a shortcut row in primary (code-only).' },
+    { name: 'SelectItem tone', type: '"default" | "action"', default: '"default"', description: 'Action paints a shortcut row in primary.' },
   ],
   guidelines: {
     do: [

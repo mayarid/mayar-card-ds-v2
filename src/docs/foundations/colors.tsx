@@ -3,8 +3,7 @@ import { Section, SubHeading } from '@/gallery/page'
 
 import { contrastRatio, wcagLevel } from './_parts/color'
 import { themeValue } from './_parts/theme'
-import { CodeOnly, Mono, Note, Rules, Swatch, Tag, TokenCopy, TokenTable } from './_parts/ui'
-import { DARK_TOKENS, PATTERN_FAMILIES_PENDING, PATTERN_TOKENS, WONDER_NAME } from './_parts/wonder'
+import { Mono, Rules, Swatch, Tag, TokenCopy, TokenTable } from './_parts/ui'
 
 interface ColorToken {
   /** Theme name without the `--color-` prefix. */
@@ -162,33 +161,21 @@ const GROUPS: ColorGroup[] = [
   },
 ]
 
-function ColorRow({ token }: { token: ColorToken }) {
+function ColorCard({ token }: { token: ColorToken }) {
   const cssVar = `--color-${token.name}`
   const value = themeValue(cssVar)
   return (
-    <tr>
-      <td className="w-14">
-        <Swatch color={`var(${cssVar})`} />
-      </td>
-      <td>
-        <div className="flex flex-col gap-0.5">
-          <span className="flex items-center gap-2 text-body-sm font-medium text-ink">
-            {token.name}
-            {token.codeOnly ? <CodeOnly /> : null}
-          </span>
-          <span className="text-caption-lg text-muted">{token.use}</span>
-        </div>
-      </td>
-      <td>
-        <Mono>{value}</Mono>
-      </td>
-      <td>
+    <li className="flex min-w-0 flex-col gap-2">
+      <Swatch color={`var(${cssVar})`} size="lg" className="h-20" />
+      <div className="flex items-baseline justify-between gap-2 px-0.5">
+        <span className="truncate text-body-sm font-medium text-ink">{token.name}</span>
+        <Mono className="shrink-0 text-muted">{value}</Mono>
+      </div>
+      <p className="px-0.5 text-caption-lg text-ink-2">{token.use}</p>
+      <div className="-ml-1">
         <TokenCopy utility={token.utility ?? `bg-${token.name}`} cssVar={cssVar} />
-      </td>
-      <td>
-        <Mono>{WONDER_NAME[token.name] ?? token.name}</Mono>
-      </td>
-    </tr>
+      </div>
+    </li>
   )
 }
 
@@ -238,38 +225,17 @@ function Specimen({ fg, bg }: { fg: string; bg: string }) {
   )
 }
 
-function ReferenceRow({ name, value, note }: { name: string; value: string; note?: string }) {
-  return (
-    <tr>
-      <td className="w-14">
-        <Swatch color={value} />
-      </td>
-      <td>
-        <Mono className="text-ink">{name}</Mono>
-      </td>
-      <td>
-        <Mono>{value}</Mono>
-      </td>
-      <td className="text-caption-lg text-muted">{note ?? ''}</td>
-    </tr>
-  )
-}
-
 function ColorsPage() {
   return (
     <>
-      <Note>
-        Every value on this page is read from <code className="font-mono">theme.css</code> at build time. Copy the class for
-        markup and the variable for inline styles or scoped CSS. Light theme only.
-      </Note>
 
       {GROUPS.map((group) => (
         <Section key={group.id} id={group.id} title={group.title} description={group.description}>
-          <TokenTable label={`${group.title} colour tokens`} columns={['~Swatch', 'Token', 'Value', 'Copy', 'Wonder']}>
+          <ul aria-label={`${group.title} colour tokens`} className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 md:gap-x-5">
             {group.tokens.map((token) => (
-              <ColorRow key={token.name} token={token} />
+              <ColorCard key={token.name} token={token} />
             ))}
-          </TokenTable>
+          </ul>
         </Section>
       ))}
 
@@ -337,44 +303,6 @@ function ColorsPage() {
           }}
         />
       </Section>
-
-      <Section
-        id="reference"
-        title="Reference only"
-        description={
-          <>
-            <Tag tone="warning">not in use — light only</Tag> Wonder keeps a dark set. The system ships light only, so these have no class
-            and no variable.
-          </>
-        }
-      >
-        <TokenTable label="Wonder dark tokens" columns={['~Swatch', 'Wonder token', 'Value', 'Note']}>
-          {DARK_TOKENS.map((token) => (
-            <ReferenceRow key={token.name} {...token} />
-          ))}
-        </TokenTable>
-      </Section>
-
-      <Section
-        id="patterns"
-        title="Patterns (phase 2) reference"
-        description="Card skins, the card face and the auth hero and story backgrounds. They belong to patterns that are not ported yet."
-      >
-        <TokenTable label="Pattern tokens" columns={['~Swatch', 'Wonder token', 'Value', 'Note']}>
-          {PATTERN_TOKENS.map((token) => (
-            <ReferenceRow key={token.name} {...token} />
-          ))}
-        </TokenTable>
-        <p className="text-body-sm text-ink-2">
-          Also in Wonder:{' '}
-          {PATTERN_FAMILIES_PENDING.map((name, i) => (
-            <span key={name}>
-              <code className="font-mono text-caption-lg">{name}</code>
-              {i < PATTERN_FAMILIES_PENDING.length - 1 ? ', ' : '.'}
-            </span>
-          ))}
-        </p>
-      </Section>
     </>
   )
 }
@@ -383,6 +311,6 @@ export const doc: FoundationDoc = {
   order: 1,
   slug: 'colors',
   name: 'Colors',
-  description: 'Semantic colour tokens from Wonder: brand, text, surfaces, borders, washes, feedback and shadow colours, with computed contrast.',
+  description: 'The colour tokens for brand, text, surfaces, borders and feedback. Each one shows its value and its contrast.',
   Page: ColorsPage,
 }

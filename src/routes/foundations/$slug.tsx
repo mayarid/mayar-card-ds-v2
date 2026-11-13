@@ -17,12 +17,8 @@ function FoundationRoute() {
   const { Page } = doc
   return (
     <DocPage>
-      <title>{`${doc.name} · Mayar Card DS v2`}</title>
-      <PageHeader
-        eyebrow={<span className="text-overline text-muted uppercase">Foundations</span>}
-        title={doc.name}
-        description={doc.description}
-      />
+      <title>{`${doc.name} · Mayar Card design system`}</title>
+      <PageHeader title={doc.name} description={doc.description} />
       <Page key={doc.slug} />
     </DocPage>
   )

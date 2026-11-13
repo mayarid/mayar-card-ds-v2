@@ -19,7 +19,7 @@ const STEPS = [
 function Installation() {
   return (
     <DocPage toc={STEPS}>
-      <title>Installation · Mayar Card DS v2</title>
+      <title>Installation · Mayar Card design system</title>
       <PageHeader
         title="Installation"
         description="Add the Mayar v2 theme to a React + Tailwind v4 app once. Then add components with the shadcn CLI, or copy them by hand."
@@ -75,9 +75,9 @@ function Installation() {
       <Section
         id="states"
         title="State variants"
-        description="The theme adds four variants. Use them instead of the plain Tailwind ones, so the states match Wonder."
+        description="The theme adds four variants. Use them instead of the plain Tailwind ones, so states behave the same in every component."
       >
-        <div className="overflow-x-auto rounded-2xl bg-surface shadow-ring">
+        <div className="overflow-x-auto rounded-xl bg-surface shadow-ring">
           <table className="w-full min-w-[560px] text-left">
             <tbody className="text-body-sm text-ink-2">
               {[

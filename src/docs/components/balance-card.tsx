@@ -216,7 +216,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Captions',
-      description: 'Delta tones: positive (success), negative (danger), warning (Anggaran tab). Neutral and the low-balance warning are code-only.',
+      description: 'Delta tones: positive (success), negative (danger), warning (Anggaran tab), neutral and low balance.',
       rows: [{ label: 'Card', props: { variant: 'card', toggle: false } }],
       columns: CAPTIONS.map((c) => ({
         label: c,

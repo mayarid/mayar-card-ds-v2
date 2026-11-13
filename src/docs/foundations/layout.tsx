@@ -8,7 +8,7 @@ import { Section, SubHeading } from '@/gallery/page'
 import { cn } from '@/lib/utils'
 
 import { themeGroup, themeValue } from './_parts/theme'
-import { CodeOnly, CopyChip, Mono, Note, Rules, TokenCopy, TokenTable } from './_parts/ui'
+import { CopyChip, Mono, Note, Rules, TokenCopy, TokenTable } from './_parts/ui'
 
 const Z_USE: Record<string, string> = {
   raised: 'In-flow lift: hovered tile, sticky review bar.',
@@ -42,7 +42,7 @@ const VARIANTS = [
 function StateDemo() {
   const [force, setForce] = useState<Force>('none')
   return (
-    <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-ring">
+    <div className="flex flex-col gap-4 rounded-xl bg-surface p-5 shadow-ring">
       <div role="radiogroup" aria-label="Force a state" className="flex flex-wrap gap-1 self-start rounded-xl bg-component p-1">
         {FORCES.map((f) => (
           <button
@@ -80,7 +80,7 @@ function StateDemo() {
 function HitAreaDemo() {
   const [show, setShow] = useState(true)
   return (
-    <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-ring">
+    <div className="flex flex-col gap-4 rounded-xl bg-surface p-5 shadow-ring">
       <div className="flex items-center gap-10 rounded-xl bg-canvas p-8">
         <div className="relative">
           <button
@@ -111,8 +111,8 @@ function LayoutPage() {
   const zTokens = themeGroup('--z-')
   return (
     <>
-      <Section id="container" title="Container and gutter" description="From Wonder. The container caps page content; the gutter is the page side padding on wide screens.">
-        <TokenTable label="Layout tokens" columns={['Token', 'Value', 'Copy', 'Wonder']}>
+      <Section id="container" title="Container and gutter" description="The container caps the page content. The gutter is the page side padding on wide screens.">
+        <TokenTable label="Layout tokens" columns={['Token', 'Value', 'Copy']}>
           <tr>
             <td>
               <div className="flex flex-col gap-0.5">
@@ -125,9 +125,6 @@ function LayoutPage() {
             </td>
             <td>
               <TokenCopy utility="max-w-layout" cssVar="--container-layout" />
-            </td>
-            <td>
-              <Mono>container</Mono>
             </td>
           </tr>
           <tr>
@@ -142,9 +139,6 @@ function LayoutPage() {
             </td>
             <td>
               <TokenCopy utility="px-gutter" cssVar="--spacing-gutter" />
-            </td>
-            <td>
-              <Mono>gutter</Mono>
             </td>
           </tr>
         </TokenTable>
@@ -168,7 +162,6 @@ function LayoutPage() {
                   <div className="flex flex-col gap-0.5">
                     <span className="flex items-center gap-2 text-body-sm font-medium text-ink">
                       {name}
-                      <CodeOnly />
                     </span>
                     <span className="text-caption-lg text-muted">{Z_USE[name] ?? ''}</span>
                   </div>
@@ -204,7 +197,7 @@ function LayoutPage() {
         </TokenTable>
       </Section>
 
-      <Section id="states" title="State variants" description="Custom variants in theme.css. Each one also matches data-force-state, so the docs can show a state without a pointer.">
+      <Section id="states" title="State variants" description="Custom variants in the theme. Each one also matches data-force-state, so the docs can show a state without a pointer.">
         <TokenTable label="State variants" columns={['Variant', 'Rule']}>
           {VARIANTS.map((v) => (
             <tr key={v.name}>
@@ -221,7 +214,7 @@ function LayoutPage() {
 
       <Section id="utilities" title="Utilities" description="Two theme utilities for focus and touch.">
         <SubHeading description="1px solid border-focus, 1px offset. Put it behind focus-ring:.">outline-focus</SubHeading>
-        <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-surface p-5 shadow-ring">
+        <div className="flex flex-wrap items-center gap-4 rounded-xl bg-surface p-5 shadow-ring">
           <span className="flex h-8 items-center rounded-lg bg-surface px-3 text-body-sm text-ink shadow-control outline-focus">Fokus</span>
           <CopyChip value="focus-ring:outline-focus" className="text-ink" />
         </div>
@@ -242,6 +235,6 @@ export const doc: FoundationDoc = {
   order: 8,
   slug: 'layout',
   name: 'Layout',
-  description: 'Container, gutter, z-index and breakpoints, plus the state variants and the focus and hit-area utilities.',
+  description: 'Container, gutter, z-index and breakpoints. Also the state variants and the focus and hit-area utilities.',
   Page: LayoutPage,
 }

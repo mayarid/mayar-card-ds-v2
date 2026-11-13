@@ -2,7 +2,7 @@ import type { FoundationDoc } from '@/docs/types'
 import { Section, SubHeading } from '@/gallery/page'
 
 import { themeValue } from './_parts/theme'
-import { CodeOnly, Mono, Note, Rules, Swatch, TokenCopy, TokenTable } from './_parts/ui'
+import { Mono, Note, Rules, Swatch, TokenCopy, TokenTable } from './_parts/ui'
 
 /* Class names stay literal so Tailwind generates them. */
 const SHADOWS = [
@@ -58,9 +58,9 @@ function ElevationPage() {
       <Section
         id="shadows"
         title="Shadows"
-        description="Every composite is code-only: Wonder has the shadow colours, and the shipped app combines them. Each one starts with the 1px hairline ring, so elevated surfaces need no border."
+        description="Each shadow starts with a 1px hairline ring, so an elevated surface needs no border."
       >
-        <div className="grid gap-4 rounded-2xl bg-canvas p-6 shadow-ring sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 rounded-xl bg-canvas p-6 shadow-ring sm:grid-cols-2 lg:grid-cols-4">
           {SHADOWS.map((s) => (
             <div key={s.name} className="flex flex-col items-center gap-3">
               <div className={`flex h-20 w-full items-center justify-center rounded-2xl ${s.name === 'highlight' ? 'bg-primary' : 'bg-surface'} ${s.className}`}>
@@ -76,7 +76,6 @@ function ElevationPage() {
                 <div className="flex flex-col gap-0.5">
                   <span className="flex items-center gap-2 text-body-sm font-medium text-ink">
                     {s.name}
-                    <CodeOnly />
                   </span>
                   <span className="text-caption-lg text-muted">{s.use}</span>
                 </div>
@@ -92,7 +91,7 @@ function ElevationPage() {
         </TokenTable>
       </Section>
 
-      <Section id="shadow-colors" title="Shadow colours" description="From Wonder. Colours only: never use one alone as a box-shadow value.">
+      <Section id="shadow-colors" title="Shadow colours" description="Colours only. Never use one alone as a box-shadow value.">
         <TokenTable label="Shadow colours" columns={['~Swatch', 'Token', 'Value', 'Copy']}>
           {COLORS.map((name) => (
             <tr key={name}>
@@ -139,6 +138,6 @@ export const doc: FoundationDoc = {
   order: 4,
   slug: 'elevation',
   name: 'Elevation',
-  description: 'Layered shadows built from the Wonder shadow colours: ring, control, raised, popover, toast and card.',
+  description: 'Layered shadows for controls, raised cards, popovers, toasts and dialogs. Each one starts with a hairline ring.',
   Page: ElevationPage,
 }

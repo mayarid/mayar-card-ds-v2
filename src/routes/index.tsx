@@ -1,77 +1,92 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
-import { componentList, componentsByGroup, foundationList } from '@/docs'
+import { Button } from '@/components/ui/button'
+import { componentsByGroup, foundationList } from '@/docs'
+import { FoundationVisual } from '@/gallery/foundation-tile'
 import { DocPage } from '@/gallery/page'
+import { REPO_URL } from '@/site'
 
 export const Route = createFileRoute('/')({ component: Overview })
 
+const linkText =
+  'rounded-sm text-ink outline-none underline decoration-border underline-offset-[3px] transition-colors duration-(--motion-quick) hover-fine:decoration-ink focus-visible:outline-focus'
+
 function Overview() {
-  const wonderCount = componentList.filter((d) => d.spec === 'wonder').length
   return (
     <DocPage>
-      <title>Mayar Card Design System v2</title>
-      <header className="flex flex-col gap-4">
-        <p className="text-overline text-primary uppercase">Mayar Card · v2</p>
-        <h1 className="max-w-[18ch] text-display text-ink">The design system behind Mayar Card</h1>
-        <p className="max-w-[60ch] text-body-lg text-ink-2">
-          Foundations and React components from the Wonder Design System page. See every variant and state, and copy the code for each one.
-        </p>
-        <dl className="mt-2 flex flex-wrap gap-x-8 gap-y-3">
-          {[
-            [String(foundationList.length), 'Foundations'],
-            [String(componentList.length), 'Components'],
-            [String(wonderCount), 'From the Wonder spec'],
-          ].map(([value, label]) => (
-            <div key={label} className="flex flex-col">
-              <dt className="order-2 text-caption-lg text-muted">{label}</dt>
-              <dd className="font-mono text-title-lg text-ink tabular-nums">{value}</dd>
-            </div>
-          ))}
-        </dl>
+      <title>Mayar Card design system</title>
+      <header className="flex flex-col gap-3">
+        <h1 className="text-title-lg text-ink">Mayar Card design system</h1>
+        <div className="flex max-w-[62ch] flex-col gap-3 text-body-lg text-pretty text-ink-2">
+          <p>
+            The foundations and React components behind Mayar Card. Each page shows the live component, its variants and
+            states, and the code to copy.
+          </p>
+          <p>
+            Add the theme once. Then add each component with the shadcn CLI, or copy its file.
+          </p>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <Button render={<Link to="/installation" />}>Install the theme</Button>
+          <a href={REPO_URL} className={`text-body-sm font-medium pointer-coarse:py-3 ${linkText}`}>
+            Source on GitHub
+          </a>
+        </div>
       </header>
 
-      <section aria-labelledby="foundations-title" className="flex flex-col gap-4">
-        <h2 id="foundations-title" className="text-title-md text-ink">Foundations</h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section aria-labelledby="foundations-title" className="flex flex-col gap-5">
+        <h2 id="foundations-title" className="text-title-md text-ink">
+          Foundations
+        </h2>
+        <ul className="grid gap-x-5 gap-y-8 sm:grid-cols-2">
           {foundationList.map((doc) => (
             <li key={doc.slug}>
               <Link
                 to="/foundations/$slug"
                 params={{ slug: doc.slug }}
-                className="flex h-full flex-col gap-1 rounded-2xl bg-surface p-4 shadow-control outline-none transition-shadow duration-(--motion-quick) hover-fine:shadow-raised focus-visible:outline-focus"
+                className="group flex flex-col gap-3 rounded-xl outline-none focus-visible:outline-focus"
               >
-                <span className="text-title-sm text-ink">{doc.name}</span>
-                <span className="line-clamp-2 text-body-sm text-ink-2">{doc.description}</span>
+                <FoundationVisual slug={doc.slug} />
+                <span className="flex flex-col gap-1 px-0.5">
+                  <span className="text-title-sm text-ink">{doc.name}</span>
+                  <span className="text-body-sm text-pretty text-ink-2">{doc.description}</span>
+                </span>
               </Link>
             </li>
           ))}
         </ul>
       </section>
 
-      {componentsByGroup().map(({ group, items }) => (
-        <section key={group} aria-labelledby={`group-${group}`} className="flex flex-col gap-4">
-          <h2 id={`group-${group}`} className="text-title-md text-ink">{group}</h2>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((doc) => (
-              <li key={doc.slug}>
-                <Link
-                  to="/components/$slug"
-                  params={{ slug: doc.slug }}
-                  className="flex h-full flex-col gap-1 rounded-2xl bg-surface p-4 shadow-control outline-none transition-shadow duration-(--motion-quick) hover-fine:shadow-raised focus-visible:outline-focus"
-                >
-                  <span className="flex items-center gap-2 text-title-sm text-ink">
-                    {doc.name}
-                    {doc.spec === 'code-only' ? (
-                      <span className="rounded-sm bg-warning-light px-1.5 text-caption-sm text-warning-text">code-only</span>
-                    ) : null}
-                  </span>
-                  <span className="line-clamp-2 text-body-sm text-ink-2">{doc.description}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <section aria-labelledby="components-title" className="flex flex-col gap-5">
+        <h2 id="components-title" className="text-title-md text-ink">
+          Components
+        </h2>
+        <div className="flex flex-col gap-8">
+          {componentsByGroup().map(({ group, items }) => (
+            <div key={group} className="grid gap-x-8 gap-y-2 md:grid-cols-[140px_minmax(0,1fr)]">
+              <h3 id={`group-${group}`} className="pt-3 text-body-sm font-medium text-muted">
+                {group}
+              </h3>
+              <ul aria-labelledby={`group-${group}`} className="flex flex-col">
+                {items.map((doc) => (
+                  <li key={doc.slug} className="border-t border-border-subtle first:border-t-0 md:first:border-t">
+                    <Link
+                      to="/components/$slug"
+                      params={{ slug: doc.slug }}
+                      className="group -mx-2 flex flex-col gap-0.5 rounded-lg px-2 py-3 outline-none focus-visible:outline-focus"
+                    >
+                      <span className="text-body-base font-medium text-ink underline decoration-transparent underline-offset-[3px] transition-colors duration-(--motion-quick) group-hover:decoration-border">
+                        {doc.name}
+                      </span>
+                      <span className="text-body-sm text-pretty text-ink-2">{doc.description}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
     </DocPage>
   )
 }

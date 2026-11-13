@@ -96,7 +96,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Tier × layout',
-      description: 'The six Wonder specimens: each tier as a row, and the rail disc.',
+      description: 'Each tier as a row, and as a rail disc.',
       rows: SPECIMENS,
       columns: [
         { label: 'Row', props: { layout: 'row' } },
@@ -118,7 +118,7 @@ export const doc: ComponentDoc = {
       code: badgeCode,
     },
     {
-      title: 'Chip × size (code-only)',
+      title: 'Chip × size',
       description: 'The Tim header chip of the app: a brand MD Badge for every tier, also Free. Suspended (warning) is not in the app.',
       rows: [
         ...TIERS.map((t) => ({ label: t[0]?.toUpperCase() + t.slice(1), props: { tier: t }, codeOnly: true })),

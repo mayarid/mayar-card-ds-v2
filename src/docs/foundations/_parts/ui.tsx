@@ -91,18 +91,13 @@ export function Tag({ tone = 'neutral', children }: { tone?: 'neutral' | 'warnin
   )
 }
 
-/** The "code-only" tag for tokens that are not in Wonder. */
-export function CodeOnly() {
-  return <Tag tone="warning">code-only</Tag>
-}
-
 /**
  * A table on a surface card. Pass the column labels; rows go in `children`.
  * A label that starts with `~` is read by screen readers but not shown (e.g. `~Swatch`).
  */
 export function TokenTable({ label, columns, children, className }: { label: string; columns: string[]; children: ReactNode; className?: string }) {
   return (
-    <div className={cn('overflow-x-auto rounded-2xl bg-surface shadow-ring', className)}>
+    <div className={cn('overflow-x-auto rounded-xl bg-surface shadow-ring', className)}>
       <table className="w-full min-w-[640px] border-collapse text-left">
         <caption className="sr-only">{label}</caption>
         <thead>
@@ -131,8 +126,8 @@ export function Mono({ children, className }: { children: ReactNode; className?:
 export function Rules({ items }: { items: { do: string[]; dont?: string[] } }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <div className="flex flex-col gap-2 rounded-2xl bg-surface p-4 shadow-ring">
-        <p className="text-overline text-success-text uppercase">Do</p>
+      <div className="flex flex-col gap-2 rounded-xl bg-surface p-4 shadow-ring">
+        <p className="text-body-sm font-semibold text-success-text">Do</p>
         <ul className="flex list-disc flex-col gap-1.5 pl-4 text-body-sm text-ink-2 marker:text-success">
           {items.do.map((rule) => (
             <li key={rule}>{rule}</li>
@@ -140,8 +135,8 @@ export function Rules({ items }: { items: { do: string[]; dont?: string[] } }) {
         </ul>
       </div>
       {items.dont?.length ? (
-        <div className="flex flex-col gap-2 rounded-2xl bg-surface p-4 shadow-ring">
-          <p className="text-overline text-danger-text uppercase">Don't</p>
+        <div className="flex flex-col gap-2 rounded-xl bg-surface p-4 shadow-ring">
+          <p className="text-body-sm font-semibold text-danger-text">Don’t</p>
           <ul className="flex list-disc flex-col gap-1.5 pl-4 text-body-sm text-ink-2 marker:text-danger">
             {items.dont.map((rule) => (
               <li key={rule}>{rule}</li>

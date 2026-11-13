@@ -16,7 +16,7 @@ function ComponentRoute() {
   const { doc } = Route.useLoaderData()
   return (
     <>
-      <title>{`${doc.name} · Mayar Card DS v2`}</title>
+      <title>{`${doc.name} · Mayar Card design system`}</title>
       {/* Keyed by slug so the playground state resets between components. */}
       <ComponentPage key={doc.slug} doc={doc} />
     </>

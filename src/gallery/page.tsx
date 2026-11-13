@@ -4,15 +4,18 @@ import { cn } from '@/lib/utils'
 
 import { Toc, type TocItem } from './toc'
 
-/** Page frame: content column plus an "On this page" rail on wide screens. */
+/**
+ * Page frame: one column plus an "On this page" rail on wide screens. The column is 800px for reading;
+ * `wide` lets component pages take up to 880px, so state matrices scroll less.
+ */
 const NO_TOC: TocItem[] = []
 
-export function DocPage({ children, toc = NO_TOC }: { children: ReactNode; toc?: TocItem[] }) {
+export function DocPage({ children, toc = NO_TOC, wide = false }: { children: ReactNode; toc?: TocItem[]; wide?: boolean }) {
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] gap-12 px-5 pt-8 pb-24 md:px-10 md:pt-12">
-      <article className="flex min-w-0 flex-1 flex-col gap-14">{children}</article>
+    <div className="mx-auto flex w-full max-w-[1184px] justify-center gap-14 px-5 pt-10 pb-24 md:px-10 md:pt-14">
+      <article className={cn('flex w-full min-w-0 flex-col gap-12 md:gap-16', wide ? 'max-w-[880px]' : 'max-w-[800px]')}>{children}</article>
       {toc.length > 0 ? (
-        <aside className="sticky top-12 hidden h-fit w-48 shrink-0 xl:block">
+        <aside className="sticky top-28 hidden h-fit w-44 shrink-0 xl:block">
           <Toc items={toc} />
         </aside>
       ) : null}
@@ -20,22 +23,12 @@ export function DocPage({ children, toc = NO_TOC }: { children: ReactNode; toc?:
   )
 }
 
-export function PageHeader({
-  eyebrow,
-  title,
-  description,
-  children,
-}: {
-  eyebrow?: ReactNode
-  title: string
-  description: ReactNode
-  children?: ReactNode
-}) {
+/** The page title and one short lead. Quiet on purpose: the specimen below is the content. */
+export function PageHeader({ title, description, children }: { title: string; description: ReactNode; children?: ReactNode }) {
   return (
-    <header className="flex flex-col gap-3">
-      {eyebrow ? <div className="flex flex-wrap items-center gap-2">{eyebrow}</div> : null}
-      <h1 className="text-display text-ink">{title}</h1>
-      <p className="max-w-[64ch] text-body-lg text-ink-2">{description}</p>
+    <header className="flex flex-col gap-2">
+      <h1 className="text-title-lg text-balance text-ink">{title}</h1>
+      <p className="max-w-[62ch] text-body-lg text-pretty text-ink-2">{description}</p>
       {children}
     </header>
   )
@@ -56,13 +49,13 @@ export function Section({
 }) {
   return (
     <section id={id} aria-labelledby={`${id}-title`} className={cn('flex scroll-mt-20 flex-col gap-4', className)}>
-      <div className="flex flex-col gap-1">
-        <h2 id={`${id}-title`} className="text-title-md text-ink">
+      <div className="flex flex-col gap-1.5">
+        <h2 id={`${id}-title`} className="text-title-md text-balance text-ink">
           <a href={`#${id}`} className="outline-none hover-fine:underline focus-visible:outline-focus">
             {title}
           </a>
         </h2>
-        {description ? <p className="max-w-[70ch] text-body-base text-ink-2">{description}</p> : null}
+        {description ? <p className="max-w-[65ch] text-body-base text-pretty text-ink-2">{description}</p> : null}
       </div>
       {children}
     </section>

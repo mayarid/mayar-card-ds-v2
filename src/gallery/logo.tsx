@@ -8,7 +8,7 @@ export function Logo() {
       </svg>
       <span className="flex flex-col">
         <span className="text-body-sm font-semibold text-ink">Mayar Card</span>
-        <span className="text-caption-sm text-muted">Design System v2</span>
+        <span className="text-caption-sm text-muted">Design system v2</span>
       </span>
     </span>
   )

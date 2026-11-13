@@ -28,7 +28,7 @@ export function Toc({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null
   return (
     <nav aria-label="On this page" className="flex flex-col gap-1">
-      <p className="pb-1 text-overline text-muted uppercase">On this page</p>
+      <p className="pb-1 text-caption-lg font-medium text-muted">On this page</p>
       {items.map((item) => (
         <a
           key={item.id}
@@ -36,7 +36,7 @@ export function Toc({ items }: { items: TocItem[] }) {
           aria-current={active === item.id ? 'location' : undefined}
           className={cn(
             'rounded-sm py-1 text-body-sm text-muted outline-none transition-colors duration-(--motion-quick) hover-fine:text-ink focus-visible:outline-focus',
-            active === item.id && 'font-medium text-ink',
+            active === item.id && 'text-ink',
           )}
         >
           {item.label}

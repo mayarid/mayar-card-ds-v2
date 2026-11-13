@@ -6,34 +6,22 @@ import { cn } from '@/lib/utils'
 
 import { useCopy } from './use-copy'
 
-function CodeOnlyMark() {
-  return (
-    <span
-      title="Not on the Wonder Design System page. It comes from the shipped Mayar Card app."
-      className="ml-1 inline-flex h-4 items-center rounded-sm bg-warning-light px-1 text-[10px] leading-none font-semibold text-warning-text"
-    >
-      code
-    </span>
-  )
-}
-
 function AxisLabel({ item }: { item: MatrixAxisItem }) {
   return (
     <span className="inline-flex items-center text-caption-lg font-medium whitespace-nowrap text-ink-2">
       {item.label}
-      {item.codeOnly ? <CodeOnlyMark /> : null}
     </span>
   )
 }
 
 /**
  * Variant × state grid. Interaction states are forced with `data-force-state`, so every state is
- * visible at once, as on the Wonder boards. Each cell copies its own usage snippet.
+ * visible at once. Each cell copies its own usage snippet.
  */
 export function StateMatrix({ def }: { def: MatrixDef }) {
   const cell = def.cellWidth ?? 128
   return (
-    <div className="overflow-hidden rounded-2xl bg-surface shadow-ring">
+    <div className="overflow-hidden rounded-xl bg-surface shadow-ring">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <caption className="sr-only">{def.title}</caption>
