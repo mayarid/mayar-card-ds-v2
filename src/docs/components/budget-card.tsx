@@ -176,7 +176,7 @@ export const doc: ComponentDoc = {
     { id: 'budget-card/hidden', title: 'Hidden balance', description: 'hidden masks money; percents stay visible.', codeOnly: true },
     { id: 'budget-card/empty', title: 'No budget', description: 'An EmptyState in place of the list.', codeOnly: true },
     { id: 'budget-card/loading', title: 'Loading', codeOnly: true },
-    { id: 'budget-card/error', title: 'Load error', description: 'Wonder Budget Error v2.' },
+    { id: 'budget-card/error', title: 'Load error', description: 'An error when budgets cannot load.' },
   ],
   props: [
     { name: 'BudgetCard hidden', type: 'boolean', default: 'false', description: 'Masks every money figure. A named region (labelled by BudgetCardTitle).' },

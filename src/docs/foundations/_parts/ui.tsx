@@ -10,26 +10,42 @@ import { cn } from '@/lib/utils'
  * `./foundations/*.tsx` glob, so nothing here is read as a page.
  */
 
-/** A mono chip that shows a value and copies it on click. */
-export function CopyChip({ value, className }: { value: string; className?: string }) {
+/** Lets a long token wrap after each hyphen or dot, never in the middle of a word. */
+function breakable(value: string) {
+  const parts = value.split(/(?<=[-.])/)
+  return parts.map((part, i) => (
+    <span key={i}>
+      {part}
+      {i < parts.length - 1 ? <wbr /> : null}
+    </span>
+  ))
+}
+
+/** A mono chip that shows a value and copies it on click. `wrap` lets a long value wrap instead of truncating. */
+export function CopyChip({ value, className, wrap = false }: { value: string; className?: string; wrap?: boolean }) {
   const { copied, copy } = useCopy()
   return (
     <button
       type="button"
       onClick={() => void copy(value)}
       className={cn(
-        'group/chip inline-flex h-6 max-w-full items-center gap-1 rounded-md px-1.5 text-left font-mono text-caption-lg text-ink-2 outline-none',
+        'group/chip inline-flex max-w-full gap-1 rounded-md px-1.5 text-left font-mono text-caption-lg text-ink-2 outline-none',
+        wrap ? 'min-h-6 items-start py-1' : 'h-6 items-center',
         'transition-colors duration-(--motion-quick) hover-fine:bg-state-hover hover-fine:text-ink pressed:bg-state-pressed focus-ring:outline-focus',
         copied && 'text-success-text',
         className,
       )}
     >
       <span className="sr-only">Copy </span>
-      <span className="truncate">{value}</span>
+      {wrap ? <span className="min-w-0 [overflow-wrap:anywhere]">{breakable(value)}</span> : <span className="truncate">{value}</span>}
       <Icon
         icon={copied ? Tick02Icon : Copy01Icon}
         size={12}
-        className={cn('opacity-0 transition-opacity duration-(--motion-quick) group-hover/chip:opacity-100 group-focus-visible/chip:opacity-100', copied && 'opacity-100')}
+        className={cn(
+          'shrink-0 opacity-0 transition-opacity duration-(--motion-quick) group-hover/chip:opacity-100 group-focus-visible/chip:opacity-100',
+          wrap && 'mt-0.5',
+          copied && 'opacity-100',
+        )}
       />
       <span className="sr-only" aria-live="polite">
         {copied ? ', copied' : ''}
@@ -42,8 +58,8 @@ export function CopyChip({ value, className }: { value: string; className?: stri
 export function TokenCopy({ utility, cssVar }: { utility?: string; cssVar: string }) {
   return (
     <div className="flex flex-col items-start gap-0.5">
-      {utility ? <CopyChip value={utility} className="text-ink" /> : null}
-      <CopyChip value={`var(${cssVar})`} />
+      {utility ? <CopyChip wrap value={utility} className="text-ink" /> : null}
+      <CopyChip wrap value={`var(${cssVar})`} />
     </div>
   )
 }
@@ -91,18 +107,13 @@ export function Tag({ tone = 'neutral', children }: { tone?: 'neutral' | 'warnin
   )
 }
 
-/** The "code-only" tag for tokens that are not in Wonder. */
-export function CodeOnly() {
-  return <Tag tone="warning">code-only</Tag>
-}
-
 /**
  * A table on a surface card. Pass the column labels; rows go in `children`.
  * A label that starts with `~` is read by screen readers but not shown (e.g. `~Swatch`).
  */
 export function TokenTable({ label, columns, children, className }: { label: string; columns: string[]; children: ReactNode; className?: string }) {
   return (
-    <div className={cn('overflow-x-auto rounded-2xl bg-surface shadow-ring', className)}>
+    <div className={cn('overflow-x-auto rounded-xl bg-surface shadow-ring', className)}>
       <table className="w-full min-w-[640px] border-collapse text-left">
         <caption className="sr-only">{label}</caption>
         <thead>
@@ -131,8 +142,8 @@ export function Mono({ children, className }: { children: ReactNode; className?:
 export function Rules({ items }: { items: { do: string[]; dont?: string[] } }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <div className="flex flex-col gap-2 rounded-2xl bg-surface p-4 shadow-ring">
-        <p className="text-overline text-success-text uppercase">Do</p>
+      <div className="flex flex-col gap-2 rounded-xl bg-surface p-4 shadow-ring">
+        <p className="text-body-sm font-semibold text-success-text">Do</p>
         <ul className="flex list-disc flex-col gap-1.5 pl-4 text-body-sm text-ink-2 marker:text-success">
           {items.do.map((rule) => (
             <li key={rule}>{rule}</li>
@@ -140,8 +151,8 @@ export function Rules({ items }: { items: { do: string[]; dont?: string[] } }) {
         </ul>
       </div>
       {items.dont?.length ? (
-        <div className="flex flex-col gap-2 rounded-2xl bg-surface p-4 shadow-ring">
-          <p className="text-overline text-danger-text uppercase">Don't</p>
+        <div className="flex flex-col gap-2 rounded-xl bg-surface p-4 shadow-ring">
+          <p className="text-body-sm font-semibold text-danger-text">Don’t</p>
           <ul className="flex list-disc flex-col gap-1.5 pl-4 text-body-sm text-ink-2 marker:text-danger">
             {items.dont.map((rule) => (
               <li key={rule}>{rule}</li>

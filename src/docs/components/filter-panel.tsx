@@ -149,7 +149,7 @@ function triggerCode(props: Record<string, PropValue>) {
 /* Panel matrix */
 
 const PANELS: Array<{ label: string; kinds: SectionKind[]; value?: FilterValues; title?: string; codeOnly?: boolean }> = [
-  { label: 'Transaksi (Wonder)', kinds: ['status', 'type', 'amount', 'source'], value: SPEC_VALUE },
+  { label: 'Transaksi', kinds: ['status', 'type', 'amount', 'source'], value: SPEC_VALUE },
   { label: 'Nothing selected', kinds: ['status', 'type', 'amount'] },
   { label: 'Kartu checklist', kinds: ['card'], value: SPEC_VALUE, codeOnly: true },
   { label: 'Tanggal', kinds: ['date'], value: { date: { from: '2026-10-14', to: TODAY } }, title: 'Tanggal' },

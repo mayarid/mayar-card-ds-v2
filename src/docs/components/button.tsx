@@ -92,6 +92,7 @@ export const doc: ComponentDoc = {
       columns: STATES,
       render,
       code,
+      cellWidth: 104,
     },
     {
       title: 'Sizes × states (Primary)',
@@ -99,6 +100,7 @@ export const doc: ComponentDoc = {
       columns: STATES,
       render,
       code,
+      cellWidth: 104,
     },
     {
       title: 'Options (MD)',

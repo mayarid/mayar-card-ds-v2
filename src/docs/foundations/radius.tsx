@@ -6,24 +6,24 @@ import { Mono, Note, Rules, Tag, TokenCopy, TokenTable } from './_parts/ui'
 
 /* Class names stay literal so Tailwind generates them. */
 const RADII = [
-  { name: 'sm', className: 'rounded-sm', wonder: 'radius/sm', use: 'Checkbox box, tab counts, small tags.' },
-  { name: 'md', className: 'rounded-md', wonder: 'radius/md', use: 'SM tabs pill and trigger.' },
-  { name: 'lg', className: 'rounded-lg', wonder: 'radius/lg', use: 'Input and Select SM/MD, Button SM/MD, MD tabs pill.' },
-  { name: 'xl', className: 'rounded-xl', wonder: 'radius/xl', use: 'Input and Select LG/XL, Button LG, choice card, segmented list.' },
-  { name: '2xl', className: 'rounded-2xl', wonder: 'radius/2xl', use: 'Surface default, toast.' },
-  { name: '3xl', className: 'rounded-3xl', wonder: 'radius/3xl', use: 'Outer card of a nested pair.' },
-  { name: 'card', className: 'rounded-card', wonder: 'r-card (alias radius/3xl)', use: 'Page-level cards. Same value as 3xl.' },
-  { name: 'media', className: 'rounded-media', wonder: 'r-media', use: 'Payment card face, media dialog.' },
-  { name: 'panel', className: 'rounded-panel', wonder: 'r-panel', use: 'Auth brand panel.' },
-  { name: 'pill', className: 'rounded-pill', wonder: 'r-pill', use: 'Every pill and circle: badges, chips, discs, avatars, bar tracks.' },
-  { name: 'btn', className: 'rounded-btn', wonder: 'r-btn (alias radius/2xl)', use: 'Not used by components. See the note below.', unused: true },
+  { name: 'sm', className: 'rounded-sm', use: 'Checkbox box, tab counts, small tags.' },
+  { name: 'md', className: 'rounded-md', use: 'SM tabs pill and trigger.' },
+  { name: 'lg', className: 'rounded-lg', use: 'Input and Select SM/MD, Button SM/MD, MD tabs pill.' },
+  { name: 'xl', className: 'rounded-xl', use: 'Input and Select LG/XL, Button LG, choice card, segmented list.' },
+  { name: '2xl', className: 'rounded-2xl', use: 'Surface default, toast.' },
+  { name: '3xl', className: 'rounded-3xl', use: 'Outer card of a nested pair.' },
+  { name: 'card', className: 'rounded-card', use: 'Page-level cards. Same value as 3xl.' },
+  { name: 'media', className: 'rounded-media', use: 'Payment card face, media dialog.' },
+  { name: 'panel', className: 'rounded-panel', use: 'Auth brand panel.' },
+  { name: 'pill', className: 'rounded-pill', use: 'Every pill and circle: badges, chips, discs, avatars, bar tracks.' },
+  { name: 'btn', className: 'rounded-btn', use: 'Not used by components. See the note below.', unused: true },
 ] as const
 
 function RadiusPage() {
   return (
     <>
-      <Section id="scale" title="Radius scale" description="Values from theme.css. Small controls take small radii; surfaces take larger ones.">
-        <TokenTable label="Radius tokens" columns={['~Specimen', 'Token', 'Value', 'Copy', 'Wonder']}>
+      <Section id="scale" title="Radius scale" description="Small controls take small radii. Surfaces take larger ones.">
+        <TokenTable label="Radius tokens" columns={['~Specimen', 'Token', 'Value', 'Copy']}>
           {RADII.map((r) => (
             <tr key={r.name}>
               <td className="w-20">
@@ -44,15 +44,12 @@ function RadiusPage() {
               <td>
                 <TokenCopy utility={r.className} cssVar={`--radius-${r.name}`} />
               </td>
-              <td>
-                <Mono>{r.wonder}</Mono>
-              </td>
             </tr>
           ))}
         </TokenTable>
         <Note>
-          rounded-btn (12px, Wonder r-btn) is in the theme for parity with Wonder, but the Button specimens use rounded-lg for SM
-          and MD and rounded-xl for LG. No component uses rounded-btn.
+          rounded-btn (12px) is in the theme, but no component uses it. Button uses rounded-lg for SM and MD, and rounded-xl
+          for LG.
         </Note>
       </Section>
 
@@ -86,6 +83,6 @@ export const doc: FoundationDoc = {
   order: 3,
   slug: 'radius',
   name: 'Radius',
-  description: 'Corner radii from Wonder: the sm to 3xl scale plus the card, media, panel and pill roles.',
+  description: 'Corner radii from small controls to page cards, and the pill for every round shape.',
   Page: RadiusPage,
 }

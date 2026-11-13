@@ -85,7 +85,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Tones × shapes (40)',
-      description: 'Every tone as a circle and as a rounded square. Code-only: there is no Wonder specimen.',
+      description: 'Every tone as a circle and as a rounded square.',
       rows: TONES.map((t) => ({ label: cap(t), props: { tone: t }, codeOnly: true })),
       columns: [
         { label: 'Circle', props: { shape: 'circle' } },

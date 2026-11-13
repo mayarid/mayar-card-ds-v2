@@ -134,10 +134,6 @@ function IconsPage() {
             ],
           }}
         />
-        <Note>
-          The Wonder icon library (Design System, Hugeicons) could not be listed for this page. The set above is the full app set; add
-          any Wonder-only icons to <code className="font-mono">_parts/app-icons.ts</code>.
-        </Note>
       </Section>
     </>
   )

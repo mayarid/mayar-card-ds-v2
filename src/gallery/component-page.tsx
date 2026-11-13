@@ -3,7 +3,7 @@ import { installCommand } from '@/site'
 
 import { CodeBlock } from './code-block'
 import { Example } from './example'
-import { DocPage, PageHeader, Pill, Section, SubHeading } from './page'
+import { DocPage, PageHeader, Section, SubHeading } from './page'
 import { Playground } from './playground'
 import { StateMatrix } from './state-matrix'
 import type { TocItem } from './toc'
@@ -13,54 +13,36 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').repla
 
 export function ComponentPage({ doc }: { doc: ComponentDoc }) {
   const toc: TocItem[] = [
-    { id: 'installation', label: 'Installation' },
     ...(doc.playground ? [{ id: 'playground', label: 'Playground' }] : []),
+    { id: 'installation', label: 'Installation' },
     ...(doc.matrices?.length ? [{ id: 'states', label: 'Variants and states' }] : []),
     ...(doc.examples?.length ? [{ id: 'examples', label: 'Examples' }] : []),
     ...(doc.props?.length ? [{ id: 'api', label: 'API' }] : []),
     ...(doc.guidelines ? [{ id: 'guidelines', label: 'Guidelines' }] : []),
-    ...(doc.notes?.length ? [{ id: 'notes', label: 'Wonder vs code' }] : []),
     { id: 'source', label: 'Source' },
   ]
 
   return (
-    <DocPage toc={toc}>
-      <PageHeader
-        title={doc.name}
-        description={doc.description}
-        eyebrow={
-          <>
-            <Pill>{doc.group}</Pill>
-            {doc.spec === 'wonder' ? (
-              <Pill tone="brand">Wonder spec</Pill>
-            ) : (
-              <Pill tone="warning">Code-only · not on the Wonder page yet</Pill>
-            )}
-            {doc.baseUi ? (
-              <a
-                href={doc.baseUi.url}
-                className="rounded-pill text-caption-lg text-muted underline-offset-2 outline-none hover-fine:text-ink hover-fine:underline focus-visible:outline-focus"
-              >
-                Built on Base UI {doc.baseUi.name} ↗
-              </a>
-            ) : null}
-          </>
-        }
-      >
-        {doc.wonderRef ? <p className="text-caption-lg text-muted">Wonder: {doc.wonderRef}</p> : null}
-      </PageHeader>
+    <DocPage toc={toc} wide>
+      <PageHeader title={doc.name} description={doc.description} />
+
+      {doc.playground ? (
+        <Section id="playground" title="Playground" description="Change the props. The code under the preview changes with them.">
+          <Playground def={doc.playground} />
+        </Section>
+      ) : null}
 
       <Section id="installation" title="Installation">
         <ViewTabs
           items={[
-            { value: 'cli', label: 'CLI', content: <CodeBlock code={installCommand(doc.registry)} lang="bash" /> },
+            { value: 'cli', label: 'CLI', content: <CodeBlock bare code={installCommand(doc.registry)} lang="bash" /> },
             {
               value: 'manual',
               label: 'Manual',
               content: (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 p-4">
                   <p className="text-body-sm text-ink-2">
-                    Set up the theme once (see Installation). Then copy the files below into your project.
+                    Set up the theme once. See Installation. Then copy the files below into your project.
                   </p>
                   {doc.source.map((file) => (
                     <CodeBlock key={file.path} title={file.path} code={file.code} maxHeight={360} />
@@ -72,17 +54,11 @@ export function ComponentPage({ doc }: { doc: ComponentDoc }) {
         />
       </Section>
 
-      {doc.playground ? (
-        <Section id="playground" title="Playground" description="Change the props. The code below follows.">
-          <Playground def={doc.playground} />
-        </Section>
-      ) : null}
-
       {doc.matrices?.length ? (
         <Section
           id="states"
           title="Variants and states"
-          description="Each cell is the real component. Hover, pressed, focus and open are forced, so you see all states at once. Hover a cell to copy its code."
+          description="Each cell is the real component. The hover, pressed, focus and open states are forced, so you see all of them at once. Hover a cell to copy its code."
         >
           <div className="flex flex-col gap-8">
             {doc.matrices.map((matrix) => (
@@ -100,14 +76,7 @@ export function ComponentPage({ doc }: { doc: ComponentDoc }) {
           <div className="flex flex-col gap-10">
             {doc.examples.map((example) => (
               <div key={example.id} id={`example-${slugify(example.id)}`} className="flex flex-col gap-3">
-                <SubHeading description={example.description}>
-                  {example.title}
-                  {example.codeOnly ? (
-                    <span className="ml-2 align-middle">
-                      <Pill tone="warning">code-only</Pill>
-                    </span>
-                  ) : null}
-                </SubHeading>
+                <SubHeading description={example.description}>{example.title}</SubHeading>
                 <Example def={example} />
               </div>
             ))}
@@ -117,7 +86,7 @@ export function ComponentPage({ doc }: { doc: ComponentDoc }) {
 
       {doc.props?.length ? (
         <Section id="api" title="API" description="Other props pass through to the rendered element.">
-          <div className="overflow-x-auto rounded-2xl bg-surface shadow-ring">
+          <div className="overflow-x-auto rounded-xl bg-surface shadow-ring">
             <table className="w-full min-w-[640px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-border-subtle bg-canvas text-caption-lg text-muted">
@@ -151,24 +120,26 @@ export function ComponentPage({ doc }: { doc: ComponentDoc }) {
         </Section>
       ) : null}
 
-      {doc.notes?.length ? (
-        <Section
-          id="notes"
-          title="Wonder vs code"
-          description="Where the Wonder page and the shipped app differ. The shipped code wins; Wonder is the visual reference."
-        >
-          <ul className="flex flex-col gap-2 rounded-2xl bg-surface p-5 shadow-ring">
-            {doc.notes.map((note) => (
-              <li key={note} className="flex gap-2.5 text-body-sm text-ink-2">
-                <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-pill bg-primary-300" />
-                {note}
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
-      <Section id="source" title="Source" description="The full component. This is the file the CLI installs.">
+      <Section
+        id="source"
+        title="Source"
+        description={
+          doc.baseUi ? (
+            <>
+              The full component. This is the file the CLI installs. Behaviour comes from{' '}
+              <a
+                href={doc.baseUi.url}
+                className="rounded-sm text-ink underline decoration-border underline-offset-2 outline-none hover-fine:decoration-ink focus-visible:outline-focus"
+              >
+                Base UI {doc.baseUi.name}
+              </a>
+              .
+            </>
+          ) : (
+            'The full component. This is the file the CLI installs.'
+          )
+        }
+      >
         <div className="flex flex-col gap-3">
           {doc.source.map((file) => (
             <CodeBlock key={file.path} title={file.path} code={file.code} maxHeight={560} />
@@ -181,7 +152,7 @@ export function ComponentPage({ doc }: { doc: ComponentDoc }) {
 
 function RuleList({ tone, items }: { tone: 'do' | 'dont'; items: string[] }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-surface p-5 shadow-ring">
+    <div className="flex flex-col gap-3 rounded-xl bg-surface p-5 shadow-ring">
       <p className={tone === 'do' ? 'text-title-sm text-success-text' : 'text-title-sm text-danger-text'}>
         {tone === 'do' ? 'Do' : 'Don’t'}
       </p>

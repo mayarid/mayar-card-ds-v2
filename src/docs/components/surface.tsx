@@ -93,7 +93,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Layouts',
-      description: 'Wonder specimens: Elevated, Container Elevated, Divided and Nested.',
+      description: 'Elevated, container elevated, divided and nested surfaces.',
       rows: [
         { label: 'Elevated', props: { variant: 'container', elevated: true } },
         { label: 'Divided', props: { layout: 'divided', elevated: true } },

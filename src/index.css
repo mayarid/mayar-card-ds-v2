@@ -4,16 +4,34 @@
 
 /* Gallery-only styles. Components never depend on these. */
 
-.preview-dots {
-  background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
-  background-size: 16px 16px;
-  background-position: -8px -8px;
-}
-
 .code-scroll pre {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 20px;
+}
+
+/* Line numbers for multi-line code. Shiki wraps each line in span.line. */
+.code-lines code {
+  counter-reset: line;
+}
+
+.code-lines .line::before {
+  counter-increment: line;
+  content: counter(line);
+  /* Empty alt text, so screen readers skip the number. */
+  content: counter(line) / '';
+  display: inline-block;
+  width: 2.5ch;
+  margin-right: 20px;
+  text-align: right;
+  color: var(--color-placeholder);
+  user-select: none;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 html {

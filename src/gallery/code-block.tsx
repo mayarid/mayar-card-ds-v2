@@ -4,19 +4,25 @@ import { cn } from '@/lib/utils'
 
 import { CopyButton } from './copy-button'
 import { getCachedHighlight, highlight, type CodeLang } from './highlight'
+import { frameClass } from './preview-frame'
 
 interface CodeBlockProps {
   code: string
   lang?: CodeLang
-  /** File name shown in the header bar. */
+  /** File name shown in the header bar. Use it when the file name is the point. */
   title?: string
   className?: string
   /** Caps the height and scrolls. */
   maxHeight?: number
+  /** Leaves out the frame, for code that sits inside another frame. */
+  bare?: boolean
+  /** Shows the copy button. Turn it off when the frame already has one. */
+  copy?: boolean
 }
 
-export function CodeBlock({ code, lang = 'tsx', title, className, maxHeight }: CodeBlockProps) {
+export function CodeBlock({ code, lang = 'tsx', title, className, maxHeight, bare = false, copy = true }: CodeBlockProps) {
   const [html, setHtml] = useState(() => getCachedHighlight(code, lang))
+  const multiline = code.trim().includes('\n')
 
   useEffect(() => {
     let live = true
@@ -29,20 +35,21 @@ export function CodeBlock({ code, lang = 'tsx', title, className, maxHeight }: C
   }, [code, lang])
 
   return (
-    <div
-      data-slot="code-block"
-      className={cn('group/code relative overflow-hidden rounded-2xl bg-surface shadow-ring', className)}
-    >
+    <div data-slot="code-block" className={cn('group/code relative', bare ? 'bg-surface' : frameClass, className)}>
       {title ? (
         <div className="flex h-10 items-center justify-between border-b border-border-subtle pr-1.5 pl-4">
-          <span className="font-mono text-caption-lg text-ink-2">{title}</span>
-          <CopyButton value={code} />
+          <span className="truncate font-mono text-caption-lg text-ink-2">{title}</span>
+          {copy ? <CopyButton value={code} /> : null}
         </div>
-      ) : (
-        <CopyButton value={code} className="absolute top-1.5 right-1.5 z-(--z-raised) bg-surface" />
-      )}
+      ) : copy ? (
+        <CopyButton value={code} className="absolute top-2 right-2 z-(--z-raised) bg-surface" />
+      ) : null}
       <div
-        className="code-scroll overflow-auto py-3 pr-12 pl-4 font-mono text-caption-lg [&_pre]:bg-transparent! [&_pre]:outline-none"
+        className={cn(
+          'code-scroll overflow-auto py-4 pl-4 [&_pre]:bg-transparent! [&_pre]:outline-none',
+          multiline && 'code-lines',
+          copy && !title ? 'pr-14' : 'pr-4',
+        )}
         style={maxHeight ? { maxHeight } : undefined}
         tabIndex={0}
         role="region"

@@ -1,6 +1,7 @@
 import { CreditCardIcon, DashboardSquare01Icon, Menu01Icon } from '@hugeicons/core-free-icons'
 import { useState } from 'react'
 
+import mayarWordmark from '@/assets/brand/mayar-wordmark-compact.svg'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import {
@@ -25,7 +26,7 @@ export default function SidebarMobileDrawer() {
     <div className="flex min-h-[420px] w-full">
       <Sidebar mobileOpen={open} onMobileOpenChange={setOpen} className="h-auto! lg:static!">
         <SidebarHeader>
-          <span className="text-title-md text-primary">mayar</span>
+          <img src={mayarWordmark} alt="Mayar" width={61} height={20} className="h-5 w-auto" />
           <SidebarActions>
             <SidebarCollapseTrigger />
             <SidebarCloseTrigger />

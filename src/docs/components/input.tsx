@@ -129,7 +129,7 @@ export const doc: ComponentDoc = {
       cellWidth: 200,
     },
     {
-      title: 'Danger tone (code-only)',
+      title: 'Danger tone',
       description: 'A danger focus ring for a type-to-confirm field. It is not an error: there is no fill and no aria-invalid.',
       rows: [{ label: 'Danger', props: { tone: 'danger' }, codeOnly: true }],
       columns: [

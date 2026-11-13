@@ -31,7 +31,7 @@ function BarDemo() {
   const labelW = 104
   const barMax = width - labelW - 64
   return (
-    <figure className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-ring">
+    <figure className="flex flex-col gap-4 rounded-xl bg-surface p-5 shadow-ring">
       <figcaption className="flex flex-col gap-0.5">
         <span className="text-title-sm text-ink">Pengeluaran per kategori</span>
         <span className="text-caption-lg text-muted">November 2026 · dalam juta rupiah</span>
@@ -73,7 +73,7 @@ function AreaDemo() {
   const step = w / (points.length - 1)
   const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${i * step},${h - p}`).join(' ')
   return (
-    <figure className="flex flex-col gap-3 rounded-2xl bg-surface p-5 shadow-ring">
+    <figure className="flex flex-col gap-3 rounded-xl bg-surface p-5 shadow-ring">
       <figcaption className="text-caption-lg text-muted">Area: fill at 16% opacity, 1.5px line in the solid colour.</figcaption>
       <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" aria-hidden>
         <path d={`${line} L${w},${h} L0,${h} Z`} fill="var(--color-chart-2)" fillOpacity={0.16} />
@@ -138,7 +138,7 @@ function ChartPalettePage() {
       <Section id="mapping" title="Mapping" description="A category keeps its colour on every chart and table. The order never follows size.">
         <SubHeading description="Names match without case or extra spaces.">Rules for names</SubHeading>
         <ul className="flex list-disc flex-col gap-1.5 pl-5 text-body-sm text-ink-2">
-          <li>Perjalanan (the label in the Wonder frames) is the same slot as Perjalanan Dinas.</li>
+          <li>Perjalanan is the same slot as Perjalanan Dinas.</li>
           <li>Uncategorized (the API label for no category) uses the Lainnya slot, chart-6.</li>
           <li>A name that is not in the table goes to chart-3 or chart-5, chosen by a hash of the name.</li>
           <li>Six series maximum. Group the rest into Lainnya.</li>
@@ -149,7 +149,7 @@ function ChartPalettePage() {
         />
       </Section>
 
-      <Section id="rules" title="Rules" description="From the Wonder Chart Palette Guide and the shipped app.">
+      <Section id="rules" title="Rules" description="Where chart colours go, and where they never go.">
         <Rules
           items={{
             do: ['Use chart colours for series, legends, tooltip swatches and category dots.', 'Area fill: solid colour at 16% + a 1.5px line.', 'Axes, labels and values in ink, ink-2 or muted.'],

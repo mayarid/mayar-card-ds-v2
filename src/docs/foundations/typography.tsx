@@ -3,11 +3,11 @@ import { CodeBlock } from '@/gallery/code-block'
 import { Section, SubHeading } from '@/gallery/page'
 
 import { themeValue } from './_parts/theme'
-import { CopyChip, Mono, Note, Rules, Tag, TokenTable } from './_parts/ui'
+import { CopyChip, Mono, Note, Rules, Tag } from './_parts/ui'
 
 /* Class names stay literal so Tailwind generates them. */
 const SCALE = [
-  { step: 'display', className: 'text-display', sample: 'Rp 12.450.000', use: 'Guide titles, large balance amounts.' },
+  { step: 'display', className: 'text-display', sample: 'Rp 12.450.000', use: 'Large balance amounts and display titles.' },
   { step: 'title-lg', className: 'text-title-lg', sample: 'Kartu Tim', use: 'Page titles.' },
   { step: 'title-md', className: 'text-title-md', sample: 'Bekukan kartu?', use: 'Modal titles, OTP digits.' },
   { step: 'title-sm', className: 'text-title-sm', sample: 'Pengeluaran bulan ini', use: 'Card and panel titles.' },
@@ -37,7 +37,7 @@ function stepValues(step: string) {
 
 function FontCard({ name, family, role, sample, className, tag }: { name: string; family: string; role: string; sample: string; className: string; tag?: string }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-surface p-5 shadow-ring">
+    <div className="flex flex-col gap-3 rounded-xl bg-surface p-5 shadow-ring">
       <div className="flex items-center justify-between gap-2">
         <span className="text-title-sm text-ink">{name}</span>
         {tag ? <Tag tone="warning">{tag}</Tag> : null}
@@ -55,39 +55,25 @@ function TypographyPage() {
       <Section
         id="scale"
         title="Type scale"
-        description="Ten steps. Each text-* class sets size, line height, tracking and, for titles and captions, weight. Values come from theme.css."
+        description="Ten steps. Each text-* class sets the size, line height and tracking. The title and caption steps also set the weight."
       >
-        <TokenTable label="Type scale" columns={['Specimen', 'Size / line', 'Tracking', 'Weight', 'Class']}>
+        <ol className="flex flex-col">
           {SCALE.map((item) => {
             const s = stepValues(item.step)
             return (
-              <tr key={item.step}>
-                <td>
-                  <div className="flex flex-col gap-1">
-                    <span className={`${item.className} text-ink`}>{item.sample}</span>
-                    <span className="text-caption-lg text-muted">
-                      {item.step} · {item.use}
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <Mono>
-                    {s.size} / {s.leading}
+              <li key={item.step} className="flex flex-col gap-3 border-t border-border-subtle py-6 first:border-t-0 first:pt-2">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                  <CopyChip value={item.className} className="-ml-1.5 text-ink" />
+                  <Mono className="text-muted">
+                    {s.size} / {s.leading} · {s.tracking === '0' ? 'tracking 0' : s.tracking} · {s.weight}
                   </Mono>
-                </td>
-                <td>
-                  <Mono>{s.tracking}</Mono>
-                </td>
-                <td>
-                  <Mono>{s.weight}</Mono>
-                </td>
-                <td>
-                  <CopyChip value={item.className} className="text-ink" />
-                </td>
-              </tr>
+                </div>
+                <p className={`${item.className} break-words text-ink`}>{item.sample}</p>
+                <p className="text-body-sm text-ink-2">{item.use}</p>
+              </li>
             )
           })}
-        </TokenTable>
+        </ol>
         <Note>
           Negative tracking starts at title-md. Body steps are 400 by default; add font-medium for labels. The overline step does
           not set uppercase, so add the uppercase class with it.
@@ -97,7 +83,7 @@ function TypographyPage() {
       <Section id="weights" title="Weights" description="Only three weights exist. There is no 700 or 800.">
         <div className="grid gap-3 sm:grid-cols-3">
           {WEIGHTS.map((w) => (
-            <div key={w.name} className="flex flex-col gap-2 rounded-2xl bg-surface p-5 shadow-ring">
+            <div key={w.name} className="flex flex-col gap-2 rounded-xl bg-surface p-5 shadow-ring">
               <span className={`text-title-lg text-ink ${w.className}`}>Aa</span>
               <span className="flex items-center gap-2 text-body-sm text-ink">
                 {w.name} <Mono>{themeValue(`--font-weight-${w.name}`)}</Mono>
@@ -132,7 +118,7 @@ function TypographyPage() {
             { label: 'Proportional', className: '' },
             { label: 'tabular-nums', className: 'tabular-nums' },
           ].map((row) => (
-            <div key={row.label} className="flex flex-col gap-2 rounded-2xl bg-surface p-5 shadow-ring">
+            <div key={row.label} className="flex flex-col gap-2 rounded-xl bg-surface p-5 shadow-ring">
               <span className="text-caption-lg text-muted">{row.label}</span>
               <div className={`flex flex-col items-end text-body-base text-ink ${row.className}`}>
                 <span>Rp 1.111.111</span>
@@ -145,7 +131,7 @@ function TypographyPage() {
         <CodeBlock code={`<span className="text-title-md text-ink tabular-nums">Rp 12.450.000</span>\n<span className="font-mono text-body-base">4291 0820 1337 0042</span>`} />
       </Section>
 
-      <Section id="usage" title="Usage rules" description="From the Wonder Typography Guide and the shipped app.">
+      <Section id="usage" title="Usage rules" description="How the product uses type.">
         <Rules
           items={{
             do: [
@@ -177,6 +163,6 @@ export const doc: FoundationDoc = {
   order: 2,
   slug: 'typography',
   name: 'Typography',
-  description: 'The ten-step type scale, the three weights and the fonts: Plus Jakarta Sans for UI, Paper Mono for card numbers.',
+  description: 'Ten type styles, three weights and two fonts. Plus Jakarta Sans sets the UI. Paper Mono sets card numbers and codes.',
   Page: TypographyPage,
 }

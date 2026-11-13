@@ -125,7 +125,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Parts × value',
-      description: 'Each Field part from the Wonder guide, empty and filled. The error replaces the description.',
+      description: 'Each field part, empty and filled. The error replaces the description.',
       rows: KINDS.map(({ kind, label, codeOnly }) => ({ label, props: { kind }, codeOnly })),
       columns: [{ label: 'Empty' }, { label: 'Filled', props: { filled: true } }],
       render,

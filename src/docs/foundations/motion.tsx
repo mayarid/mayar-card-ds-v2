@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import type { FoundationDoc } from '@/docs/types'
 import { CodeBlock } from '@/gallery/code-block'
-import { Pill, Section } from '@/gallery/page'
+import { Section } from '@/gallery/page'
 
 import { themeSource, themeValue } from './_parts/theme'
 import { CopyChip, Mono, Note, Rules, TokenTable } from './_parts/ui'
@@ -109,10 +109,7 @@ function AnimationDemo({ className, name }: { className: string; name: string })
 function MotionPage() {
   return (
     <>
-      <Note>
-        <Pill tone="warning">code-only</Pill> Wonder has no motion tokens. These come from the shipped app (motion.css). Press a
-        play button to see each token. With reduced motion on, the demos do not move.
-      </Note>
+      <Note>Press a play button to see each token. With reduced motion on, the demos do not move.</Note>
 
       <Section
         id="durations"
@@ -205,7 +202,7 @@ function MotionPage() {
       <Section
         id="reduced-motion"
         title="Reduced motion"
-        description="Under prefers-reduced-motion: reduce, theme.css sets these tokens to 0ms. State still changes at once: colour, opacity and the tick appear with no fade."
+        description="Under prefers-reduced-motion: reduce, the theme sets these tokens to 0ms. State still changes at once: colour, opacity and the tick appear with no fade."
       >
         <div className="flex flex-wrap gap-1.5">
           {REDUCED.map((name) => (
@@ -243,6 +240,6 @@ export const doc: FoundationDoc = {
   order: 5,
   slug: 'motion',
   name: 'Motion',
-  description: 'Code-only durations, easings and keyframes from the shipped app, with live demos and the reduced-motion rules.',
+  description: 'Durations and easings, with live demos. Under reduced motion, nothing moves, but the state still changes.',
   Page: MotionPage,
 }

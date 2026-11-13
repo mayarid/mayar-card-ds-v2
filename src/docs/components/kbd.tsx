@@ -34,7 +34,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Keys × states',
-      description: 'The four keys of the Wonder row. Disabled is the in-input hint of a disabled field.',
+      description: 'Four keys and their disabled state. A disabled field uses the disabled key hint.',
       rows: [{ label: 'Default' }, { label: 'Disabled', props: { disabled: true } }],
       columns: KEYS.map((k) => ({ label: k, props: { children: k } })),
       render,
@@ -43,7 +43,7 @@ export const doc: ComponentDoc = {
     },
   ],
   examples: [
-    { id: 'kbd/shortcuts', title: 'Shortcuts', description: 'The keys from the Wonder row.' },
+    { id: 'kbd/shortcuts', title: 'Shortcuts', description: 'Keys for common shortcuts.' },
     { id: 'kbd/in-text', title: 'In text', description: 'A hint inside a sentence.' },
     { id: 'input/search', title: 'In an input', description: 'Pass it as the trailing content of Input, with aria-hidden.' },
   ],

@@ -6,8 +6,9 @@ A gallery of the Mayar Card v2 design system: foundations, components, every var
 
 - **Foundations** — colour, typography, radius, elevation, motion, icons, chart palette, layout.
 - **Components** — React 19 + TypeScript, styled with Tailwind v4, behaviour from [Base UI](https://base-ui.com).
-- **Every state** — each component page has a live playground and a variant × state grid. Hover, pressed, focus and open are forced, so you see them all at once, as on the Wonder boards.
-- **Copy the code** — copy a usage snippet from any cell or example, the full source from the Source tab, or install with the shadcn CLI.
+- **Every state** — each component page has a live playground and a variant × state grid. Hover, pressed, focus and open are forced, so you see them all at once.
+- **Copy the code** — copy a usage snippet from any cell or example, the full source from the Source section, or install with the shadcn CLI.
+- **Search** — press Ctrl K (⌘K on a Mac) to go to any page. The sidebar also has a filter.
 
 ## Use a component in your app
 
@@ -31,11 +32,16 @@ See the Installation page for fonts and manual setup.
 ## Sources of truth
 
 1. The shipped Mayar Card app (v2 design). Its code is final and sets the values.
-2. The Wonder file **Mayar Card Dashboard** — the visual reference. Parts with no Wonder specimen are marked **code-only**.
+2. The Wonder file **Mayar Card Dashboard** — the visual reference. Parts with no Wonder specimen are **code-only**.
 
-Where the two differ, the code wins, and the component page lists the difference under "Wonder vs code".
+Where the two differ, the code wins. The gallery does not show provenance. [CONTRIBUTING.md](CONTRIBUTING.md) lists what is
+code-only and every difference between Wonder and the code.
 
 Light theme only.
+
+## Brand files
+
+The Mayar Card app icon and the Mayar logos are in `src/assets/brand/`. The favicons are in `public/`.
 
 ## Develop
 

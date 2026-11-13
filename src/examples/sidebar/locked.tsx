@@ -6,6 +6,7 @@ import {
   UserGroupIcon,
 } from '@hugeicons/core-free-icons'
 
+import mayarWordmark from '@/assets/brand/mayar-wordmark-compact.svg'
 import { Icon } from '@/components/ui/icon'
 import {
   Sidebar,
@@ -36,7 +37,7 @@ export default function SidebarLocked() {
     <div className="flex h-[600px] overflow-hidden rounded-card border border-border-subtle">
       <Sidebar layout="static">
         <SidebarHeader>
-          <span className="text-title-md text-primary">mayar</span>
+          <img src={mayarWordmark} alt="Mayar" width={61} height={20} className="h-5 w-auto" />
         </SidebarHeader>
         <SidebarNav>
           <SidebarGroup>
