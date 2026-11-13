@@ -11,6 +11,13 @@ export const Route = createFileRoute('/')({ component: Overview })
 const linkText =
   'rounded-sm text-ink outline-none underline decoration-border underline-offset-[3px] transition-colors duration-(--motion-quick) hover-fine:decoration-ink focus-visible:outline-focus'
 
+/** The first sentence of a description, up to its first colon. The component page has the rest. */
+function summary(description: string) {
+  const sentence = description.match(/^.+?[.!?](?=\s|$)/)?.[0] ?? description
+  const colon = sentence.indexOf(': ')
+  return colon > 0 ? `${sentence.slice(0, colon)}.` : sentence
+}
+
 function Overview() {
   return (
     <DocPage>
@@ -61,24 +68,24 @@ function Overview() {
         <h2 id="components-title" className="text-title-md text-ink">
           Components
         </h2>
-        <div className="flex flex-col gap-8">
+        <div className="gap-x-10 md:columns-2">
           {componentsByGroup().map(({ group, items }) => (
-            <div key={group} className="grid gap-x-8 gap-y-2 md:grid-cols-[140px_minmax(0,1fr)]">
-              <h3 id={`group-${group}`} className="pt-3 text-body-sm font-medium text-muted">
+            <div key={group} className="mb-8 flex break-inside-avoid flex-col gap-1">
+              <h3 id={`group-${group}`} className="pb-1 text-body-sm font-medium text-muted">
                 {group}
               </h3>
               <ul aria-labelledby={`group-${group}`} className="flex flex-col">
                 {items.map((doc) => (
-                  <li key={doc.slug} className="border-t border-border-subtle first:border-t-0 md:first:border-t">
+                  <li key={doc.slug}>
                     <Link
                       to="/components/$slug"
                       params={{ slug: doc.slug }}
-                      className="group -mx-2 flex flex-col gap-0.5 rounded-lg px-2 py-3 outline-none focus-visible:outline-focus"
+                      className="group -mx-2 flex flex-col rounded-lg px-2 py-1.5 outline-none focus-visible:outline-focus pointer-coarse:py-2.5"
                     >
                       <span className="text-body-base font-medium text-ink underline decoration-transparent underline-offset-[3px] transition-colors duration-(--motion-quick) group-hover:decoration-border">
                         {doc.name}
                       </span>
-                      <span className="text-body-sm text-pretty text-ink-2">{doc.description}</span>
+                      <span className="text-body-sm text-pretty text-ink-2">{summary(doc.description)}</span>
                     </Link>
                   </li>
                 ))}

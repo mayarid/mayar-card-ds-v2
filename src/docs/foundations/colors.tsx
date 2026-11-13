@@ -168,7 +168,7 @@ function ColorCard({ token }: { token: ColorToken }) {
     <li className="flex min-w-0 flex-col gap-2">
       <Swatch color={`var(${cssVar})`} size="lg" className="h-20" />
       <div className="flex items-baseline justify-between gap-2 px-0.5">
-        <span className="truncate text-body-sm font-medium text-ink">{token.name}</span>
+        <span className="min-w-0 text-body-sm font-medium text-ink [overflow-wrap:anywhere]">{token.name}</span>
         <Mono className="shrink-0 text-muted">{value}</Mono>
       </div>
       <p className="px-0.5 text-caption-lg text-ink-2">{token.use}</p>
