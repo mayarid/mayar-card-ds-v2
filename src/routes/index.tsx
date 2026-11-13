@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { componentsByGroup, foundationList } from '@/docs'
 import { FoundationVisual } from '@/gallery/foundation-tile'
+import { ByMayar } from '@/gallery/logo'
 import { DocPage } from '@/gallery/page'
 import { REPO_URL } from '@/site'
 
@@ -23,7 +24,10 @@ function Overview() {
     <DocPage>
       <title>Mayar Card design system</title>
       <header className="flex flex-col gap-3">
-        <h1 className="text-title-lg text-ink">Mayar Card design system</h1>
+        <div className="flex flex-col items-start gap-1">
+          <h1 className="text-title-lg text-ink">Mayar Card design system</h1>
+          <ByMayar />
+        </div>
         <div className="flex max-w-[62ch] flex-col gap-3 text-body-lg text-pretty text-ink-2">
           <p>
             The foundations and React components behind Mayar Card. Each page shows the live component, its variants and

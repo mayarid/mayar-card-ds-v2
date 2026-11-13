@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { Kbd } from '@/components/ui/kbd'
 import { CommandPalette, useModKey, usePaletteShortcut } from '@/gallery/command-palette'
-import { Logo } from '@/gallery/logo'
+import { Logo, SiteFooter } from '@/gallery/logo'
 import { SidebarNav } from '@/gallery/sidebar'
 import { REPO_URL } from '@/site'
 
@@ -131,6 +131,7 @@ function RootLayout() {
 
         <main id="main" ref={main} tabIndex={-1} className="min-w-0 flex-1 outline-none">
           <Outlet />
+          <SiteFooter repoUrl={REPO_URL} />
         </main>
       </div>
 
