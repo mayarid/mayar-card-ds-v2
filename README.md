@@ -8,6 +8,7 @@ A gallery of the Mayar Card v2 design system: foundations, components, every var
 - **Components** — React 19 + TypeScript, styled with Tailwind v4, behaviour from [Base UI](https://base-ui.com).
 - **Every state** — each component page has a live playground and a variant × state grid. Hover, pressed, focus and open are forced, so you see them all at once.
 - **Copy the code** — copy a usage snippet from any cell or example, the full source from the Source section, or install with the shadcn CLI.
+- **Search** — press Ctrl K (⌘K on a Mac) to go to any page. The sidebar also has a filter.
 
 ## Use a component in your app
 
@@ -37,6 +38,10 @@ Where the two differ, the code wins. The gallery does not show provenance. [CONT
 code-only and every difference between Wonder and the code.
 
 Light theme only.
+
+## Brand files
+
+The Mayar Card app icon and the Mayar logos are in `src/assets/brand/`. The favicons are in `public/`.
 
 ## Develop
 
