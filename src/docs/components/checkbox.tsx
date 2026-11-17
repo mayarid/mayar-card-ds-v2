@@ -140,7 +140,8 @@ export const doc: ComponentDoc = {
   },
   notes: [
     'The shipped app (Checkbox.svelte) is the source of truth; Wonder is the visual reference. Where they differ, the app wins.',
-    'The box shadow is a 1px ring plus a 1px drop (no ambient layer), as in the app, so it is not shadow-control.',
+    'Audit (17 Nov 2026): the unchecked box has a 1.5px muted inset ring (3:1), the same as the tile variant. The shipped app uses a faint 1px ring plus a 1px drop.',
+    'Audit (17 Nov 2026): a press scales the tile variant to 0.99. The shipped app has no press scale.',
     'The tick uses pathLength="1" for the stroke-dashoffset draw, so the app\'s getTotalLength() measure is not necessary.',
     'The app gates the draw behind an "is-init" class. Here a CSS transition does not run on first paint, so a checked box mounts drawn without a gate.',
     'The tile variant comes from the app (KYC revision grid) and is not on the Wonder page. Its focus outline sits 2px outside the tile, as in the app.',

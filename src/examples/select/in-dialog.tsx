@@ -15,7 +15,7 @@ export default function SelectInDialog() {
     <Dialog.Root>
       <Dialog.Trigger render={<Button variant="secondary" />}>Ubah batas</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-(--z-modal) bg-overlay" />
+        <Dialog.Backdrop className="fixed inset-0 z-(--z-modal) bg-overlay backdrop-blur-[2px]" />
         <Dialog.Popup className="fixed top-1/2 left-1/2 z-(--z-modal) flex w-80 -translate-1/2 flex-col gap-4 rounded-2xl bg-surface p-5 shadow-popover">
           <Dialog.Title className="text-title-sm text-ink">Ubah batas</Dialog.Title>
           <Select items={periods} value={period} onValueChange={setPeriod}>

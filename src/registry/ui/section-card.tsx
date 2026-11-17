@@ -50,7 +50,7 @@ function SectionCardHeader({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="section-card-header"
       className={cn(
-        'flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border-subtle px-5',
+        'flex h-14 shrink-0 items-center justify-between gap-4 border-b-[0.5px] border-border-subtle px-5',
         className,
       )}
       {...props}

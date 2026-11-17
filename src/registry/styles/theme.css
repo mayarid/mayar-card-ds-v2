@@ -85,19 +85,21 @@
   --color-canvas: #fafafa;
   --color-sunken: #f2f2f2;
   --color-well: #f4f5f9;
+  --color-well-hover: #eceef4; /* audit: hover on a field well */
   --color-card: #0c111e06;
   --color-container: #0c111e14; /* code-only */
   --color-surface-strong: #14171f; /* code-only (same value as Wonder dark/surface) */
   --color-component: #0c111e0f;
   --color-component-hover: #0c111e17;
   --color-component-active: #0c111e1f;
-  --color-overlay: #0e0f1a66;
+  --color-overlay: #0e0f1a4d; /* audit: 30% (Wonder 40%), used with a 2px backdrop blur */
 
   /* Borders and focus */
   --color-border: #e8e8ec;
   --color-border-subtle: #0c111e14;
-  --color-border-focus: #253ce2a1;
-  --color-focus-ring: #253ce2a1;
+  /* audit: solid primary (Wonder #253ce2a1 is 3.3:1 on white, under 3:1 on sunken) */
+  --color-border-focus: #253ce2;
+  --color-focus-ring: #253ce2;
 
   /* Interaction washes */
   --color-state-hover: #0c111e0a;
@@ -130,7 +132,7 @@
   --color-pink-text: #b0125b;
 
   /* Controls */
-  --color-switch-off: #d4d6dd;
+  --color-switch-off: #878c99; /* audit: 3.36:1 on white (Wonder #d4d6dd is 1.45:1) */
   --color-highlight-inset: #ffffff2e;
 
   /* Shadow colours (used inside the shadow composites below) */
@@ -274,6 +276,8 @@
   --shadow-combobox: 0 0 0 1px var(--color-shadow-ring), 0 12px 32px -8px var(--color-shadow-drop),
     0 4px 8px -2px var(--color-shadow-ambient);
   --shadow-ring: 0 0 0 1px var(--color-shadow-ring);
+  /* audit: 2px focus ring on a field (a box-shadow, so the field does not move) */
+  --shadow-focus: 0 0 0 2px var(--color-border-focus);
   --inset-shadow-highlight: inset 0 1px 0 var(--color-highlight-inset);
 
   /* Layout — Wonder container (1280px, renamed to avoid the colour clash) and gutter */
@@ -302,7 +306,8 @@
   }
   @keyframes dialog-in {
     from {
-      transform: scale(var(--motion-dialog-scale));
+      transform: translateY(var(--motion-dialog-rise));
+      filter: blur(var(--motion-dialog-blur));
       opacity: 0;
     }
   }
@@ -317,9 +322,10 @@
       opacity: 0;
     }
   }
+  /* audit: bars fade in, they never grow from 0 */
   @keyframes bar-fill {
     from {
-      transform: scaleX(0);
+      opacity: 0;
     }
   }
   @keyframes state-swap {
@@ -369,9 +375,9 @@
 
   --motion-switch: 350ms;
   --motion-check-box: 150ms;
-  --motion-check-draw: 350ms;
-  --motion-dropdown-open: 250ms;
-  --motion-dropdown-close: 150ms;
+  --motion-check-draw: 200ms; /* audit: 350ms is long for a frequent control */
+  --motion-dropdown-open: 150ms; /* audit: menus in 150ms, out 120ms */
+  --motion-dropdown-close: 120ms;
   --motion-dropdown-pre-scale: 0.97;
   --motion-tabs: 250ms;
   --motion-choice-pop: 200ms;
@@ -381,10 +387,16 @@
   --motion-toast-scale: 0.97;
   --motion-toast-blur: 2px;
   --motion-toast-spin: 1s;
-  --motion-dialog-open: 200ms;
+  /* audit: modal in 240ms (16px rise, 4px blur, fade), out 200ms; the drawer slides its full width */
+  --motion-dialog-open: 240ms;
+  --motion-dialog-close: 200ms;
   --motion-dialog-scale: 0.96;
-  --motion-drawer-x: 24px;
-  --motion-bar-fill: 200ms;
+  --motion-dialog-rise: 16px;
+  --motion-dialog-blur: 4px;
+  --motion-drawer-x: 100%;
+  --motion-sheet-open: 320ms;
+  --motion-sheet-close: 200ms;
+  --motion-bar-fill: 150ms;
   --motion-state-swap: 150ms;
   --motion-state-swap-y: 4px;
   --motion-state-swap-blur: 2px;
@@ -402,22 +414,41 @@
   --z-toast: 300;
 }
 
+/*
+ * Reduced motion: travel, scale and blur go to neutral, and overlays keep a short crossfade
+ * (150ms), so a change is still visible. Small controls change at once.
+ */
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --motion-micro: 0ms;
     --motion-quick: 0ms;
     --motion-fast: 0ms;
+    --motion-medium: 0ms;
     --motion-switch: 0ms;
     --motion-check-box: 0ms;
     --motion-check-draw: 0ms;
-    --motion-dropdown-open: 0ms;
-    --motion-dropdown-close: 0ms;
     --motion-tabs: 0ms;
     --motion-choice-pop: 0ms;
-    --motion-dialog-open: 0ms;
     --motion-bar-fill: 0ms;
-    --motion-state-swap: 0ms;
-    --motion-toast-open: 0ms;
-    --motion-toast-close: 0ms;
+
+    --motion-dropdown-open: 150ms;
+    --motion-dropdown-close: 150ms;
+    --motion-dropdown-pre-scale: 1;
+    --motion-dialog-open: 150ms;
+    --motion-dialog-close: 150ms;
+    --motion-dialog-scale: 1;
+    --motion-dialog-rise: 0px;
+    --motion-dialog-blur: 0px;
+    --motion-drawer-x: 0px;
+    --motion-sheet-open: 150ms;
+    --motion-sheet-close: 150ms;
+    --motion-state-swap: 150ms;
+    --motion-state-swap-y: 0px;
+    --motion-state-swap-blur: 0px;
+    --motion-toast-open: 150ms;
+    --motion-toast-close: 150ms;
+    --motion-toast-distance: 0px;
+    --motion-toast-scale: 1;
     --motion-toast-blur: 0px;
   }
 }
@@ -469,10 +500,10 @@
 
 /* ── Utilities ───────────────────────────────────────────────────────────── */
 
-/* Focus outline — Wonder border-focus, 1px, 1px offset. */
+/* Focus outline — 2px solid border-focus, 2px offset (audit: Wonder 1px at 63% alpha is under 3:1). */
 @utility outline-focus {
-  outline: 1px solid var(--color-border-focus);
-  outline-offset: 1px;
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
 }
 
 /* A hit area of at least 44×44 without a change to the visible box. Needs `relative`. */

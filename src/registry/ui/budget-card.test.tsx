@@ -27,7 +27,7 @@ function Card({ hidden = false }: { hidden?: boolean }) {
       </BudgetCardHeader>
       <BudgetCardList>
         <BudgetCardItem category="Pemasaran" spent={6_300_000} amount={6_000_000} />
-        <BudgetCardItem category="Operasional" spent={1_200_000} amount={4_000_000} index={1} />
+        <BudgetCardItem category="Operasional" spent={1_200_000} amount={4_000_000} />
       </BudgetCardList>
       <BudgetCardFooter>
         <span>Total sisa</span>

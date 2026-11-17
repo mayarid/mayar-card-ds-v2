@@ -116,8 +116,36 @@ describe('BalanceCard', () => {
         <BalanceCardValue value={62} suffix="%" money={false} />
       </BalanceCard>,
     )
-    expect(screen.getByText('—')).toBeTruthy()
+    const dash = screen.getByText('–')
+    expect(dash.className).toContain('text-muted')
     expect(screen.getAllByText('62%').length).toBeGreaterThan(0)
+  })
+
+  it('a figure over 6 digits prints compact, with the full value in title and for screen readers', () => {
+    const { container } = render(
+      <BalanceCard>
+        <BalanceCardValue value={48250000} />
+        <BalanceCardValue value={850000} data-testid="small" />
+      </BalanceCard>,
+    )
+    const compact = container.querySelector('[data-compact]') as HTMLElement
+    expect(compact.getAttribute('title')).toBe('Rp 48.250.000')
+    expect(compact.querySelector('.sr-only')?.textContent).toBe('Rp 48.250.000')
+    expect(compact.querySelector('[aria-hidden="true"]')?.textContent).toContain('48,3')
+    expect(compact.className).toContain('tabular-nums')
+    expect(screen.getByTestId('small').textContent).toBe('Rp 850.000')
+  })
+
+  it('the error can offer a retry button', async () => {
+    const onRetry = vi.fn()
+    render(
+      <BalanceCard>
+        <BalanceCardError onRetry={onRetry}>Gagal memuat saldo QRIS.</BalanceCardError>
+      </BalanceCard>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Coba lagi' }))
+    expect(onRetry).toHaveBeenCalledOnce()
+    expect(screen.getByRole('alert').textContent).not.toContain('Coba lagi')
   })
 
   it('delta speaks its direction; the error is an alert', () => {

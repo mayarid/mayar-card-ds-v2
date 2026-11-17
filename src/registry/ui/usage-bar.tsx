@@ -6,31 +6,30 @@ import { cn } from '@/lib/utils'
 /*
  * Mayar v2 UsageBar. Code-only: no specimen on the Wonder Design System page.
  * Source: the shipped app (foundations/UsageBar.svelte, lib/usage-tone.ts).
- * One blue ramp: the fill gets darker as usage grows and turns red at 100% or more.
- * Height 6 (default) or 8. Track component (default) or well. The fill grows from the left once.
- * `warning` (theme warning fill) is a port extra for a near-limit quota; the ramp never picks it.
+ * Height 6 (default) or 8. Track component (default) or well. The fill fades in once.
+ * Audit (17 Nov 2026): three flat tones in place of the app's blue intensity ramp: `fill`
+ * (bg-primary) below the near threshold, `warning` (bg-warning) from 85% used, `over` (bg-danger)
+ * at 100% or more.
  */
 
-type UsageTone = 'none' | 'p1' | 'p2' | 'p3' | 'p4' | 'over' | 'warning'
+type UsageTone = 'none' | 'fill' | 'warning' | 'over'
 
-/** The ramp bucket for a usage percent (`null` = nothing to measure). */
-function getUsageTone(percent: number | null): UsageTone {
+/** The share of a limit (in %) at which the bar turns to the warning tone. */
+const USAGE_NEAR_PERCENT = 85
+
+/** The tone for a usage percent (`null` = nothing to measure). `near` sets the warning threshold. */
+function getUsageTone(percent: number | null, near: number = USAGE_NEAR_PERCENT): UsageTone {
   if (percent === null || !Number.isFinite(percent)) return 'none'
   if (percent >= 100) return 'over'
-  if (percent >= 90) return 'p4'
-  if (percent >= 75) return 'p3'
-  if (percent >= 50) return 'p2'
-  return 'p1'
+  if (percent >= near) return 'warning'
+  return 'fill'
 }
 
 const toneClass: Record<UsageTone, string> = {
   none: 'bg-component',
-  p1: 'bg-[color-mix(in_oklch,var(--color-primary)_45%,var(--color-surface))]',
-  p2: 'bg-[color-mix(in_oklch,var(--color-primary)_65%,var(--color-surface))]',
-  p3: 'bg-[color-mix(in_oklch,var(--color-primary)_82%,var(--color-surface))]',
-  p4: 'bg-primary',
-  over: 'bg-danger',
+  fill: 'bg-primary',
   warning: 'bg-warning',
+  over: 'bg-danger',
 }
 
 interface UsageBarContextValue {
@@ -49,8 +48,8 @@ const UsageBarContext = createContext<UsageBarContextValue>({
 
 interface UsageBarProps extends Omit<Meter.Root.Props, 'color'> {
   /**
-   * Ramp bucket override. Default: from the percent (`p4` = flat primary, `over` = danger).
-   * `warning` paints the theme warning fill for a near-limit quota; set it yourself, the ramp never does.
+   * Tone override. Default: from the percent (`fill` = primary, `warning` from 85%, `over` = danger
+   * from 100%).
    */
   tone?: UsageTone
   /** Fill colour override, e.g. `var(--color-chart-3)` for a share bar. Wins over `tone`. */
@@ -130,7 +129,7 @@ function UsageBarTrack({ className, ...props }: Meter.Track.Props) {
         <Meter.Indicator
           data-slot="usage-bar-fill"
           className={cn(
-            'block h-full origin-left rounded-pill animate-bar-fill [animation-delay:var(--bar-delay,0ms)]',
+            'block h-full rounded-pill animate-bar-fill',
             color === undefined && toneClass[tone],
           )}
           style={color === undefined ? undefined : { background: color }}
@@ -140,11 +139,12 @@ function UsageBarTrack({ className, ...props }: Meter.Track.Props) {
   )
 }
 
-/** The label. It names the meter for assistive tech. */
+/** The label. It names the meter for assistive tech. A plain-text label is also its own `title`. */
 function UsageBarLabel({ className, ...props }: Meter.Label.Props) {
   return (
     <Meter.Label
       data-slot="usage-bar-label"
+      title={typeof props.children === 'string' ? props.children : undefined}
       {...props}
       className={(state) =>
         cn('min-w-0 truncate text-body-sm text-ink-2', typeof className === 'function' ? className(state) : className)
@@ -169,4 +169,4 @@ function UsageBarValue({ className, ...props }: Meter.Value.Props) {
   )
 }
 
-export { getUsageTone, UsageBar, UsageBarLabel, UsageBarTrack, UsageBarValue, type UsageBarProps, type UsageTone }
+export { getUsageTone, USAGE_NEAR_PERCENT, UsageBar, UsageBarLabel, UsageBarTrack, UsageBarValue, type UsageBarProps, type UsageTone }

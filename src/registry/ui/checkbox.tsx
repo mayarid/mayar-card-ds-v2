@@ -6,15 +6,16 @@ import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 Checkbox. Wonder "Mayar Forms Inputs Guide" › Checkbox.
- * 16px box, radius sm (4px). Unchecked: surface + 1px ring. Checked / indeterminate: primary +
+ * 16px box, radius sm (4px). Unchecked: surface + 1.5px muted inset ring. Checked / indeterminate: primary +
  * inset highlight. The tick draws with stroke-dashoffset (--motion-check-draw) and erases with
  * --motion-check-box. A CSS transition never runs on first paint, so a checked box mounts drawn.
- * Variant "tile" (code-only, KYC document grid): box + label in a 36px bordered tile.
+ * Variant "tile" (code-only, KYC document grid): box + label in a 36px bordered tile; a press scales it to 0.99.
  */
 const checkboxVariants = cva(
   [
     'inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-sm outline-none',
-    'bg-surface text-on-primary shadow-[0_0_0_1px_var(--color-shadow-ring),0_1px_1px_-1px_var(--color-shadow-drop)]',
+    // Unchecked: a 1.5px muted ring, so the box stands out from the page at 3:1.
+    'bg-surface text-on-primary shadow-[inset_0_0_0_1.5px_var(--color-muted)]',
     'transition-[background-color,box-shadow] duration-(--motion-check-box) ease-smooth-out',
     'focus-ring:outline-focus',
     'data-checked:bg-primary data-checked:shadow-none data-checked:inset-shadow-highlight',
@@ -38,13 +39,12 @@ const checkboxRowVariants = cva(
         tile: [
           'flex min-h-9 min-w-0 items-center gap-2 rounded-lg bg-surface px-3 py-2',
           'inset-ring inset-ring-border-subtle',
-          'transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
+          'transition-[background-color,box-shadow,scale] duration-(--motion-quick) ease-smooth-out',
+          'pressed:scale-[0.99] has-[[data-slot=checkbox][data-force-state~=pressed]]:scale-[0.99]',
           // 44px hit area around the 36px tile.
           'before:absolute before:inset-x-0 before:-inset-y-1',
           'has-data-checked:bg-primary-tint has-data-checked:inset-ring-[1.5px] has-data-checked:inset-ring-primary',
           'hover-fine:not-has-data-checked:inset-ring-border has-[[data-slot=checkbox][data-force-state~=hover]]:not-has-data-checked:inset-ring-border',
-          // The unchecked box stands out from the tile at 3:1: a muted ring.
-          '[&_[data-slot=checkbox]:not([data-checked],[data-indeterminate],[data-disabled])]:shadow-[inset_0_0_0_1.5px_var(--color-muted)]',
           // The focus outline goes round the tile (2px offset, as in the app), not the box.
           '[&_[data-slot=checkbox]]:outline-none!',
           'has-[[data-slot=checkbox]:focus-visible]:outline-focus has-[[data-slot=checkbox][data-force-state~=focus]]:outline-focus',

@@ -170,9 +170,12 @@ export const doc: ComponentDoc = {
   notes: [
     'Source of truth: the shipped app. Wonder is the visual reference; where they differ, this port follows the app.',
     'Chip: the app Tim header uses <Badge variant="brand" size="md">Paket {tier}</Badge> for every tier, also Free. PlanBadgeChip matches it. The suspended (warning, "berakhir") chip is not in the app; it stays opt-in.',
-    'Row: the app has no row badge (its sidebar footer shows the Plan Quota card), so the row follows the Wonder specimen and paints it with the app tokens of the quota card: the tier in primary, the quota line in muted, and a lapsed plan in semibold warning-text. Wonder shows a #eef1ff disc, #2d3dec ink and #b47908 for the lapsed line.',
+    'Row: the app has no row badge (its sidebar footer shows the Plan Quota card), so the row follows the Wonder specimen and paints it with the app tokens of the quota card: the tier in primary, the quota line in muted, and a lapsed plan in warning-text. Wonder shows a #eef1ff disc, #2d3dec ink and #b47908 for the lapsed line.',
     'The disc is the 28px primary IconDisc (16px glyph). Wonder draws a 15px glyph.',
     'The quota line comes from getPlanQuota in plan-quota.tsx, so the badge and the quota card always say the same thing ("7 terpakai · 3 tersedia", "Paket berakhir").',
     'The "Row as link" focus state and the "With usage" line are code-only.',
+    'Audit (17 Nov 2026): the rail badge shows the tier and quota in a Base UI tooltip (the same style as the Sidebar rail tooltips) on hover and keyboard focus, in place of a title attribute; the text also stays as screen-reader text. Wonder and the app have no rail tooltip for it.',
+    'Audit (17 Nov 2026): the lapsed quota line ("Paket berakhir") is warning-text at the regular weight; colour carries the state. The app tokens of the quota card set it semibold.',
+    'Audit (17 Nov 2026): the tier and quota lines of the row keep their full text in title, so a cut line can still be read.',
   ],
 }

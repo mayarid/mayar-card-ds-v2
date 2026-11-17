@@ -213,7 +213,7 @@ function LayoutPage() {
       </Section>
 
       <Section id="utilities" title="Utilities" description="Two theme utilities for focus and touch.">
-        <SubHeading description="1px solid border-focus, 1px offset. Put it behind focus-ring:.">outline-focus</SubHeading>
+        <SubHeading description="2px solid border-focus, 2px offset. Put it behind focus-ring:. Fields use shadow-focus instead.">outline-focus</SubHeading>
         <div className="flex flex-wrap items-center gap-4 rounded-xl bg-surface p-5 shadow-ring">
           <span className="flex h-8 items-center rounded-lg bg-surface px-3 text-body-sm text-ink shadow-control outline-focus">Fokus</span>
           <CopyChip value="focus-ring:outline-focus" className="text-ink" />

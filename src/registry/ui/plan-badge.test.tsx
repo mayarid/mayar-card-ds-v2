@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import { expectNoAxeViolations } from '@/test/axe'
@@ -28,11 +29,23 @@ describe('PlanBadge', () => {
     expect(screen.getByTestId('b').textContent).toBe('Paket Free')
   })
 
-  it('rail keeps the text for assistive tech and as a title', () => {
+  it('rail keeps the text for assistive tech and shows it in a tooltip on hover', async () => {
     render(<PlanBadge tier="starter" max={2} layout="rail" data-testid="b" />)
     const badge = screen.getByTestId('b')
-    expect(badge.getAttribute('title')).toBe('Paket Starter · 2 kartu')
+    expect(badge.getAttribute('title')).toBeNull()
     expect(badge.querySelector('.sr-only')?.textContent).toBe('Paket Starter · 2 kartu')
+    await userEvent.hover(badge)
+    const tooltip = await screen.findByText('Paket Starter · 2 kartu', { selector: '[data-slot="plan-badge-tooltip"]' })
+    expect(tooltip).toBeTruthy()
+  })
+
+  it('a lapsed quota line is warning ink at the regular weight; cut lines keep a title', () => {
+    render(<PlanBadge tier="business" max={0} suspended data-testid="b" />)
+    const quota = screen.getByTestId('b').querySelector('[data-slot="plan-badge-quota"]') as HTMLElement
+    expect(quota.className).toContain('text-warning-text')
+    expect(quota.className).not.toContain('font-semibold')
+    expect(quota.getAttribute('title')).toBe('Paket berakhir')
+    expect(screen.getByTestId('b').querySelector('[data-slot="plan-badge-tier"]')?.getAttribute('title')).toBe('Paket Business')
   })
 
   it('renders a link with render', () => {

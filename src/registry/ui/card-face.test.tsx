@@ -102,6 +102,24 @@ describe('CardFace', () => {
     expect(document.querySelector('[data-slot="card-face-overlay"]')).toBeNull()
   })
 
+  it('reduced motion, read at the flip: the veil crossfades out in 150ms instead of a snap', async () => {
+    const animate = vi.fn(() => ({ cancel() {}, onfinish: null }) as unknown as Animation)
+    const original = HTMLElement.prototype.animate
+    HTMLElement.prototype.animate = animate
+    const matchMedia = window.matchMedia
+    try {
+      const { rerender } = render(<CardFace {...base} status="frozen" animated />)
+      // The setting changes after mount; the next thaw still reads it.
+      window.matchMedia = ((query: string) => ({ matches: query.includes('reduce'), media: query }) as MediaQueryList)
+      rerender(<CardFace {...base} status="active" animated />)
+      expect(document.querySelector('[data-slot="card-face-overlay"]')).not.toBeNull()
+      expect(animate).toHaveBeenLastCalledWith([{ opacity: 1 }, { opacity: 0 }], expect.objectContaining({ duration: 150 }))
+    } finally {
+      HTMLElement.prototype.animate = original
+      window.matchMedia = matchMedia
+    }
+  })
+
   it('without WebGL a frozen card falls back to the CSS frost', () => {
     render(<CardFace {...base} status="frozen" />)
     expect(document.querySelector('[data-slot="card-face-overlay"] [data-frost]')).not.toBeNull()

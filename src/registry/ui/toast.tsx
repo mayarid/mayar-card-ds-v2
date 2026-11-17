@@ -4,7 +4,13 @@ import {
   type ToastManagerAddOptions,
   type ToastObject,
 } from '@base-ui/react/toast'
-import { AlertCircleIcon, Cancel01Icon, CancelCircleIcon, CheckmarkCircle02Icon, HelpCircleIcon } from '@hugeicons/core-free-icons'
+import {
+  AlertCircleIcon,
+  Cancel01Icon,
+  CancelCircleIcon,
+  CheckmarkCircle02Icon,
+  InformationCircleIcon,
+} from '@hugeicons/core-free-icons'
 import { useMemo, type ComponentType, type ReactNode } from 'react'
 
 import { Icon, type IconProps } from '@/components/ui/icon'
@@ -14,14 +20,17 @@ import { cn } from '@/lib/utils'
 /*
  * Mayar v2 Toast. Wonder "Mayar Toast Guide" (adopted from the ReUI Sonner examples) and the
  * shipped app (foundations/Toast.svelte, ToastViewport.svelte, toast.ts).
- * Card: 356px, radius 2xl, shadow-toast, 14px 16px padding, 12px gap. Tone lives only on the 18px
- * icon; card, title and description stay neutral. Default has no icon.
+ * Card: 356px (at most viewport − 40px, audit), radius 2xl, shadow-toast, 14px 16px padding, 12px
+ * gap. Tone lives only on the 18px icon; card, title and description stay neutral. Default has no
+ * icon. Warning icon in warning-text, info icon an information circle (audit).
  * Content: title (body-sm medium), description (body-sm ink-2), one action (28px primary),
  * cancel (28px component, only with an action), close (24px, "Tutup notifikasi").
- * Placement: bottom centre, 28px + safe area. Max 3; older cards step back 12px and scale
+ * Placement: bottom centre, 28px + safe area. Max 1 (audit; the app shows 3): a new toast
+ * replaces the visible one. With a higher `limit`, older cards step back 12px and scale
  * 95% / 90%; hover or focus sets the scale back to 1 and pauses the timers. No swipe dismiss.
  * Duration: 4s; 6s with an action or a description; loading never auto-dismisses.
  * Motion: open 350ms / close 250ms smooth-out, rise 16px, scale 0.97, blur 2px (--motion-toast-*).
+ * Reduced motion: the tokens keep a 150ms crossfade.
  */
 
 type ToastType = 'default' | 'success' | 'error' | 'warning' | 'info' | 'loading'
@@ -85,7 +94,8 @@ interface ToasterInstance extends ToastApi {
 
 const TOAST_DURATION_MS = 4000
 const TOAST_DURATION_LONG_MS = 6000
-const TOAST_LIMIT = 3
+/** audit: one toast at a time (the app shows 3). A new toast replaces the visible one. */
+const TOAST_LIMIT = 1
 
 type ManagerLike = Pick<ToastManager<ToastData>, 'add' | 'close' | 'update' | 'promise'>
 type ToastOptions = ToastManagerAddOptions<ToastData>
@@ -179,8 +189,9 @@ function useToast(): ToastApi {
 const ICONS: Record<Exclude<ToastType, 'default' | 'loading'>, { icon: IconProps['icon']; className: string }> = {
   success: { icon: CheckmarkCircle02Icon, className: 'text-success' },
   error: { icon: CancelCircleIcon, className: 'text-danger' },
-  warning: { icon: AlertCircleIcon, className: 'text-warning' },
-  info: { icon: HelpCircleIcon, className: 'text-primary' },
+  // audit: warning-text, as text-warning is under 3:1 on white; info is an information circle.
+  warning: { icon: AlertCircleIcon, className: 'text-warning-text' },
+  info: { icon: InformationCircleIcon, className: 'text-primary' },
 }
 
 function ToastIcon({ type, multi }: { type: ToastType; multi: boolean }) {
@@ -191,7 +202,7 @@ function ToastIcon({ type, multi }: { type: ToastType; multi: boolean }) {
   return <Icon icon={icon} size={18} data-slot="toast-icon" className={cn(className, tone)} />
 }
 
-const toastSurfaceClass = 'w-[356px] max-w-full rounded-2xl bg-surface font-sans text-ink shadow-toast'
+const toastSurfaceClass = 'w-[356px] max-w-[calc(100vw-40px)] rounded-2xl bg-surface font-sans text-ink shadow-toast'
 const toastLayoutClass = 'relative flex items-center gap-3 px-4 py-3.5 data-multi:items-start'
 const toastTitleClass = 'm-0 text-body-sm font-medium text-ink'
 const toastDescriptionClass = 'm-0 text-body-sm text-ink-2'
@@ -284,7 +295,7 @@ const toastStackClass = [
   'data-expanded:[transform:translateX(var(--toast-sx))_translateY(calc(var(--toast-sy)+var(--toast-lift)))]',
   'data-limited:pointer-events-none data-limited:opacity-0',
   'transition-[transform,opacity,filter] duration-(--motion-toast-open) ease-smooth-out',
-  'data-ending-style:duration-(--motion-toast-close) motion-reduce:transition-none',
+  'data-ending-style:duration-(--motion-toast-close)',
   'data-starting-style:opacity-0 data-starting-style:blur-(--motion-toast-blur)',
   'data-starting-style:[transform:translateY(var(--motion-toast-distance))_scale(var(--motion-toast-scale))]',
   'data-ending-style:opacity-0 data-ending-style:blur-(--motion-toast-blur)',
@@ -375,7 +386,7 @@ function Toaster({ className, contained = false, ...props }: ToasterProps) {
       aria-label="Notifikasi"
       className={cn(
         contained ? 'absolute' : 'fixed',
-        'bottom-[calc(env(safe-area-inset-bottom,0px)+28px)] left-1/2 z-(--z-toast) w-[356px] max-w-full -translate-x-1/2 outline-none',
+        'bottom-[calc(env(safe-area-inset-bottom,0px)+28px)] left-1/2 z-(--z-toast) w-[356px] max-w-[calc(100vw-40px)] -translate-x-1/2 outline-none',
         className,
       )}
       {...props}

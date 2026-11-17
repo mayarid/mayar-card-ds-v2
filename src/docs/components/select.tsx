@@ -1,4 +1,4 @@
-import { Calendar03Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { Calendar03Icon } from '@hugeicons/core-free-icons'
 
 import { Icon } from '@/components/ui/icon'
 import {
@@ -109,17 +109,17 @@ function StaticItem({
     <div
       className={selectItemVariants({ tone })}
       data-highlighted={highlighted ? '' : undefined}
+      data-selected={selected ? '' : undefined}
       data-disabled={disabled ? '' : undefined}
     >
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      {selected ? <Icon icon={Tick02Icon} /> : null}
     </div>
   )
 }
 
 function PopupSpecimen({ kind }: { kind: string }) {
   return (
-    <div className={cn(selectPopupClassName, 'w-56 animate-none')}>
+    <div className={cn(selectPopupClassName, 'w-56 gap-0.5')}>
       {kind === 'grouped' ? (
         <>
           <div className={selectGroupLabelClassName}>Operasional</div>
@@ -202,7 +202,7 @@ export const doc: ComponentDoc = {
     {
       title: 'Open menu',
       description:
-        'A static drawing of the popup: as wide as the trigger, radius xl, 4px padding, popover shadow, 32px rows, a tick on the selected row, a wash on the highlighted row.',
+        'A static drawing of the popup: as wide as the trigger, radius xl, 4px padding, popover shadow, 36px rows with a 2px gap, a component-active fill on the selected row, a lighter wash on the highlighted row.',
       rows: [
         { label: 'List', props: { kind: 'list' } },
         { label: 'Groups + separator', props: { kind: 'grouped' } },
@@ -260,5 +260,11 @@ export const doc: ComponentDoc = {
     'The app shakes the Select on an invalid submit (is-shaking). This port leaves that to the Field; use animate-shake on the trigger if you need it.',
     'The active tone, the action row and SelectLeading come from the app and are not on the Wonder page.',
     'The app test helpers (pickSelectOption, readSelectOptions) are ported into select.test.tsx.',
+    'Audit (17 Nov 2026): the trigger stays raised (it acts as a button), but its focus ring is 2px (ghost: shadow-focus). The shipped app uses a 1px ring.',
+    'Audit (17 Nov 2026): the trigger is 44px tall under a coarse pointer. The shipped app keeps the size height.',
+    'Audit (17 Nov 2026): the selected row has a component-active fill with ink text and no tick; rows are 36px, radius md (6px, inside the 10px popup with 4px padding), with a 2px gap. The shipped app shows a tick on 32px radius-lg rows with no gap.',
+    'Audit (17 Nov 2026): the separator is 0.5px and runs edge to edge. The shipped app uses a 1px line inset 4px.',
+    'Audit (17 Nov 2026): the active tone and the action row keep the normal weight; colour shows the state. The shipped app makes them medium.',
+    'Audit (17 Nov 2026): the menu opens with a transition (scale from --motion-dropdown-pre-scale + fade, 150ms) and closes the same way in 120ms; under reduced motion it is a 150ms crossfade. The shipped app uses the menu-in keyframe and a 0.99 scale on close.',
   ],
 }

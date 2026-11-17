@@ -14,11 +14,12 @@ import {
 } from '@/components/ui/balance-card'
 import { Icon } from '@/components/ui/icon'
 
-type Tab = 'akun' | 'kartu' | 'qris' | 'anggaran'
+type Tab = 'akun' | 'kartu' | 'anggaran'
 
 export default function BalanceCardBerandaTiles() {
   const [tab, setTab] = useState<Tab>('akun')
   const [hidden, setHidden] = useState(false)
+  const [qrisFailed, setQrisFailed] = useState(true)
 
   const tile = (key: Tab) => ({
     render: (
@@ -36,53 +37,60 @@ export default function BalanceCardBerandaTiles() {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <BalanceCardGroup
-        role="tablist"
-        aria-label="Ringkasan saldo"
-        columns={2}
-        hidden={hidden}
-        onHiddenChange={setHidden}
-      >
-        <BalanceCard {...tile('akun')}>
-          <BalanceCardLabel>
-            <Icon icon={Wallet01Icon} />
-            Saldo akun
-          </BalanceCardLabel>
-          <BalanceCardValue value={48250000} />
-          <BalanceCardCaption>
-            <BalanceCardDelta direction="up" tone="positive">
-              12,5%
-            </BalanceCardDelta>
-            vs 30 hari lalu
-          </BalanceCardCaption>
-        </BalanceCard>
-        <BalanceCard {...tile('kartu')}>
-          <BalanceCardLabel>
-            <Icon icon={CreditCardIcon} />
-            Saldo kartu
-          </BalanceCardLabel>
-          <BalanceCardValue value={18750000} />
-          <BalanceCardCaption>Total saldo di 12 kartu</BalanceCardCaption>
-        </BalanceCard>
-        <BalanceCard {...tile('qris')}>
+      <BalanceCardGroup columns={2} hidden={hidden} onHiddenChange={setHidden}>
+        {/* The tabs share one tablist; `contents` keeps them in the group grid. */}
+        <div role="tablist" aria-label="Ringkasan saldo" className="contents">
+          <BalanceCard {...tile('akun')}>
+            <BalanceCardLabel>
+              <Icon icon={Wallet01Icon} />
+              Saldo akun
+            </BalanceCardLabel>
+            <BalanceCardValue value={48250000} />
+            <BalanceCardCaption>
+              <BalanceCardDelta direction="up" tone="positive">
+                12,5%
+              </BalanceCardDelta>
+              vs 30 hari lalu
+            </BalanceCardCaption>
+          </BalanceCard>
+          <BalanceCard {...tile('kartu')}>
+            <BalanceCardLabel>
+              <Icon icon={CreditCardIcon} />
+              Saldo kartu
+            </BalanceCardLabel>
+            <BalanceCardValue value={18750000} />
+            <BalanceCardCaption>Total saldo di 12 kartu</BalanceCardCaption>
+          </BalanceCard>
+          <BalanceCard {...tile('anggaran')}>
+            <BalanceCardLabel>
+              <Icon icon={ChartBarIncreasingIcon} />
+              Anggaran
+            </BalanceCardLabel>
+            <BalanceCardValue value={62} suffix="%" money={false}>
+              terpakai
+            </BalanceCardValue>
+            <BalanceCardCaption>
+              <BalanceCardAmount value={4150000} /> tersisa
+            </BalanceCardCaption>
+          </BalanceCard>
+        </div>
+        {/* A tile that failed to load is not a tab: it holds the retry button. */}
+        <BalanceCard>
           <BalanceCardLabel>
             <Icon icon={QrCodeIcon} />
             Saldo QRIS
           </BalanceCardLabel>
-          <BalanceCardValue value={null} />
-          <BalanceCardError>Gagal memuat saldo QRIS.</BalanceCardError>
-        </BalanceCard>
-        <BalanceCard {...tile('anggaran')}>
-          <BalanceCardLabel>
-            <Icon icon={ChartBarIncreasingIcon} />
-            Anggaran
-          </BalanceCardLabel>
-          <BalanceCardValue value={62} suffix="%" money={false}>
-            terpakai
-          </BalanceCardValue>
-          <BalanceCardCaption>
-            <BalanceCardAmount value={4150000} /> tersisa
-          </BalanceCardCaption>
+          {qrisFailed ? (
+            <>
+              <BalanceCardValue value={null} />
+              <BalanceCardError onRetry={() => setQrisFailed(false)}>Gagal memuat saldo QRIS.</BalanceCardError>
+            </>
+          ) : (
+            <>
+              <BalanceCardValue value={3_420_000} />
+              <BalanceCardCaption>Dari 5 transaksi QRIS hari ini</BalanceCardCaption>
+            </>
+          )}
         </BalanceCard>
       </BalanceCardGroup>
       <div

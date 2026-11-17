@@ -25,8 +25,9 @@ import { cn } from '@/lib/utils'
  * Segmented: a component track (2px padding and gap, radius xl), MD triggers 32px radius lg,
  * SM triggers 28px radius md on a radius lg track. A white pill with the control shadow slides
  * under the active tab. Line: 36px triggers, 20px gap, a 2px ink underline slides under the
- * active tab (the line gap is `--tabs-gap`, default 20px; set it on an ancestor).
- * Selection changes the colour, never the weight.
+ * active tab (the line gap is `--tabs-gap`, default 20px; set it on an ancestor), over a 0.5px hairline.
+ * Selection changes the colour, never the weight; counts keep the medium weight of the label.
+ * A press scales a tab to 0.97.
  * The indicator is Base UI `Tabs.Indicator`: it reads `--active-tab-*` and tweens with
  * `--motion-tabs` + `ease-smooth-out`, so reduced motion turns the slide off.
  * `TabsNav` + `TabsLink` give the same look to links (the selection lives in the URL).
@@ -116,8 +117,8 @@ const listVariants = cva('relative', {
     variant: {
       segmented: 'inline-flex items-center gap-0.5 self-start bg-component p-0.5',
       line: [
-        'flex w-full items-end gap-[var(--tabs-gap,20px)] shadow-[inset_0_-1px_0_var(--color-border-subtle)]',
-        'data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch data-[orientation=vertical]:gap-0 data-[orientation=vertical]:shadow-[inset_-1px_0_0_var(--color-border-subtle)]',
+        'flex w-full items-end gap-[var(--tabs-gap,20px)] shadow-[inset_0_-0.5px_0_var(--color-border-subtle)]',
+        'data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch data-[orientation=vertical]:gap-0 data-[orientation=vertical]:shadow-[inset_-0.5px_0_0_var(--color-border-subtle)]',
       ],
     },
     size: { sm: '', md: '' },
@@ -198,7 +199,8 @@ const tabVariants = cva(
   [
     'group/tab relative z-1 hit-44 inline-flex items-center gap-1.5 border-0 bg-transparent whitespace-nowrap',
     'font-sans text-body-sm font-medium text-ink-2 no-underline outline-none select-none touch-manipulation',
-    'transition-[color] duration-(--motion-tabs) ease-smooth-out',
+    'transition-[color,scale] duration-(--motion-tabs) ease-smooth-out',
+    'pressed:scale-[0.97]',
     'focus-ring:outline-focus',
     // A scrollable list clips its overflow, so the ring goes inside the tab.
     'in-data-scrollable:focus-ring:-outline-offset-2',
@@ -253,13 +255,13 @@ function TabsHeader({ className, ...props }: ComponentProps<'div'>) {
 const countVariants = cva('inline-flex items-center text-caption-lg font-medium tabular-nums', {
   variants: {
     variant: {
-      segmented: 'text-muted',
+      segmented: 'text-ink-2',
       line: 'h-5 rounded-sm bg-component px-1.5 text-ink-2',
     },
     tone: { neutral: '', primary: '' },
     countTone: {
       neutral: '',
-      primary: 'h-5 min-w-5 justify-center rounded-pill bg-primary-light px-1.5 font-semibold text-primary',
+      primary: 'h-5 min-w-5 justify-center rounded-pill bg-primary-light px-1.5 text-primary',
       tint: 'h-5 min-w-5 justify-center rounded-pill bg-primary-tint px-1.5 text-primary',
     },
   },

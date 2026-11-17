@@ -15,7 +15,7 @@ export default function EmptyStateNoMatch() {
   return (
     <div className="w-80 rounded-card bg-surface shadow-ring">
       <EmptyState size="sm">
-        <EmptyStateIcon shape="square">
+        <EmptyStateIcon>
           <Icon icon={Search01Icon} />
         </EmptyStateIcon>
         <EmptyStateText>

@@ -52,7 +52,7 @@ export const doc: ComponentDoc = {
   name: 'Usage Bar',
   group: 'Display',
   description:
-    'Shows how much of a limit, budget, quota or seat count is used. The fill gets darker blue as usage grows and turns red at 100%.',
+    'Shows how much of a limit, budget, quota or seat count is used. The fill is primary, turns to warning from 85% and red at 100%.',
   spec: 'code-only',
   registry: 'usage-bar',
   baseUi: { name: 'Meter', url: 'https://base-ui.com/react/components/meter' },
@@ -60,7 +60,7 @@ export const doc: ComponentDoc = {
   playground: {
     controls: [
       { name: 'value', type: 'select', options: ['0', '30', '60', '80', '95', '120'], default: '60' },
-      { name: 'tone', type: 'select', options: ['auto', 'p1', 'p2', 'p3', 'p4', 'over', 'warning'], default: 'auto' },
+      { name: 'tone', type: 'select', options: ['auto', 'fill', 'warning', 'over'], default: 'auto' },
       { name: 'height', type: 'select', options: ['6', '8'], default: '6' },
       { name: 'track', type: 'select', options: ['component', 'well'], default: 'component' },
       { name: 'labelled', label: 'label + value', type: 'boolean', default: true },
@@ -71,16 +71,14 @@ export const doc: ComponentDoc = {
   },
   matrices: [
     {
-      title: 'Usage ramp × height',
-      description: '<50% p1, 50% p2, 75% p3, 90% p4 (flat primary), 100%+ over (danger). warning is set by hand, never by the ramp.',
+      title: 'Usage tones × height',
+      description: 'Below 85% fill (primary), 85% and up warning, 100%+ over (danger).',
       rows: [
-        { label: '30% (p1)', props: { value: 30 }, codeOnly: true },
-        { label: '60% (p2)', props: { value: 60 }, codeOnly: true },
-        { label: '80% (p3)', props: { value: 80 }, codeOnly: true },
-        { label: '95% (p4)', props: { value: 95 }, codeOnly: true },
+        { label: '30% (fill)', props: { value: 30 }, codeOnly: true },
+        { label: '80% (fill)', props: { value: 80 }, codeOnly: true },
+        { label: '90% (warning)', props: { value: 90 }, codeOnly: true },
         { label: '120% (over)', props: { value: 120 }, codeOnly: true },
         { label: '0%', props: { value: 0 }, codeOnly: true },
-        { label: '85% (warning)', props: { value: 85, tone: 'warning' }, codeOnly: true },
       ],
       columns: [
         { label: 'Height 6', props: { height: 6 } },
@@ -94,7 +92,7 @@ export const doc: ComponentDoc = {
     },
     {
       title: 'Colour override (share bars)',
-      description: 'A share that is not a usage reading takes a chart colour. It wins over the ramp.',
+      description: 'A share that is not a usage reading takes a chart colour. It wins over the tone.',
       rows: [1, 2, 3, 4, 5, 6].map((n) => ({
         label: `chart-${n}`,
         props: { color: `var(--color-chart-${n})`, value: 20 + n * 10 },
@@ -111,7 +109,7 @@ export const doc: ComponentDoc = {
     {
       id: 'usage-bar/ramp',
       title: 'Budget list',
-      description: 'Numbers printed beside the bar, so the bar is decorative. --bar-delay staggers the fills.',
+      description: 'Numbers printed beside the bar, so the bar is decorative. The fills fade in together.',
       codeOnly: true,
     },
     { id: 'usage-bar/share', title: 'Category share', description: 'color with a chart token, on a well panel.', codeOnly: true },
@@ -122,9 +120,9 @@ export const doc: ComponentDoc = {
     { name: 'min', type: 'number', default: '0', description: 'Lower end.' },
     {
       name: 'tone',
-      type: '"none" | "p1" | "p2" | "p3" | "p4" | "over" | "warning"',
+      type: '"none" | "fill" | "warning" | "over"',
       description:
-        'Ramp bucket override. Default: from the percent. "warning" paints the theme warning fill (bg-warning) for a near-limit plan quota; the ramp never picks it, so set it yourself (for example at 80% and over).',
+        'Tone override. Default: from the percent with getUsageTone(percent, near = 85): fill (bg-primary) below near, warning (bg-warning) from near, over (bg-danger) from 100%.',
     },
     { name: 'color', type: 'string', description: 'Any CSS colour or token. Wins over tone.' },
     { name: 'height', type: '6 | 8', default: '6', description: 'Bar height in px.' },
@@ -135,20 +133,21 @@ export const doc: ComponentDoc = {
   guidelines: {
     do: [
       'Print the numbers next to the bar ("Rp 7.200.000 dari Rp 10.000.000").',
-      'Use the ramp for usage. Use color only for a share that is not usage.',
+      'Use the default tones for usage. Use color only for a share that is not usage.',
       'Give the bar a label (aria-label or UsageBarLabel) when no text next to it says what it measures.',
     ],
     dont: [
-      'Do not use green for usage. Red is only for 100% and over. Use the warning tone only where a near-limit quota must stand out.',
-      'Do not animate the fill again on every update.',
+      'Do not use green for usage. Red is only for 100% and over; warning is only for near the limit.',
+      'Do not animate the fill again on every update, and do not stagger the fills.',
     ],
   },
   notes: [
     'Code-only: Usage Bar has no specimen on the Wonder Design System page. The Dashboard "Anggaran" panel uses it; values come from UsageBar.svelte and lib/usage-tone.ts.',
     'Built on Base UI Meter (role="meter"), the same role the app uses when the bar has a label. Without a label and without children it is aria-hidden, as in the app.',
     'The app takes value + max or percent. This port takes value, min and max (percent = value with max 100).',
-    'The ramp colours p1–p3 are color-mix of primary and surface (45 / 65 / 82%), as in the app; there is no theme token for them.',
-    'The fill uses animate-bar-fill once on mount; --motion-bar-fill is 0ms under reduced motion.',
-    'The app code is final (decision, 12 Nov 2026). The warning tone is a port extra: the app ramp (lib/usage-tone.ts) is "never amber", and the Sidebar plan quota uses the blue ramp (red at 100%). The tone is opt-in and the default ramp is unchanged.',
+    'The fill uses animate-bar-fill once on mount: an opacity fade of --motion-bar-fill (150ms; 0ms under reduced motion). It does not grow with scaleX.',
+    'Audit (17 Nov 2026): no blue intensity ramp. One flat fill (bg-primary) below 85%, the warning tone (bg-warning) from 85% (the near state), danger from 100%. The shipped app (lib/usage-tone.ts) uses a blue ramp of primary mixed into surface (45 / 65 / 82 / 100%) and is "never amber".',
+    'Audit (17 Nov 2026): the 40ms per-row stagger (--bar-delay) is removed; every fill fades in at once. The shipped app staggers the rows.',
+    'Audit (17 Nov 2026): a plain-text UsageBarLabel gets the same text as its title, so a truncated label can still be read in full. The shipped app has no title.',
   ],
 }

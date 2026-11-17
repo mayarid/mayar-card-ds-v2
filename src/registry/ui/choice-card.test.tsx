@@ -73,7 +73,7 @@ describe('ChoiceCard', () => {
     expect(screen.getByTestId('v').textContent).toBe('virtual')
   })
 
-  it('list rows show a check only when selected', () => {
+  it('list rows show the fill only: no tick and no radio', () => {
     const { container } = render(
       <ChoiceCardGroup aria-label="Bank tujuan" defaultValue="bca">
         <ChoiceCardList>
@@ -82,7 +82,7 @@ describe('ChoiceCard', () => {
         </ChoiceCardList>
       </ChoiceCardGroup>,
     )
-    expect(container.querySelectorAll('[data-slot="choice-card-check"]').length).toBe(2)
+    expect(container.querySelectorAll('[data-slot="choice-card-check"]').length).toBe(0)
     expect(container.querySelector('[data-slot="choice-card-radio"]')).toBeNull()
   })
 

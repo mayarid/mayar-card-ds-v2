@@ -178,5 +178,8 @@ export const doc: ComponentDoc = {
     'The app has no small segmented item, so size="sm" on segmented keeps the 32px radius-lg item.',
     'Wonder shows only the chips (MD). Chips SM, segmented, track, the icon size and multiple are code-only.',
     'The track pill is measured with a small layout effect (local offsets) and tweens with --motion-tabs and ease-smooth-out, as the app slidingPill does; a resize snaps it.',
+    'Audit (17 Nov 2026): a press scales an item to 0.97. The shipped app has no press scale.',
+    'Audit (17 Nov 2026): every item has a hit area at least 44px tall (chips SM, segmented and track items were 40px). The shipped app uses 40px. SM chip rows are 12px apart, so their hit areas overlap by 4px.',
+    'Audit (17 Nov 2026): chips and segmented items stay 32px (the Wonder chip size); the track is 36px outside, the same as the Button, Input and Select default.',
   ],
 }

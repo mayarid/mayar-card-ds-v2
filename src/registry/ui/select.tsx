@@ -1,5 +1,5 @@
 import { Select as SelectPrimitive } from '@base-ui/react/select'
-import { ArrowDown01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 
@@ -10,15 +10,18 @@ import { cn } from '@/lib/utils'
  * Mayar v2 Select. Source: the app's Select.svelte (Wonder "Mayar Forms Inputs Guide" › Select / Combobox is the visual reference).
  * The trigger has the Input chrome: SM 28 / MD 32 / LG 36 (default) / XL 40, radius lg (SM/MD) and
  * xl (LG/XL), text body-sm / body-sm / body-base / body-lg (body-lg on a coarse pointer, so iOS does
- * not zoom). Variants: default (surface + control shadow) and ghost. States: hover (canvas), focus
- * (1px border-focus ring on any focus), invalid (danger-subtle + danger ring), disabled, active filter tone.
- * Popup: as wide as the trigger, radius xl, 4px padding, popover shadow, max 320px tall, 32px rows (44px on a coarse pointer),
- * a tick on the selected row. Motion: animate-menu-in on open, a 0.99 scale + fade on close.
+ * not zoom; 44px tall). Variants: default (surface + control shadow: the trigger stays raised, as it acts
+ * as a button) and ghost. States: hover (canvas), focus (2px border-focus ring on any focus), invalid
+ * (danger-subtle + danger ring), disabled, active filter tone.
+ * Popup: as wide as the trigger, radius xl, 4px padding, popover shadow, max 320px tall, 36px rows radius md
+ * with a 2px gap (44px on a coarse pointer). The selected row has a component-active fill (no tick).
+ * Motion: a transition from a --motion-dropdown-pre-scale scale + fade (--motion-dropdown-open in,
+ * --motion-dropdown-close out), from the trigger side.
  */
 const selectTriggerVariants = cva(
   [
     'group/select-trigger relative hit-44 flex w-full min-w-0 items-center text-left font-sans font-normal text-ink',
-    'outline-none select-none touch-manipulation pointer-coarse:text-body-lg',
+    'outline-none select-none touch-manipulation pointer-coarse:h-11 pointer-coarse:text-body-lg',
     '[&_svg]:pointer-events-none [&_svg]:shrink-0',
     // A leading part (icon, initials disc) pulls the start padding in to 8px, like the app.
     'has-data-[slot=select-leading]:pl-2',
@@ -34,13 +37,13 @@ const selectTriggerVariants = cva(
           'bg-surface shadow-control',
           'hover-fine:not-aria-invalid:not-data-invalid:not-focus:not-data-[tone=active]:bg-canvas',
           // The app rings the control on any focus (:focus-within), not only keyboard focus.
-          'focus:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
-          'focus-ring:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
+          'focus:not-aria-invalid:not-data-invalid:shadow-[0_0_0_2px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
+          'focus-ring:not-aria-invalid:not-data-invalid:shadow-[0_0_0_2px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
         ],
         ghost: [
           'bg-transparent shadow-none',
-          'focus:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus)]',
-          'focus-ring:not-aria-invalid:not-data-invalid:shadow-[0_0_0_1px_var(--color-border-focus)]',
+          'focus:not-aria-invalid:not-data-invalid:shadow-focus',
+          'focus-ring:not-aria-invalid:not-data-invalid:shadow-focus',
           'data-disabled:bg-transparent data-disabled:shadow-none',
         ],
       },
@@ -54,7 +57,7 @@ const selectTriggerVariants = cva(
         default: '',
         // A filter that is set (code-only).
         active:
-          'not-data-disabled:not-aria-invalid:bg-primary-tint not-data-disabled:not-aria-invalid:text-primary font-medium not-data-disabled:not-aria-invalid:shadow-[0_0_0_1px_var(--color-primary),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)] not-data-disabled:[&_svg]:text-primary not-data-disabled:[&_[data-slot=select-leading]]:text-primary',
+          'not-data-disabled:not-aria-invalid:bg-primary-tint not-data-disabled:not-aria-invalid:text-primary not-data-disabled:not-aria-invalid:shadow-[0_0_0_1px_var(--color-primary),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)] not-data-disabled:[&_svg]:text-primary not-data-disabled:[&_[data-slot=select-leading]]:text-primary',
       },
     },
     defaultVariants: { variant: 'default', size: 'lg', tone: 'default' },
@@ -65,15 +68,19 @@ const selectTriggerVariants = cva(
 const selectPopupClassName = cn(
   'flex max-h-[min(320px,var(--available-height,320px))] w-(--anchor-width) min-w-0 flex-col overflow-y-auto overscroll-contain',
   'rounded-xl bg-surface p-1 font-sans text-ink shadow-popover outline-none',
-  'origin-(--transform-origin) animate-menu-in',
-  'transition-[opacity,scale] duration-(--motion-dropdown-close) ease-smooth-out data-ending-style:scale-[0.99] data-ending-style:opacity-0',
+  'origin-(--transform-origin)',
+  'transition-[opacity,scale] duration-(--motion-dropdown-open) ease-smooth-out',
+  'data-starting-style:scale-(--motion-dropdown-pre-scale) data-starting-style:opacity-0',
+  'data-ending-style:scale-(--motion-dropdown-pre-scale) data-ending-style:opacity-0 data-ending-style:duration-(--motion-dropdown-close)',
 )
 
 const selectItemVariants = cva(
   [
-    'relative flex h-8 cursor-default items-center gap-2 rounded-lg px-2 text-body-sm outline-none select-none touch-manipulation',
+    'relative flex h-9 shrink-0 cursor-default items-center gap-2 rounded-md px-2 text-body-sm outline-none select-none touch-manipulation',
     'pointer-coarse:h-11',
     'data-highlighted:bg-component',
+    // The selected row: one step above the highlight, also while highlighted.
+    'data-selected:bg-component-active data-selected:text-ink data-highlighted:data-selected:bg-component-active',
     'data-disabled:text-disabled-foreground data-disabled:data-highlighted:bg-transparent',
   ],
   {
@@ -81,7 +88,7 @@ const selectItemVariants = cva(
       tone: {
         default: 'text-ink',
         // A shortcut row, not a value ("+ Tambah pemegang kartu"). Code-only.
-        action: 'font-medium text-primary',
+        action: 'text-primary',
       },
     },
     defaultVariants: { tone: 'default' },
@@ -89,7 +96,8 @@ const selectItemVariants = cva(
 )
 
 const selectGroupLabelClassName = 'px-2 pt-1.5 pb-1 text-left text-caption-lg font-medium text-muted'
-const selectSeparatorClassName = 'm-1 h-px shrink-0 bg-border-subtle'
+/** Edge to edge across the 4px popup padding, 0.5px. */
+const selectSeparatorClassName = '-mx-1 my-1 h-[0.5px] shrink-0 bg-border-subtle'
 
 /**
  * A single-select listbox with the Input chrome. Use it when the list is short and the user does not
@@ -199,7 +207,7 @@ function SelectContent({
         className="z-(--z-modal) outline-none"
       >
         <SelectPrimitive.Popup data-slot="select-content" className={cn(selectPopupClassName, className)} {...props}>
-          <SelectPrimitive.List data-slot="select-list" className="flex flex-col">
+          <SelectPrimitive.List data-slot="select-list" className="flex flex-col gap-0.5">
             {children}
           </SelectPrimitive.List>
         </SelectPrimitive.Popup>
@@ -212,14 +220,11 @@ interface SelectItemProps extends Omit<SelectPrimitive.Item.Props, 'className'>,
   className?: string
 }
 
-/** One option. The selected option shows a tick at the end. */
+/** One option. The selected option has a component-active fill. */
 function SelectItem({ className, tone, children, ...props }: SelectItemProps) {
   return (
     <SelectPrimitive.Item data-slot="select-item" className={cn(selectItemVariants({ tone }), className)} {...props}>
       <SelectPrimitive.ItemText className="min-w-0 flex-1 truncate">{children}</SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator data-slot="select-item-indicator" className="flex">
-        <Icon icon={Tick02Icon} />
-      </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
 }
@@ -227,7 +232,7 @@ function SelectItem({ className, tone, children, ...props }: SelectItemProps) {
 type SelectGroupProps = Omit<SelectPrimitive.Group.Props, 'className'> & { className?: string }
 
 function SelectGroup({ className, ...props }: SelectGroupProps) {
-  return <SelectPrimitive.Group data-slot="select-group" className={cn('flex flex-col', className)} {...props} />
+  return <SelectPrimitive.Group data-slot="select-group" className={cn('flex flex-col gap-0.5', className)} {...props} />
 }
 
 type SelectGroupLabelProps = Omit<SelectPrimitive.GroupLabel.Props, 'className'> & { className?: string }

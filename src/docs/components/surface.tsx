@@ -128,6 +128,8 @@ export const doc: ComponentDoc = {
     'The shipped app code is final (decision, 12 Nov 2026). Every value here comes from the app Surface.svelte; Wonder is the visual reference.',
     'variant="container" paints the white surface, not the code-only `container` colour token.',
     'The related ring is requested on the child (nested.ring) and drawn by the parent with :has().',
+    'Audit (17 Nov 2026): an elevated parent no longer adds the border-subtle related ring on top of shadow-control (the control shadow already has a ring); only a flat parent draws it. The shipped app draws both.',
+    'Audit (17 Nov 2026): the divided line between rows is 0.5px. The shipped app draws 1px.',
     'The app also accepts `surface` as a deprecated alias of `variant`. This port keeps only `variant`.',
   ],
 }

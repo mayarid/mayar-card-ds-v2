@@ -162,7 +162,7 @@ export const doc: ComponentDoc = {
     {
       title: 'Placement and stack',
       description:
-        'Bottom centre, 28px above the safe area. Max 3. Older cards step back 12px and scale to 95% / 90%; hover or focus expands the stack.',
+        'Bottom centre, 28px above the safe area. Max 1 by default (audit): a new toast replaces the visible one. With <ToastProvider limit={3}>, older cards step back 12px and scale to 95% / 90%; hover or focus expands the stack.',
       rows: [{ label: 'Bottom centre' }],
       columns: [
         { label: 'Collapsed', props: { expanded: false } },
@@ -192,7 +192,7 @@ export const doc: ComponentDoc = {
     { name: 'toast.update(id, patch) / toast.dismiss(id?)', type: 'void', description: 'Change a toast in place / close one, or all without an id.' },
     { name: 'useToast()', type: 'ToastApi', description: 'The same API for the nearest ToastProvider, inside components.' },
     { name: 'createToaster()', type: 'ToastApi & { manager }', description: 'An isolated toaster. Pass it to <ToastProvider toaster={…}>.' },
-    { name: 'ToastProvider · toaster / limit', type: 'Toaster / number', default: 'toast / 3', description: 'The toaster it shows and the max visible cards.' },
+    { name: 'ToastProvider · toaster / limit', type: 'Toaster / number', default: 'toast / 1', description: 'The toaster it shows and the max visible cards.' },
     { name: 'Toaster · contained', type: 'boolean', default: 'false', description: 'Position inside the nearest positioned parent, without a portal (mocks).' },
     { name: 'Toast · swipeDirection', type: "Array<'up' | 'down' | 'left' | 'right'>", default: '[]', description: 'Swipe-to-dismiss directions for a custom viewport. Off by default, as in the app.' },
     { name: 'ToastCard', type: '{ type, title, description?, action?, cancel?, closable? }', description: 'Static card for specimens. No timer, no live region.' },
@@ -216,8 +216,10 @@ export const doc: ComponentDoc = {
     'Roles: Base UI renders each toast as role="dialog" in a polite region named "Notifikasi". An error toast has priority "high", which Base UI announces through an assertive region. The app puts role="status" / role="alert" on the card.',
     'Base UI hides the close and cancel buttons from assistive tech until the stack is expanded or focused.',
     'Motion: open 350 / close 250 smooth-out, rise --motion-toast-distance, scale --motion-toast-scale, blur --motion-toast-blur. The loading icon is the shared Spinner (Hugeicons loading-03, 1s linear), as in the app.',
-    'The theme reduced-motion block does not zero --motion-toast-open/close; the toast uses motion-reduce:transition-none and drops the blur instead, as the app does.',
-    'The app card is a fixed 356px; this port caps it at the viewport width (max-w-full) so it does not overflow a 320px phone.',
-    'Info uses help-circle (a question mark), as in Wonder and the app. It reads as help, not info: flagged, not changed.',
+    'Audit (17 Nov 2026): under reduced motion the toast keeps a 150ms crossfade (the theme sets --motion-toast-open/close to 150ms and the distance, scale and blur to neutral); motion-reduce:transition-none is gone. The shipped app turns the transition off.',
+    'Audit (17 Nov 2026): the card is at most the viewport width minus 40px (max-w-[calc(100vw-40px)]), so it keeps a 20px margin on a phone. The shipped app card is a fixed 356px.',
+    'Audit (17 Nov 2026): the info icon is information-circle (it was help-circle, a question mark, which reads as help). The shipped app and Wonder use help-circle.',
+    'Audit (17 Nov 2026): the warning icon is warning-text, as text-warning is under 3:1 on white. The shipped app uses warning.',
+    'Audit (17 Nov 2026): TOAST_LIMIT is 1: one toast at a time, a new one replaces it. Pass limit={3} to ToastProvider for the app stack. The shipped app shows up to 3.',
   ],
 }

@@ -239,5 +239,9 @@ export const doc: ComponentDoc = {
     'Not ported: the SvelteKit keepfocus and noscroll flags (use your router options on the link), and the app vertical layout (the app stacks a vertical rail above the panels; this port puts it beside them).',
     'Wonder shows segmented MD/SM and neutral line tabs. tone, countTone, fill, loading counts, scrollable, fullHeight, the header, nav links and vertical orientation are code-only.',
     'countTone="tint" on segmented tabs uses the same round pill as countTone="primary" (the app only changes the colours there).',
+    'Audit (17 Nov 2026): a press scales a tab to 0.97. The shipped app has no press scale.',
+    'Audit (17 Nov 2026): the segmented count is ink-2 (muted failed contrast), and countTone="primary" keeps the medium weight of the other counts. The shipped app uses muted and semibold.',
+    'Audit (17 Nov 2026): the line hairline under (or beside) the list is 0.5px. The shipped app uses 1px.',
+    'Audit (17 Nov 2026): the segmented MD list is 36px outside (32px tabs in a 2px track), the same as the Button, Input and Select default.',
   ],
 }

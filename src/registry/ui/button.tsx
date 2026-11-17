@@ -7,20 +7,22 @@ import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 Button. Wonder "Mayar Card Design System" › Button Guide Section.
- * Sizes: SM 28 / MD 32 / LG 36 (Wonder) and XL 40 (code-only). Radius: lg 8px, LG uses xl 10px.
- * States: default, hover, pressed, focus, open, disabled, loading.
+ * Sizes: SM 28 / MD 32 / LG 36 (Wonder, default) and XL 40 (code-only). Radius matches the field at
+ * each size: lg 8px (SM, MD), xl 10px (LG, XL). Labels are body-sm (13px) at every size.
+ * States: default, hover, pressed (0.97 scale; 0.92 on icon-sm), focus, open, disabled (opacity 60,
+ * 40 on icon sizes; the variant paint stays), loading.
  */
 const buttonVariants = cva(
   [
     'relative hit-44 inline-flex min-w-0 shrink-0 items-center justify-center whitespace-nowrap',
     'font-sans text-body-sm font-medium no-underline outline-none',
-    // Release eases with the standard curve; hover and open ease out (as in the app).
-    'transition-[background-color,border-color,box-shadow,color] duration-(--motion-quick) ease-standard hover-fine:ease-smooth-out opened:ease-smooth-out',
+    'transition-[background-color,border-color,box-shadow,color,scale] duration-(--motion-quick) ease-smooth-out',
+    'pressed:scale-[0.97]',
     'focus-ring:outline-focus',
     '[&_svg]:pointer-events-none [&_svg]:shrink-0',
-    // Disabled. Loading keeps the variant paint.
-    'disabled:not-data-loading:bg-disabled disabled:not-data-loading:text-disabled-foreground disabled:not-data-loading:shadow-none',
-    'aria-disabled:not-data-loading:cursor-not-allowed aria-disabled:not-data-loading:bg-disabled aria-disabled:not-data-loading:text-disabled-foreground aria-disabled:not-data-loading:shadow-none',
+    // Disabled: the variant paint at reduced opacity. Loading keeps full paint.
+    'disabled:not-data-loading:opacity-60',
+    'aria-disabled:not-data-loading:cursor-not-allowed aria-disabled:not-data-loading:opacity-60',
   ],
   {
     variants: {
@@ -48,18 +50,24 @@ const buttonVariants = cva(
         sm: 'h-7 gap-1.5 rounded-lg px-2.5 [&_svg]:size-3.5',
         md: 'h-8 gap-1.5 rounded-lg px-3 [&_svg]:size-4',
         lg: 'h-9 gap-2 rounded-xl px-3.5 [&_svg]:size-4',
-        xl: 'h-10 gap-2 rounded-lg px-5 [&_svg]:size-4',
-        'icon-sm': 'size-7 rounded-lg [&_svg]:size-3.5',
+        xl: 'h-10 gap-2 rounded-xl px-5 [&_svg]:size-4',
+        'icon-sm': 'size-7 rounded-lg pressed:scale-[0.92] [&_svg]:size-3.5',
         'icon-md': 'size-8 rounded-lg [&_svg]:size-4',
         'icon-lg': 'size-9 rounded-xl [&_svg]:size-4',
-        'icon-xl': 'size-10 rounded-lg [&_svg]:size-4',
+        'icon-xl': 'size-10 rounded-xl [&_svg]:size-4',
       },
       shape: {
         rounded: '',
         pill: 'rounded-pill',
       },
     },
-    defaultVariants: { variant: 'primary', size: 'md', shape: 'rounded' },
+    compoundVariants: [
+      {
+        size: ['icon-sm', 'icon-md', 'icon-lg', 'icon-xl'],
+        className: 'disabled:not-data-loading:opacity-40 aria-disabled:not-data-loading:opacity-40',
+      },
+    ],
+    defaultVariants: { variant: 'primary', size: 'lg', shape: 'rounded' },
   },
 )
 

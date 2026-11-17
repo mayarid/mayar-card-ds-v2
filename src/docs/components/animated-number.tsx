@@ -102,7 +102,8 @@ export const doc: ComponentDoc = {
   },
   notes: [
     'Code-only: Animated Number has no specimen on the Wonder Design System page. Behaviour comes from AnimatedNumber.svelte; the app code is final (decision, 12 Nov 2026).',
-    'Same as the app: NumberFlow (@number-flow/react) rolls each changed digit, with transform and spin timing 350ms and opacity 150ms on the smooth-out curve. Where NumberFlow cannot animate, the same text renders in a plain span.',
+    'NumberFlow (@number-flow/react) rolls each changed digit on the smooth-out curve, as in the app. Where NumberFlow cannot animate, the same text renders in a plain span.',
+    'Audit (17 Nov 2026): NumberFlow stays as a documented exception to CSS motion, but its timing now comes from the theme: transform and spin use --motion-fast (250ms), opacity --motion-quick (150ms), read from the root at runtime and again when the reduced-motion setting changes (both 0ms under reduced motion). The shipped app uses 350ms and 150ms.',
     'Digits use tabular-nums on the inherited font, as in the app (no monospace font).',
     'Screen readers get the final value once (an sr-only copy), and the moving text is aria-hidden. Under reduced motion the value snaps.',
   ],

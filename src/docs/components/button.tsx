@@ -34,7 +34,7 @@ const STATES: MatrixAxisItem[] = [
   { label: 'Loading', props: { loading: true } },
 ]
 
-const DEFAULTS = { variant: 'primary', size: 'md', shape: 'rounded' }
+const DEFAULTS = { variant: 'primary', size: 'lg', shape: 'rounded' }
 
 const label = (v: string) => v.replace(/(^|-)(\w)/g, (_, dash: string, c: string) => (dash ? ' ' : '') + c.toUpperCase())
 
@@ -74,7 +74,7 @@ export const doc: ComponentDoc = {
   playground: {
     controls: [
       { name: 'variant', type: 'select', options: VARIANTS, default: 'primary' },
-      { name: 'size', type: 'select', options: SIZES, default: 'md' },
+      { name: 'size', type: 'select', options: SIZES, default: 'lg' },
       { name: 'shape', type: 'select', options: ['rounded', 'pill'], default: 'rounded' },
       { name: 'children', label: 'label', type: 'text', default: 'Simpan' },
       { name: 'withIcon', label: 'icon', type: 'boolean', default: false },
@@ -86,8 +86,8 @@ export const doc: ComponentDoc = {
   },
   matrices: [
     {
-      title: 'Variants × states (MD)',
-      description: 'Every variant at size MD in each state. Hover, pressed, focus and open are forced.',
+      title: 'Variants × states (LG)',
+      description: 'Every variant at size LG (the default) in each state. Hover, pressed, focus and open are forced.',
       rows: VARIANTS.map((v) => ({ label: label(v), props: { variant: v }, codeOnly: CODE_ONLY_VARIANTS.has(v) })),
       columns: STATES,
       render,
@@ -103,7 +103,7 @@ export const doc: ComponentDoc = {
       cellWidth: 104,
     },
     {
-      title: 'Options (MD)',
+      title: 'Options (LG)',
       description: 'Icon start, icon end, icon only and pill for each filled variant.',
       rows: VARIANTS.filter((v) => !v.startsWith('link')).map((v) => ({
         label: label(v),
@@ -113,11 +113,11 @@ export const doc: ComponentDoc = {
       columns: [
         { label: 'Icon start', props: { withIcon: true } },
         { label: 'Pill', props: { shape: 'pill' } },
-        { label: 'Icon only', props: { size: 'icon-md', iconOnly: true } },
+        { label: 'Icon only', props: { size: 'icon-lg', iconOnly: true } },
       ],
       render: (props, force) =>
         props.iconOnly ? (
-          <Button variant={props.variant as ButtonVariant} size="icon-md" aria-label="Tambah" data-force-state={force}>
+          <Button variant={props.variant as ButtonVariant} size="icon-lg" aria-label="Tambah" data-force-state={force}>
             <Icon icon={Add01Icon} />
           </Button>
         ) : (
@@ -125,7 +125,7 @@ export const doc: ComponentDoc = {
         ),
       code: (props) =>
         props.iconOnly
-          ? toJsx('Button', { variant: props.variant, size: 'icon-md', 'aria-label': 'Tambah' }, '<Icon icon={Add01Icon} />', DEFAULTS)
+          ? toJsx('Button', { variant: props.variant, size: 'icon-lg', 'aria-label': 'Tambah' }, '<Icon icon={Add01Icon} />', DEFAULTS)
           : code(props),
     },
   ],
@@ -142,7 +142,7 @@ export const doc: ComponentDoc = {
   ],
   props: [
     { name: 'variant', type: VARIANTS.map((v) => `"${v}"`).join(' | '), default: '"primary"', description: 'Visual weight of the action.' },
-    { name: 'size', type: '"sm" | "md" | "lg" | "xl" | "icon-sm" | "icon-md" | "icon-lg" | "icon-xl"', default: '"md"', description: 'Height 28 / 32 / 36 / 40. Icon sizes are square.' },
+    { name: 'size', type: '"sm" | "md" | "lg" | "xl" | "icon-sm" | "icon-md" | "icon-lg" | "icon-xl"', default: '"lg"', description: 'Height 28 / 32 / 36 / 40, the same as the field sizes. Icon sizes are square.' },
     { name: 'shape', type: '"rounded" | "pill"', default: '"rounded"', description: 'Pill uses the full radius.' },
     { name: 'loading', type: 'boolean', default: 'false', description: 'Spinner overlay, aria-busy, no clicks.' },
     { name: 'loadingLabel', type: 'string', description: 'Text next to the spinner while loading.' },
@@ -166,5 +166,9 @@ export const doc: ComponentDoc = {
     'As in the app, aria-disabled on a button is a soft disable (focusable, no click), and a disabled or loading link does not navigate.',
     'The app takes icon and iconPosition props; this port puts icons in children. The app sets aria-pressed with a pressed prop; here you set aria-pressed directly.',
     'Every button has a hit area of at least 44×44 (an invisible ::before), so touch targets pass without a change to the visible size.',
+    'Audit (17 Nov 2026): the default size is LG (36px), the same height as the Input, Select and Combobox default. The shipped app defaults to MD (32px).',
+    'Audit (17 Nov 2026): each size has the field radius: SM/MD 8px, LG/XL 10px. The shipped app uses 8px on XL. Labels stay 13px at every size; the larger field text at LG/XL comes from the app and is kept.',
+    'Audit (17 Nov 2026): a press scales the button to 0.97 (0.92 on icon-sm), and every state eases with smooth-out. The shipped app has no press scale and eases release with the standard curve.',
+    'Audit (17 Nov 2026): a disabled button keeps its variant paint at 60% opacity (40% on icon sizes). The shipped app paints a grey disabled fill.',
   ],
 }

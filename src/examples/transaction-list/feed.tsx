@@ -42,11 +42,11 @@ const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString
 
 const transactions: Tx[] = [
   { id: 't1', occurredAt: hoursAgo(1), merchantName: 'Google Workspace', category: 'Software & Langganan', cardName: 'Operasional', cardMaskedNumber: '•••• 4821', amount: 711000, direction: 'DEBIT', type: 'PURCHASE', status: 'SETTLED' },
-  { id: 't2', occurredAt: hoursAgo(2), merchantName: 'Top-up Saldo', category: null, cardName: null, cardMaskedNumber: null, amount: 10000000, direction: 'CREDIT', type: 'TOPUP_CREDIT', status: 'SETTLED' },
+  { id: 't2', occurredAt: hoursAgo(2), merchantName: 'Top-up saldo', category: null, cardName: null, cardMaskedNumber: null, amount: 10000000, direction: 'CREDIT', type: 'TOPUP_CREDIT', status: 'SETTLED' },
   { id: 't3', occurredAt: hoursAgo(26), merchantName: 'Notion Labs', category: 'Perangkat lunak', cardName: 'Langganan SaaS', cardMaskedNumber: '•••• 1907', amount: 1120000, direction: 'DEBIT', type: 'PURCHASE', status: 'PENDING' },
   { id: 't4', occurredAt: hoursAgo(27), merchantName: 'Grab', category: 'Transportasi', cardName: 'Tim Sales', cardMaskedNumber: '•••• 3310', amount: 86500, direction: 'DEBIT', type: 'PURCHASE', status: 'SETTLED' },
   { id: 't5', occurredAt: hoursAgo(28), merchantName: 'Meta Ads', category: 'Pemasaran', cardName: 'Marketing', cardMaskedNumber: '•••• 7752', amount: 2500000, direction: 'DEBIT', type: 'PURCHASE', status: 'DECLINED' },
-  { id: 't6', occurredAt: hoursAgo(29), merchantName: 'Biaya Penolakan', category: null, cardName: 'Marketing', cardMaskedNumber: '•••• 7752', amount: 5000, direction: 'DEBIT', type: 'REJECTION_FEE', status: 'SETTLED' },
+  { id: 't6', occurredAt: hoursAgo(29), merchantName: 'Biaya penolakan', category: null, cardName: 'Marketing', cardMaskedNumber: '•••• 7752', amount: 5000, direction: 'DEBIT', type: 'REJECTION_FEE', status: 'SETTLED' },
 ]
 
 export default function TransactionListFeed() {
@@ -54,34 +54,37 @@ export default function TransactionListFeed() {
   const groups = groupTransactionsByDay(transactions)
 
   return (
-    <TransactionList className="w-full">
-      {groups.map((group) => (
-        <TransactionGroup key={group.key} label={group.label} summary={group.summary}>
-          {group.rows.map((tx) => (
-            <TransactionRow key={tx.id} aria-label={`Lihat detail: ${tx.merchantName}`}>
-              <TransactionRowIcon
-                icon={transactionIconStyle(tx).icon}
-                tone={tx.direction === 'CREDIT' ? 'credit' : 'neutral'}
-              />
-              <TransactionRowContent>
-                <TransactionRowTitle>{tx.merchantName}</TransactionRowTitle>
-                <TransactionRowMeta>
-                  <TransactionRowDetail>
-                    {tx.category ?? TRANSACTION_TYPE_LABEL[tx.type]} · {tx.cardName ?? 'Saldo Akun Perusahaan'}{' '}
-                    {tx.cardMaskedNumber}
-                  </TransactionRowDetail>
-                  <TransactionRowSeparator />
-                  <TransactionRowTime dateTime={tx.occurredAt} />
-                </TransactionRowMeta>
-              </TransactionRowContent>
-              <TransactionRowEnd>
-                <TransactionAmount amount={tx.amount} direction={tx.direction} void={isVoidTransaction(tx.status)} />
-                <TransactionRowStatus status={tx.status} />
-              </TransactionRowEnd>
-            </TransactionRow>
-          ))}
-        </TransactionGroup>
-      ))}
+    <div className="flex w-full flex-col gap-2">
+      <TransactionList>
+        {groups.map((group) => (
+          <TransactionGroup key={group.key} label={group.label} summary={group.summary} summaryFull={group.summaryFull}>
+            {group.rows.map((tx) => (
+              <TransactionRow key={tx.id} aria-label={`Lihat detail: ${tx.merchantName}`}>
+                <TransactionRowIcon
+                  icon={transactionIconStyle(tx).icon}
+                  tone={tx.direction === 'CREDIT' ? 'credit' : 'neutral'}
+                />
+                <TransactionRowContent>
+                  <TransactionRowTitle>{tx.merchantName}</TransactionRowTitle>
+                  <TransactionRowMeta>
+                    <TransactionRowDetail>
+                      {tx.category ?? TRANSACTION_TYPE_LABEL[tx.type]} · {tx.cardName ?? 'Saldo Akun Perusahaan'}{' '}
+                      {tx.cardMaskedNumber}
+                    </TransactionRowDetail>
+                    <TransactionRowSeparator />
+                    <TransactionRowTime dateTime={tx.occurredAt} />
+                  </TransactionRowMeta>
+                </TransactionRowContent>
+                <TransactionRowEnd>
+                  <TransactionAmount amount={tx.amount} direction={tx.direction} void={isVoidTransaction(tx.status)} />
+                  <TransactionRowStatus status={tx.status} />
+                </TransactionRowEnd>
+              </TransactionRow>
+            ))}
+          </TransactionGroup>
+        ))}
+      </TransactionList>
+      {/* The pager sits after the panel, not inside it. */}
       <TransactionListFooter>
         <Button
           variant="link"
@@ -94,6 +97,6 @@ export default function TransactionListFeed() {
           Muat transaksi lainnya
         </Button>
       </TransactionListFooter>
-    </TransactionList>
+    </div>
   )
 }

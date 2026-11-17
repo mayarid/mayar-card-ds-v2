@@ -9,9 +9,10 @@ import { cn } from '@/lib/utils'
 /*
  * Mayar v2 Input. Wonder "Mayar Forms Inputs Guide" › Input.
  * Variants: default, ghost, inline. Sizes: SM 28 / MD 32 / LG 36 (default) / XL 40.
- * Radius lg 8px (SM, MD) and xl 10px (LG, XL). Text 13 (SM, MD), 14 (LG), 16 (XL); 16 under a coarse pointer.
- * States: placeholder, filled, hover (canvas), focus (border-focus ring), invalid (danger-subtle + danger ring),
- * disabled. The shake on a failed submit belongs to `Field` (`shakeSignal`), as in the app.
+ * Radius lg 8px (SM, MD) and xl 10px (LG, XL). Text 13 (SM, MD), 14 (LG), 16 (XL); 16 and 44px tall
+ * under a coarse pointer. The default variant is a flat well (no shadow).
+ * States: placeholder, filled, hover (well-hover), focus (2px border-focus ring, shadow-focus),
+ * invalid (danger-subtle + danger ring), disabled. The shake on a failed submit belongs to `Field` (`shakeSignal`), as in the app.
  * Code-only: tone "danger" (danger focus ring for a type-to-confirm field) and the clear button.
  */
 
@@ -19,7 +20,7 @@ const inputVariants = cva(
   [
     'group/input relative flex w-full min-w-0 items-center text-ink touch-manipulation',
     'font-sans font-normal',
-    'pointer-coarse:text-body-lg',
+    'pointer-coarse:h-11 pointer-coarse:text-body-lg',
     '[&_svg]:shrink-0',
     // Invalid: the one error story for every text control.
     'has-[[aria-invalid=true]]:bg-danger-subtle has-[[aria-invalid=true]]:shadow-[0_0_0_1px_var(--color-danger)]',
@@ -32,24 +33,24 @@ const inputVariants = cva(
     variants: {
       variant: {
         default: [
-          'bg-surface shadow-control',
+          'bg-well shadow-none',
           'transition-[background-color] duration-(--motion-quick) ease-smooth-out',
-          'hover-fine:not-has-disabled:not-focus-within:not-has-[[aria-invalid=true]]:bg-canvas',
+          'hover-fine:not-has-disabled:not-focus-within:not-has-[[aria-invalid=true]]:bg-well-hover',
           // Focus: real focus inside the box, or a forced focus state.
-          'not-has-[[aria-invalid=true]]:focus-within:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
-          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
+          'not-has-[[aria-invalid=true]]:focus-within:shadow-focus',
+          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-focus',
         ],
         ghost: [
           'bg-transparent shadow-none',
           'has-disabled:bg-transparent has-disabled:shadow-none',
-          'not-has-[[aria-invalid=true]]:focus-within:shadow-[0_0_0_1px_var(--color-border-focus)]',
-          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-[0_0_0_1px_var(--color-border-focus)]',
+          'not-has-[[aria-invalid=true]]:focus-within:shadow-focus',
+          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-focus',
         ],
         inline: [
           'h-auto! rounded-none! p-0! bg-transparent shadow-none',
           'has-disabled:bg-transparent has-disabled:shadow-none',
-          'not-has-[[aria-invalid=true]]:focus-within:shadow-[0_0_0_1px_var(--color-border-focus)]',
-          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-[0_0_0_1px_var(--color-border-focus)]',
+          'not-has-[[aria-invalid=true]]:focus-within:shadow-focus',
+          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-focus',
         ],
       },
       size: {
@@ -61,8 +62,8 @@ const inputVariants = cva(
       tone: {
         default: '',
         danger: [
-          'not-has-[[aria-invalid=true]]:focus-within:shadow-[0_0_0_1px_var(--color-danger),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
-          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-[0_0_0_1px_var(--color-danger),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
+          'not-has-[[aria-invalid=true]]:focus-within:shadow-[0_0_0_2px_var(--color-danger)]',
+          'not-has-[[aria-invalid=true]]:[&[data-force-state~=focus]]:shadow-[0_0_0_2px_var(--color-danger)]',
         ],
       },
     },

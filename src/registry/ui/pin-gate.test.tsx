@@ -215,7 +215,10 @@ describe('PinGate', () => {
     await typePin('123456')
     await userEvent.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).not.toBeNull()
-    expect((screen.getByRole('button', { name: 'Tutup' }) as HTMLButtonElement).disabled).toBe(true)
+    // Every close control (the × and, on a sheet, the grab handle) is disabled while checking.
+    const closers = screen.getAllByRole('button', { name: 'Tutup' }) as HTMLButtonElement[]
+    expect(closers.length).toBeGreaterThan(0)
+    expect(closers.every((button) => button.disabled)).toBe(true)
     await act(async () => resolve(false))
     await userEvent.keyboard('{Escape}')
     expect(onOpenChange).toHaveBeenCalledWith(false, expect.anything())

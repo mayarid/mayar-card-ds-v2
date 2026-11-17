@@ -37,8 +37,8 @@ export default function BudgetCardBerandaModule() {
         </Button>
       </BudgetCardHeader>
       <BudgetCardList>
-        {budgets.map((budget, index) => (
-          <BudgetCardItem key={budget.category} index={index} {...budget} />
+        {budgets.map((budget) => (
+          <BudgetCardItem key={budget.category} {...budget} />
         ))}
       </BudgetCardList>
       <BudgetCardFooter>

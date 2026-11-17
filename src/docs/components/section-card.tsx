@@ -90,5 +90,6 @@ export const doc: ComponentDoc = {
   notes: [
     'Code-only: no specimen on the Wonder page. Source: the admin user detail cards in the shipped app.',
     'The app took title, aside and foot as props and snippets. This port uses compound parts; the title gives the region its name.',
+    'Audit (17 Nov 2026): the head line is 0.5px border-subtle. The shipped app draws 1px.',
   ],
 }

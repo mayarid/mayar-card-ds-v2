@@ -182,5 +182,7 @@ export const doc: ComponentDoc = {
     'Under a coarse pointer the text is 16px for every size, so iOS does not zoom.',
     'Input does not shake by itself, as in the app. Use shakeSignal on the Field after a failed submit.',
     'The Svelte "prefix" prop is the InputPrefix part here, given to leading. "icon" and "kbd" are the leading and trailing slots.',
+    'Audit (17 Nov 2026): the default variant is a flat well (bg-well, well-hover on hover, no shadow) and focus is a 2px border-focus ring (shadow-focus) on every variant; tone="danger" focuses with a 2px danger ring. The shipped app uses a raised surface field with the control shadow, a canvas hover and a 1px ring.',
+    'Audit (17 Nov 2026): every size is 44px tall under a coarse pointer. The shipped app keeps the size height.',
   ],
 }

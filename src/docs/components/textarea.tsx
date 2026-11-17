@@ -102,7 +102,9 @@ export const doc: ComponentDoc = {
   notes: [
     'The shipped app code (Textarea.svelte) is the source of truth (decision, 12 Nov 2026). Wonder is the visual reference.',
     'The app has sizes MD / LG / XL and no ghost. Wonder shows a ghost Textarea; this port keeps it (transparent, border-focus ring on focus, as Input ghost). The app does not use it. MD and XL are not on the Wonder page.',
-    'As in the app: no paint transition, no shake, and the disabled field keeps the control shadow.',
+    'As in the app: no paint transition and no shake.',
+    'Audit (17 Nov 2026): the default variant is a flat well (bg-well, well-hover on hover, no control shadow, also when disabled) and focus is a 2px border-focus ring (shadow-focus) on both variants. The shipped app uses a raised surface field with the control shadow and a 1px ring.',
+    'Audit (17 Nov 2026): the minimum height is 44px under a coarse pointer. The shipped app has no coarse-pointer minimum.',
     'Built on Base UI Field.Control with render={<textarea />}, so it takes its label, description and invalid state from a Field.',
   ],
 }

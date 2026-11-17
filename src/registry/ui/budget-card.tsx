@@ -13,12 +13,13 @@ import { cn } from '@/lib/utils'
  * and "Budget Error v2".
  * Card: white, radius 2xl, control shadow. Head 16 16 8: title title-sm, period caption-lg muted
  * (clock 14). Item: 12px vertical padding, 6px gap, hairline between items. Top row body-sm (name
- * medium ink, "Sisa"/"Lebih" semibold); the UsageBar (the app's blue ramp, red at 100%+); bottom
- * row caption-lg muted "Rp … / Rp …" and the percent (danger-text when over, same weight).
+ * and "Sisa"/"Lebih" at the regular weight, ink); the UsageBar (primary, warning from 85%, red at
+ * 100%+); bottom row caption-lg muted "Rp … / Rp …" and the percent (danger-text when over).
  * Foot: no fill, hairline, 12×16, "Total sisa" caption-lg medium ink-2, total body-sm semibold ink
- * ("Rp … / Rp …", the remainder animates).
+ * ("Rp … / Rp …", the remainder animates, positive or negative).
  * Status (backend budget.service): under < 85% · near 85–99% · at exactly 100% · over > 100%.
- * The app only paints "over" in red; near and at show in the bar ramp and in the spoken status.
+ * Audit (17 Nov 2026): the bar shows near in the warning tone and at/over in danger; the app uses a
+ * blue ramp. The name and the remainder lose their medium/semibold weight; the bars do not stagger.
  */
 
 const RUPIAH = new Intl.NumberFormat('id-ID')
@@ -135,7 +136,8 @@ function BudgetCardList({ className, ...props }: React.ComponentProps<'ul'>) {
   return <ul data-slot="budget-card-list" role="list" {...props} className={cn('m-0 list-none px-4 py-0', className)} />
 }
 
-function Money({ value, signed = false }: { value: number; signed?: boolean }) {
+/** An amount without its sign (the row words say "Sisa" or "Lebih"). */
+function Money({ value }: { value: number }) {
   const { hidden } = use(BudgetCardContext)
   if (hidden) {
     return (
@@ -145,7 +147,7 @@ function Money({ value, signed = false }: { value: number; signed?: boolean }) {
       </>
     )
   }
-  return <>{signed ? formatRupiah(value) : formatRupiah(Math.abs(value))}</>
+  return <>{formatRupiah(Math.abs(value))}</>
 }
 
 interface BudgetCardItemProps extends Omit<React.ComponentProps<'li'>, 'children'> {
@@ -155,15 +157,13 @@ interface BudgetCardItemProps extends Omit<React.ComponentProps<'li'>, 'children
   spent: number
   /** The limit, in Rupiah. */
   amount: number
-  /** The row position. Staggers the bar fill by 40ms per row. */
-  index?: number
 }
 
 /**
  * One category budget: the name and what is left (or over), the usage bar, then "spent / limit"
  * and the percent. Red only when the budget is over. The status is spoken before the amount left.
  */
-function BudgetCardItem({ className, category, spent, amount, index = 0, style, ...props }: BudgetCardItemProps) {
+function BudgetCardItem({ className, category, spent, amount, ...props }: BudgetCardItemProps) {
   const status = getBudgetStatus(spent, amount)
   const remaining = amount - spent
   const over = status === 'over'
@@ -173,20 +173,21 @@ function BudgetCardItem({ className, category, spent, amount, index = 0, style, 
       data-slot="budget-card-item"
       data-status={status}
       {...props}
-      style={{ '--bar-delay': `${index * 40}ms`, ...style } as React.CSSProperties}
       className={cn(
         'flex flex-col gap-1.5 border-b border-border-subtle py-3 last:border-b-0',
         className,
       )}
     >
       <span className="flex items-baseline justify-between gap-2 text-body-sm">
-        <span className="min-w-0 truncate font-medium text-ink">{category}</span>
-        <span className={cn('shrink-0 font-semibold tabular-nums', over ? 'text-danger-text' : 'text-ink')}>
+        <span className="min-w-0 truncate text-ink" title={category}>
+          {category}
+        </span>
+        <span className={cn('shrink-0 tabular-nums', over ? 'text-danger-text' : 'text-ink')}>
           <span className="sr-only">{BUDGET_STATUS_LABEL[status]}, </span>
           {over ? 'Lebih' : 'Sisa'} <Money value={remaining} />
         </span>
       </span>
-      <UsageBar value={Math.max(0, percent)} max={100} tone={getUsageTone(Math.round(percent))} />
+      <UsageBar value={Math.max(0, percent)} max={100} tone={getUsageTone(percent, BUDGET_NEAR_PERCENT)} />
       <span className="flex items-baseline justify-between gap-2 text-caption-lg text-muted tabular-nums">
         <span>
           <Money value={spent} /> / <Money value={amount} />
@@ -222,24 +223,20 @@ interface BudgetCardTotalProps extends Omit<React.ComponentProps<'span'>, 'child
 
 /**
  * "Rp 4.150.000 / Rp 12.000.000" for the foot. The remainder rolls to a new value (AnimatedNumber,
- * as the app); a negative remainder reads "−Rp …" with a true minus.
+ * as the app); a negative remainder reads "−Rp …" with a true minus, through the same AnimatedNumber.
  */
 function BudgetCardTotal({ className, remaining, total, ...props }: BudgetCardTotalProps) {
   const { hidden } = use(BudgetCardContext)
   return (
     <span data-slot="budget-card-total" {...props} className={cn(className)}>
-      {remaining < 0 ? (
-        <Money value={remaining} signed />
-      ) : (
-        <AnimatedNumber
-          value={remaining}
-          prefix="Rp "
-          format={{ maximumFractionDigits: 0 }}
-          hidden={hidden}
-          hiddenText={BUDGET_MASK}
-          hiddenLabel="disembunyikan"
-        />
-      )}{' '}
+      <AnimatedNumber
+        value={Math.abs(remaining)}
+        prefix={remaining < 0 ? '−Rp ' : 'Rp '}
+        format={{ maximumFractionDigits: 0 }}
+        hidden={hidden}
+        hiddenText={BUDGET_MASK}
+        hiddenLabel="disembunyikan"
+      />{' '}
       / <Money value={total} />
     </span>
   )

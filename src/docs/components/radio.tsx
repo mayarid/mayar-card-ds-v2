@@ -134,5 +134,6 @@ export const doc: ComponentDoc = {
     'The shipped app (Radio.svelte) is the source of truth; Wonder is the visual reference. Where they differ, the app wins.',
     'The app groups radios by a shared name and syncs peers with a document listener. Here Base UI RadioGroup owns the value, roving focus and arrow keys.',
     'A disabled checked radio keeps a white dot on the grey disabled fill, as in the app.',
+    'Audit (17 Nov 2026): the unchecked radio has a 1.5px muted inset ring (3:1), like the Checkbox. The shipped app uses a faint 1px ring plus a 1px drop.',
   ],
 }

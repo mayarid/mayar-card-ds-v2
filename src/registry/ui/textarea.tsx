@@ -4,17 +4,17 @@ import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 Textarea. Wonder "Mayar Forms Inputs Guide" › Textarea (default and ghost).
- * Same paints as Input: surface + control shadow, border-focus ring on focus, danger-subtle + danger ring
- * when invalid, disabled fill (the control shadow stays). No transition, as in the app. Radius xl 10px, 10/12 padding, 14/20 text.
+ * Same paints as Input: a flat well (no shadow, well-hover on hover), a 2px border-focus ring (shadow-focus)
+ * on focus, danger-subtle + danger ring when invalid, disabled fill. No transition, as in the app. Radius xl 10px, 10/12 padding, 14/20 text.
  * Code-only sizes from the shipped app: MD (13px text, 8/12 padding, radius lg) and XL (16/24 text, 12/14 padding).
- * Text is 16px under a coarse pointer. ⌘/Ctrl+Enter submits the form; Enter adds a line.
+ * Text is 16px and the minimum height 44px under a coarse pointer. ⌘/Ctrl+Enter submits the form; Enter adds a line.
  */
 
 const textareaVariants = cva(
   [
     'block w-full min-w-0 resize-y border-0 font-sans font-normal text-ink outline-none touch-manipulation',
     'placeholder:text-placeholder',
-    'pointer-coarse:text-body-lg',
+    'pointer-coarse:min-h-11 pointer-coarse:text-body-lg',
     'aria-invalid:bg-danger-subtle aria-invalid:shadow-[0_0_0_1px_var(--color-danger)]',
     'disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground',
   ],
@@ -22,12 +22,13 @@ const textareaVariants = cva(
     variants: {
       variant: {
         default: [
-          'bg-surface shadow-control',
-          'not-aria-invalid:focus-ring:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
+          'bg-well shadow-none',
+          'hover-fine:not-focus:not-aria-invalid:bg-well-hover',
+          'not-aria-invalid:focus-ring:shadow-focus',
         ],
         ghost: [
           'bg-transparent shadow-none',
-          'not-aria-invalid:focus-ring:bg-transparent not-aria-invalid:focus-ring:shadow-[0_0_0_1px_var(--color-border-focus)]',
+          'not-aria-invalid:focus-ring:bg-transparent not-aria-invalid:focus-ring:shadow-focus',
           'disabled:bg-transparent',
         ],
       },

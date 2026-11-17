@@ -64,7 +64,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Sizes × states',
-      description: 'SM 28×16 and MD 36×20. Hover stretches the thumb away from its pinned edge. Hover and focus are forced.',
+      description: 'SM 28×16 and MD 36×20. Hover and focus are forced.',
       rows: SIZES.map((s) => ({ label: s.toUpperCase(), props: { size: s } })),
       columns: STATES,
       render,
@@ -108,5 +108,7 @@ export const doc: ComponentDoc = {
     'The app animates the thumb with keyframes (1px overshoot at 55%, only after the first user change). This port uses one translate transition on ease-toggle (cubic-bezier(0.34, 1.35, 0.64, 1)). Its overshoot is about 1px, and a CSS transition does not run on first paint, so the result is the same without new keyframes in theme.css.',
     'The track colour changes at once (the app sets its transition to 0ms).',
     'The app requires a label. Here the label is optional, but a switch without one must have an aria-label.',
+    'Audit (17 Nov 2026): hover does not stretch the thumb (on the control or on the label row). The shipped app stretches the thumb on hover (SM 12→14, MD 16→18).',
+    'Audit (17 Nov 2026): the off track is switch-off #878c99 (3.36:1 on white). The shipped app uses #d4d6dd (1.45:1).',
   ],
 }

@@ -12,10 +12,13 @@ import { cn } from '@/lib/utils'
  * Detail Kartu, the Kartu rows and tiles, Tim member rows and the sidebar account menu.
  * Trigger: text 36px (radius xl, shadow-control), icon 32px square (radius lg) or ghost icon
  * (radius md, no fill until hover or open). Menu: 260px, 6px padding, radius xl, shadow-popover,
- * 6px from the trigger, right edges aligned. Items: min 44px, 8px 10px padding, radius lg,
+ * 6px from the trigger, right edges aligned. Items (audit): min 36px on a fine pointer, 44px on a
+ * coarse pointer, 2px apart, 8px 10px padding, radius lg,
  * 16px icon in ink-2, label body-sm medium; hover/highlight state-hover, pressed state-pressed;
- * danger in danger-text; disabled in disabled-foreground and still focusable.
- * Motion: menu-in (opacity + scale 0.97 from the trigger corner) at --motion-quick.
+ * danger in danger-text; disabled in disabled-foreground and still focusable. Separator 0.5px.
+ * Motion (audit): a transition on data-starting-style / data-ending-style, opacity + scale
+ * --motion-dropdown-pre-scale (0.97) from the trigger corner, in --motion-dropdown-open 150ms, out
+ * --motion-dropdown-close 120ms. Reduced motion: a 150ms fade.
  */
 
 /**
@@ -79,7 +82,14 @@ function ActionMenuTrigger({ className, variant = 'secondary', children, ...prop
 }
 
 const actionMenuPanelClass =
-  'flex w-[260px] max-w-[calc(100vw-16px)] flex-col rounded-xl bg-surface p-1.5 shadow-popover outline-none'
+  'flex w-[260px] max-w-[calc(100vw-16px)] flex-col gap-0.5 rounded-xl bg-surface p-1.5 shadow-popover outline-none'
+
+const actionMenuMotionClass = [
+  'origin-(--transform-origin) transition-[opacity,scale] duration-(--motion-dropdown-open) ease-smooth-out',
+  'data-ending-style:duration-(--motion-dropdown-close)',
+  'data-starting-style:scale-(--motion-dropdown-pre-scale) data-starting-style:opacity-0',
+  'data-ending-style:scale-(--motion-dropdown-pre-scale) data-ending-style:opacity-0',
+]
 
 interface ActionMenuContentProps extends Menu.Popup.Props {
   side?: 'top' | 'bottom' | 'left' | 'right'
@@ -112,11 +122,7 @@ function ActionMenuContent({
       >
         <Menu.Popup
           data-slot="action-menu-content"
-          className={cn(
-            actionMenuPanelClass,
-            'origin-(--transform-origin) animate-menu-in [animation-duration:var(--motion-quick)]',
-            className,
-          )}
+          className={cn(actionMenuPanelClass, actionMenuMotionClass, className)}
           {...props}
         />
       </Menu.Positioner>
@@ -134,7 +140,7 @@ function ActionMenuPanel({ className, ...props }: React.ComponentProps<'div'>) {
 
 const actionMenuItemVariants = cva(
   [
-    'relative flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left',
+    'relative flex min-h-9 w-full pointer-coarse:min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left',
     'text-body-sm font-medium no-underline outline-none select-none',
     'transition-colors duration-(--motion-quick) ease-smooth-out',
     '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
@@ -209,7 +215,7 @@ function ActionMenuSeparator({ className, ...props }: Menu.Separator.Props) {
   return (
     <Menu.Separator
       data-slot="action-menu-separator"
-      className={cn('mx-1 my-1.5 h-px shrink-0 bg-border-subtle', className)}
+      className={cn('my-1.5 h-[0.5px] shrink-0 bg-border-subtle', className)}
       {...props}
     />
   )

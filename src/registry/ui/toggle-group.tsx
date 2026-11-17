@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils'
  * track: the Tabs Segmented look for a filter: one component track, a white pill slides
  *   to the pressed item with `--motion-tabs`.
  * icon size: 28px square icon items (the grid/list view switch).
+ * Every item has a hit area at least 44px tall and scales to 0.97 on press.
  * Single (default): exactly one item stays pressed; a press on the pressed item does nothing.
  * `multiple`: any number of items, none included; the value is a `string[]`.
  */
@@ -65,7 +66,8 @@ const itemVariants = cva(
   [
     'relative z-1 hit-44 inline-flex items-center justify-center border-0 whitespace-nowrap',
     'font-sans text-body-sm font-medium outline-none select-none touch-manipulation',
-    'transition-[color,background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
+    'transition-[color,background-color,box-shadow,scale] duration-(--motion-quick) ease-smooth-out',
+    'pressed:scale-[0.97]',
     'focus-ring:outline-focus',
     'disabled:cursor-not-allowed data-disabled:cursor-not-allowed',
     '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
@@ -81,14 +83,15 @@ const itemVariants = cva(
         ],
         segmented: [
           'min-w-0 rounded-lg bg-component px-2 text-ink-2 tabular-nums',
-          'before:h-[calc(100%+8px)]! before:w-full!',
+          // 44px tall hit area; as wide as the item, so neighbours do not overlap.
+          'before:w-full!',
           'hover-fine:not-data-pressed:bg-component-hover hover-fine:not-data-pressed:text-ink',
           'data-pressed:bg-surface data-pressed:text-ink data-pressed:shadow-control',
           'data-disabled:bg-disabled! data-disabled:text-disabled-foreground! data-disabled:shadow-none!',
         ],
         track: [
           'bg-transparent text-ink-2 tabular-nums',
-          'before:h-[calc(100%+8px)]! before:w-full!',
+          'before:w-full!',
           'hover-fine:text-ink data-pressed:text-ink',
           'data-disabled:text-disabled-foreground!',
           // `multiple` has no sliding pill: each pressed item carries the pill look itself.
@@ -107,7 +110,7 @@ const itemVariants = cva(
         variant: 'chips',
         size: 'sm',
         className: [
-          'rounded-md px-2.5 text-caption-lg shadow-ring before:h-[max(100%,40px)]!',
+          'rounded-md px-2.5 text-caption-lg shadow-ring',
           'data-pressed:bg-primary-light',
         ],
       },
