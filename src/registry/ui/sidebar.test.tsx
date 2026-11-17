@@ -112,6 +112,29 @@ describe('Sidebar', () => {
     expect(screen.getByRole('note')).toBeTruthy()
   })
 
+  it('a locked item is described by the visible footer notice', async () => {
+    render(<App locked />)
+    const cards = screen.getByText('Kartu').closest('a')!
+    const note = screen.getByRole('note')
+    await waitFor(() => expect(cards.getAttribute('aria-describedby')).toBe(note.id))
+    expect(note.id).toBeTruthy()
+  })
+
+  it('with no notice, a locked item shows its reason as a caption under it', () => {
+    render(
+      <Sidebar layout="static">
+        <SidebarNav>
+          <SidebarItem href="/cards" label="Kartu" locked lockedHint="Verifikasi akun dulu">
+            <Icon icon={CreditCardIcon} />
+          </SidebarItem>
+        </SidebarNav>
+      </Sidebar>,
+    )
+    const hint = screen.getByText('Verifikasi akun dulu')
+    expect(hint.dataset.slot).toBe('sidebar-item-hint')
+    expect(screen.getByText('Kartu').closest('a')!.getAttribute('aria-describedby')).toBe(hint.id)
+  })
+
   it('collapses to the rail (uncontrolled) and names items by aria-label', async () => {
     const onCollapsedChange = vi.fn()
     render(<App onCollapsedChange={onCollapsedChange} />)
@@ -200,7 +223,7 @@ describe('Sidebar', () => {
 
   it('the KYC notice on the rail is a link to the settings page; render takes a router link', () => {
     const { rerender } = render(<App locked collapsed />)
-    const link = screen.getByRole('link', { name: 'Verifikasi diperlukan — buka Pengaturan' })
+    const link = screen.getByRole('link', { name: 'Verifikasi diperlukan, buka Pengaturan' })
     expect(link.getAttribute('href')).toBe('/settings')
     expect(link.tabIndex).toBe(0)
     expect(screen.queryByRole('note')).toBeNull()

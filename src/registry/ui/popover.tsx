@@ -7,12 +7,20 @@ import { cn } from '@/lib/utils'
  * Source: the shipped app (foundations/Popover.svelte): filter panels, search results,
  * notification panels. The panel owns only the mechanics; the content owns its layout.
  * Panel: surface, radius 2xl (12px), shadow-popover, z --z-popover, no padding, 8px from the
- * anchor, max width viewport − 32px. Open motion: menu-in (opacity + scale 0.97 from the anchor
- * corner) at --motion-quick. Reduced motion zeroes the token.
+ * anchor, max width viewport − 32px. Motion (audit): a transition on data-starting-style /
+ * data-ending-style, opacity + scale --motion-dropdown-pre-scale (0.97) from the anchor corner, in
+ * --motion-dropdown-open 150ms, out --motion-dropdown-close 120ms. Reduced motion: a 150ms fade.
  */
 
 const popoverPanelClass =
   'flex max-w-[calc(100vw-32px)] flex-col overflow-clip rounded-2xl bg-surface text-ink shadow-popover outline-none'
+
+const popoverMotionClass = [
+  'origin-(--transform-origin) transition-[opacity,scale] duration-(--motion-dropdown-open) ease-smooth-out',
+  'data-ending-style:duration-(--motion-dropdown-close)',
+  'data-starting-style:scale-(--motion-dropdown-pre-scale) data-starting-style:opacity-0',
+  'data-ending-style:scale-(--motion-dropdown-pre-scale) data-ending-style:opacity-0',
+]
 
 /**
  * An anchored panel that opens from a trigger: filters, search results, notifications.
@@ -75,11 +83,7 @@ function PopoverContent({
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
-          className={cn(
-            popoverPanelClass,
-            'origin-(--transform-origin) animate-menu-in [animation-duration:var(--motion-quick)]',
-            className,
-          )}
+          className={cn(popoverPanelClass, popoverMotionClass, className)}
           {...props}
         />
       </PopoverPrimitive.Positioner>

@@ -29,6 +29,20 @@ describe('Skeleton', () => {
     expect(b?.className).toContain('bg-component')
   })
 
+  it('lineHeight wraps the bone in a line box of that height, bone centred', () => {
+    const { container } = render(<Skeleton width="60%" height={12} lineHeight={20} className="mt-1" />)
+    const line = container.firstElementChild as HTMLElement
+    expect(line.dataset.slot).toBe('skeleton-line')
+    expect(line.getAttribute('aria-hidden')).toBe('true')
+    expect(line.style.height).toBe('20px')
+    expect(line.style.width).toBe('60%')
+    expect(line.className).toContain('items-center')
+    expect(line.className).toContain('mt-1')
+    const bone = line.firstElementChild as HTMLElement
+    expect(bone.dataset.slot).toBe('skeleton')
+    expect(bone.style.height).toBe('12px')
+  })
+
   it('shimmer only animates for motion-safe users', () => {
     const { container } = render(<Skeleton shimmer />)
     const bone = container.firstElementChild as HTMLElement

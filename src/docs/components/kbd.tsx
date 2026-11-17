@@ -62,5 +62,6 @@ export const doc: ComponentDoc = {
     'Renders a native <kbd>. Size: 20px tall, min-width 20px, 6px side padding, radius sm, caption-sm 11/16 medium.',
     'Values come from the shipped app (Kbd.svelte), which is the source of truth (decision, 12 Nov 2026). Wonder is the visual reference.',
     'The app takes the text as a keys prop or children; this port takes children only.',
+    'Audit (17 Nov 2026): the key is hidden under a coarse pointer (pointer-coarse:hidden), as a touch device has no keyboard. The shipped app shows it on every device.',
   ],
 }

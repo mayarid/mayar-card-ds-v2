@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
  * Mayar v2 Skeleton. Code-only: no specimen on the Wonder Design System page.
  * Source: the shipped app (foundations/Skeleton.svelte). The app bones are static; `shimmer` is an
  * opt-in addition of this port and stops under reduced motion.
+ * Text bones (audit): `lineHeight` wraps the bone in a line box of the text line height, bone centred.
  */
 const skeletonVariants = cva('block max-w-full shrink-0', {
   variants: {
@@ -41,6 +42,12 @@ interface SkeletonProps
   width?: SkeletonLength
   /** A number is px: 10 / 12 / 14 for text lines, 20–24 for chips, 36 for fields. */
   height?: SkeletonLength
+  /**
+   * For a text bone: the line height of the text it stands in for (e.g. 20 for body-sm, 16 for
+   * caption-lg). The bone sits centred in a line box of that height, so the layout does not move
+   * when the text arrives (audit).
+   */
+  lineHeight?: SkeletonLength
 }
 
 const length = (value: SkeletonLength) => (typeof value === 'number' ? `${value}px` : value)
@@ -50,18 +57,39 @@ const length = (value: SkeletonLength) => (typeof value === 'number' ? `${value}
  *
  * It is always `aria-hidden`: put `role="status"`, `aria-busy` and a screen-reader label on the
  * loading container, not on each bone. For an avatar bone use
- * `<Skeleton width={36} height={36} radius="full" />`.
+ * `<Skeleton width={36} height={36} radius="full" />`. For a text line pass the text `lineHeight`:
+ * `<Skeleton width="60%" height={12} lineHeight={20} />`.
  */
 function Skeleton({
   className,
   width = '100%',
   height = 12,
+  lineHeight,
   radius,
   fill,
   shimmer,
   style,
   ...props
 }: SkeletonProps) {
+  if (lineHeight !== undefined) {
+    return (
+      <span
+        data-slot="skeleton-line"
+        {...props}
+        aria-hidden
+        className={cn('flex max-w-full shrink-0 items-center', className)}
+        style={{ width: length(width), height: length(lineHeight), ...style }}
+      >
+        <span
+          data-slot="skeleton"
+          data-radius={radius ?? 'sm'}
+          data-fill={fill ?? 'well'}
+          className={skeletonVariants({ radius, fill, shimmer })}
+          style={{ width: '100%', height: length(height) }}
+        />
+      </span>
+    )
+  }
   return (
     <span
       data-slot="skeleton"

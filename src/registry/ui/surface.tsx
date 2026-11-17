@@ -9,8 +9,9 @@ import { cn } from '@/lib/utils'
  * Mayar v2 Surface. Wonder "Mayar Card Design System" › Card (Surface) section.
  * Kinds: container = white surface (not the `container` colour token), subtle = component,
  * strong = component-hover, card = card, transparent = none.
- * Radius lg 8 / xl 10 / 2xl 12 (default) / 3xl 16. Elevated = control shadow.
- * Divided: a 1px border-subtle line between direct children, 16px in from the start edge.
+ * Radius lg 8 / xl 10 / 2xl 12 (default) / 3xl 16. Elevated = control shadow (its ring is the only
+ * ring: audit, no extra border-subtle ring for a related child).
+ * Divided (audit): a 0.5px border-subtle line between direct children, 16px in from the start edge.
  * Nested: inner radius = outer radius − outer padding (16 − 4 = 12).
  */
 const surfaceVariants = cva(
@@ -31,13 +32,14 @@ const surfaceVariants = cva(
         '3xl': 'rounded-3xl',
       },
       elevated: {
-        true: 'shadow-control has-[>[data-related-ring=subtle]]:shadow-[0_0_0_1px_var(--color-border-subtle),var(--shadow-control)]',
+        // audit: the control shadow already has a ring, so a related child adds no second ring.
+        true: 'shadow-control',
         false: 'has-[>[data-related-ring=subtle]]:shadow-[0_0_0_1px_var(--color-border-subtle)]',
       },
       divided: {
         true: [
           'gap-0 overflow-clip *:relative',
-          "[&>*+*]:before:pointer-events-none [&>*+*]:before:absolute [&>*+*]:before:top-0 [&>*+*]:before:right-0 [&>*+*]:before:left-4 [&>*+*]:before:h-px [&>*+*]:before:bg-border-subtle [&>*+*]:before:content-['']",
+          "[&>*+*]:before:pointer-events-none [&>*+*]:before:absolute [&>*+*]:before:top-0 [&>*+*]:before:right-0 [&>*+*]:before:left-4 [&>*+*]:before:h-[0.5px] [&>*+*]:before:bg-border-subtle [&>*+*]:before:content-['']",
         ],
         false: '',
       },

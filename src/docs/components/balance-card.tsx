@@ -95,18 +95,20 @@ function render(props: Record<string, PropValue>, force?: MatrixAxisItem['force'
           <Icon icon={variant === 'tile' ? CreditCardIcon : Wallet01Icon} />
           {label}
         </BalanceCardLabel>
-        {variant === 'card' && props.toggle !== false ? <BalanceCardHideToggle /> : null}
+        {props.actions ? (
+          <BalanceCardActions>
+            <Button size="sm">
+              <Icon icon={Add01Icon} />
+              Top up saldo
+            </Button>
+            {variant === 'card' && props.toggle !== false ? <BalanceCardHideToggle className="my-0 me-0" /> : null}
+          </BalanceCardActions>
+        ) : variant === 'card' && props.toggle !== false ? (
+          <BalanceCardHideToggle />
+        ) : null}
       </BalanceCardHeader>
       <BalanceCardValue value={value} />
       <Caption kind={caption} />
-      {props.actions ? (
-        <BalanceCardActions>
-          <Button size="sm">
-            <Icon icon={Add01Icon} />
-            Top up saldo
-          </Button>
-        </BalanceCardActions>
-      ) : null}
     </>
   )
 
@@ -139,13 +141,16 @@ function code(props: Record<string, PropValue>) {
       `<BalanceCardContent>\n  <BalanceCardLabel>${label}</BalanceCardLabel>\n  <BalanceCardValue value={${value}} />\n</BalanceCardContent>\n<BalanceCardActions>\n  <Button variant="secondary">Perbarui</Button>\n</BalanceCardActions>`,
     )
   }
-  const header = `<BalanceCardHeader>\n  <BalanceCardLabel>\n    <Icon icon={Wallet01Icon} />\n    ${label}\n  </BalanceCardLabel>${
-    variant === 'card' && props.toggle !== false ? '\n  <BalanceCardHideToggle />' : ''
-  }\n</BalanceCardHeader>`
-  const actions = props.actions
-    ? `\n<BalanceCardActions>\n  <Button size="sm">\n    <Icon icon={Add01Icon} />\n    Top up saldo\n  </Button>\n</BalanceCardActions>`
-    : ''
-  const children = `${header}\n<BalanceCardValue value={${value}} />\n${captionCode(caption)}${actions}`
+  const toggle = variant === 'card' && props.toggle !== false
+  const right = props.actions
+    ? `\n  <BalanceCardActions>\n    <Button size="sm">\n      <Icon icon={Add01Icon} />\n      Top up saldo\n    </Button>${
+        toggle ? '\n    <BalanceCardHideToggle className="my-0 me-0" />' : ''
+      }\n  </BalanceCardActions>`
+    : toggle
+      ? '\n  <BalanceCardHideToggle />'
+      : ''
+  const header = `<BalanceCardHeader>\n  <BalanceCardLabel>\n    <Icon icon={Wallet01Icon} />\n    ${label}\n  </BalanceCardLabel>${right}\n</BalanceCardHeader>`
+  const children = `${header}\n<BalanceCardValue value={${value}} />\n${captionCode(caption)}`
   if (variant === 'tile') {
     return `<BalanceCardGroup role="tablist" aria-label="Ringkasan saldo">\n${indent(
       toJsx('BalanceCard', { render: undefined }, children).replace(
@@ -229,8 +234,8 @@ export const doc: ComponentDoc = {
     },
   ],
   examples: [
-    { id: 'balance-card/beranda-tiles', title: 'Beranda tiles', description: 'A group of tabs. One hide toggle in the chart header masks every tile.' },
-    { id: 'balance-card/with-actions', title: 'With actions', description: 'A standalone card. Persist the hidden choice in onHiddenChange.', codeOnly: true },
+    { id: 'balance-card/beranda-tiles', title: 'Beranda tiles', description: 'A group of tabs. One hide toggle in the chart header masks every tile. The QRIS tile failed to load and offers "Coba lagi".' },
+    { id: 'balance-card/with-actions', title: 'With actions', description: 'A standalone card with the actions in the header row, above the figure. Persist the hidden choice in onHiddenChange.', codeOnly: true },
     { id: 'balance-card/top-up-strip', title: 'Top-up strip', description: 'The refresh row from the top-up page.', codeOnly: true },
     { id: 'balance-card/low-balance', title: 'Low balance', description: 'A warning caption. The app has no low-balance rule yet.', codeOnly: true },
     { id: 'balance-card/loading', title: 'Loading', description: 'Bones replace the value and the caption; the card is aria-busy.', codeOnly: true },
@@ -242,7 +247,8 @@ export const doc: ComponentDoc = {
     { name: 'loading', type: 'boolean', default: 'false', description: 'Bones for the value and caption; aria-busy.' },
     { name: 'render', type: 'ReactElement', description: 'Render the card as another element, e.g. a tab button.' },
     { name: 'BalanceCardGroup columns', type: 'number', default: '4', description: 'Tiles per row from 1280px. It owns hidden / loading for its tiles.' },
-    { name: 'BalanceCardValue value', type: 'number | null', description: 'Whole Rupiah. null shows "—". children: a suffix word ("terpakai").' },
+    { name: 'BalanceCardValue value', type: 'number | null', description: 'Whole Rupiah. null shows a muted "–". More than 6 digits prints compact ("Rp 48,3 jt") with the full value in title. children: a suffix word ("terpakai").' },
+    { name: 'BalanceCardError onRetry / retryLabel', type: '() => void / string', default: '— / "Coba lagi"', description: 'Adds a secondary small retry button next to the error line.' },
     { name: 'BalanceCardValue money', type: 'boolean', default: 'true', description: 'false: not masked and no "Rp" (a percent).' },
     { name: 'BalanceCardDelta', type: 'direction: "up" | "down", tone: "positive" | "negative" | "warning" | "neutral"', description: 'Arrow and spoken word from direction, colour from tone.' },
     { name: 'BalanceCardCaption tone', type: '"muted" | "warning" | "danger"', default: '"muted"', description: 'Danger for an overspend, warning for a low balance.' },
@@ -265,7 +271,13 @@ export const doc: ComponentDoc = {
     'Value and caption: the app keeps the 12px tile gap between the value and the caption or delta row; the chip and its period ("vs 30 hari lalu") sit 6px apart. Wonder pulls the delta row up to 6px under the value.',
     'Hide toggle: the app renders the ghost icon Button (32px, radius lg, ink-2 glyph). Wonder shows radius md and a muted glyph.',
     'Strip: one row with a 24px gap (16px under 768px), as the top-up page.',
-    'Amounts: the full figure ("Rp 48.250.000") with tabular digits on every balance and budget amount. Wonder prints short figures ("Rp 48,25 jt").',
+    'Amounts: tabular digits on every balance and budget amount. Wonder prints short figures ("Rp 48,25 jt").',
+    'Audit (17 Nov 2026): BalanceCardValue prints a figure with more than 6 integer digits in id-ID compact notation ("Rp 48,3 jt"), with the full value ("Rp 48.250.000") in title and in an sr-only copy for screen readers. Smaller figures and inline amounts stay full. The shipped app always prints the full figure.',
+    'Audit (17 Nov 2026): in the card variant, BalanceCardActions go in BalanceCardHeader, at the right of the label and above the figure; on a narrow card they wrap under the label, still above the figure. The shipped app puts the actions under the caption.',
+    'Audit (17 Nov 2026): BalanceCardError takes onRetry (and retryLabel), which adds one secondary small "Coba lagi" button next to the error line. Do not use it in a tile that is a button; in the Beranda example the failed tile is not a tab. The shipped app has no retry.',
+    'Audit (17 Nov 2026): a missing value (value null) shows a muted en dash "–". The shipped app shows an em dash in ink.',
+    'Audit (17 Nov 2026): the warning caption (tone="warning") is regular weight; colour carries the state. The shipped app sets it medium.',
+    'Audit (17 Nov 2026): the label above the figure and the 4-tile BalanceCardGroup are kept from the shipped app as a documented exception to the figure recipe; the tiles are not redesigned.',
     'The strip variant, the neutral delta, the low-balance warning and the loading bones come from the app (top-up page, Beranda), not from a Wonder specimen.',
     'The value animates with AnimatedNumber (NumberFlow, as the app). No count-up on mount; reduced motion snaps.',
     'Tiles as tabs: the app wires role="tab", arrow keys and the chart panel itself. This pattern styles aria-selected and leaves the tab logic to the page (or the Tabs primitive).',

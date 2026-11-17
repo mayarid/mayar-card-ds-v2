@@ -8,15 +8,20 @@ import { getUsageTone, UsageBar, UsageBarLabel, UsageBarTrack, UsageBarValue } f
 describe('getUsageTone', () => {
   it.each([
     [null, 'none'],
-    [0, 'p1'],
-    [49, 'p1'],
-    [50, 'p2'],
-    [75, 'p3'],
-    [90, 'p4'],
+    [0, 'fill'],
+    [50, 'fill'],
+    [84, 'fill'],
+    [85, 'warning'],
+    [99, 'warning'],
     [100, 'over'],
     [140, 'over'],
   ] as const)('%s → %s', (pct, tone) => {
     expect(getUsageTone(pct)).toBe(tone)
+  })
+
+  it('takes a custom near threshold', () => {
+    expect(getUsageTone(80, 80)).toBe('warning')
+    expect(getUsageTone(79, 80)).toBe('fill')
   })
 })
 
@@ -25,7 +30,10 @@ describe('UsageBar', () => {
     const { container } = render(<UsageBar value={30} />)
     const root = container.querySelector('[data-slot="usage-bar"]') as HTMLElement
     expect(root.getAttribute('aria-hidden')).toBe('true')
-    expect(root.dataset.tone).toBe('p1')
+    expect(root.dataset.tone).toBe('fill')
+    const fill = container.querySelector('[data-slot="usage-bar-fill"]') as HTMLElement
+    expect(fill.className).toContain('bg-primary')
+    expect(fill.className).not.toContain('animation-delay')
   })
 
   it('is a meter with an aria-label', () => {
@@ -33,7 +41,7 @@ describe('UsageBar', () => {
     const meter = screen.getByRole('meter', { name: 'Limit bulanan' })
     expect(meter.getAttribute('aria-valuenow')).toBe('720')
     expect(meter.getAttribute('aria-valuemax')).toBe('1000')
-    expect(meter.dataset.tone).toBe('p2')
+    expect(meter.dataset.tone).toBe('fill')
   })
 
   it('composes label and value; the label names the meter', () => {
@@ -45,8 +53,9 @@ describe('UsageBar', () => {
       </UsageBar>,
     )
     const meter = screen.getByRole('meter', { name: 'Kuota kartu' })
-    expect(meter.dataset.tone).toBe('p4')
+    expect(meter.dataset.tone).toBe('warning')
     expect(meter.textContent).toContain('92%')
+    expect(screen.getByText('Kuota kartu').getAttribute('title')).toBe('Kuota kartu')
   })
 
   it('clamps the fill and turns red at 100%+', () => {
@@ -56,12 +65,13 @@ describe('UsageBar', () => {
     expect(fill.className).toContain('bg-danger')
   })
 
-  it('paints the warning fill only when the tone is set', () => {
-    const { container } = render(<UsageBar value={85} tone="warning" aria-label="Kuota kartu" />)
+  it('paints the warning fill from 85%, and a tone override wins', () => {
+    const { container } = render(<UsageBar value={85} aria-label="Kuota kartu" />)
     const fill = container.querySelector('[data-slot="usage-bar-fill"]') as HTMLElement
     expect(screen.getByRole('meter', { name: 'Kuota kartu' }).dataset.tone).toBe('warning')
     expect(fill.className).toContain('bg-warning')
-    expect(getUsageTone(85)).toBe('p3')
+    const { container: forced } = render(<UsageBar value={85} tone="fill" aria-label="Paksa" />)
+    expect((forced.querySelector('[data-slot="usage-bar-fill"]') as HTMLElement).className).toContain('bg-primary')
   })
 
   it('color wins over the tone; height and track change the track', () => {

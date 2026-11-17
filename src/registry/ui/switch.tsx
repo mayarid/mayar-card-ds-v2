@@ -7,9 +7,8 @@ import { cn } from '@/lib/utils'
 /*
  * Mayar v2 Switch. Wonder "Mayar Forms Inputs Guide" › Switch Block.
  * SM 28×16 (12px thumb, 12px travel) / MD 36×20 (16px thumb, 16px travel). Off: switch-off; on: primary.
- * The thumb travels with --motion-switch on ease-toggle (a bounded overshoot). On hover the thumb
- * stretches away from its pinned edge (SM 12→14, MD 16→18) with scaleX, so the box never resizes.
- * A CSS transition never runs on first paint, so an "on" switch mounts in place.
+ * The thumb travels with --motion-switch on ease-toggle (a bounded overshoot). Hover does not
+ * change the thumb. A CSS transition never runs on first paint, so an "on" switch mounts in place.
  */
 const switchVariants = cva(
   [
@@ -21,8 +20,8 @@ const switchVariants = cva(
   {
     variants: {
       size: {
-        sm: 'h-4 w-7 hover-fine:*:data-[slot=switch-thumb]:scale-x-[calc(14/12)]',
-        md: 'h-5 w-9 hover-fine:*:data-[slot=switch-thumb]:scale-x-[calc(18/16)]',
+        sm: 'h-4 w-7',
+        md: 'h-5 w-9',
       },
     },
     defaultVariants: { size: 'md' },
@@ -32,8 +31,7 @@ const switchVariants = cva(
 const thumbVariants = cva(
   [
     'pointer-events-none absolute top-0.5 left-0.5 rounded-pill bg-surface shadow-[0_1px_2px_var(--color-shadow-drop)]',
-    'origin-left data-checked:origin-right',
-    '[transition:translate_var(--motion-switch)_var(--ease-toggle),scale_var(--motion-quick)_var(--ease-smooth-out)]',
+    '[transition:translate_var(--motion-switch)_var(--ease-toggle)]',
   ],
   {
     variants: {
@@ -45,12 +43,6 @@ const thumbVariants = cva(
     defaultVariants: { size: 'md' },
   },
 )
-
-/** A hover on the label row stretches the thumb too. */
-const rowHover = {
-  sm: 'hover-fine:[&_[data-slot=switch-thumb]]:scale-x-[calc(14/12)]',
-  md: 'hover-fine:[&_[data-slot=switch-thumb]]:scale-x-[calc(18/16)]',
-} as const
 
 interface SwitchProps
   extends Omit<SwitchPrimitive.Root.Props, 'className' | 'children'>,
@@ -93,7 +85,6 @@ function Switch({ className, size, description, children, ...props }: SwitchProp
       className={cn(
         'group/switch relative inline-flex min-h-11 cursor-pointer items-start gap-2 touch-manipulation select-none data-disabled:cursor-not-allowed',
         '[&_[data-slot=switch]]:mt-0.5',
-        rowHover[resolvedSize],
         className,
       )}
     >

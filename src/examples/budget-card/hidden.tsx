@@ -24,7 +24,7 @@ export default function BudgetCardHidden() {
         </BudgetCardHeader>
         <BudgetCardList>
           <BudgetCardItem category="Pemasaran" spent={3_100_000} amount={6_000_000} />
-          <BudgetCardItem category="Operasional" spent={3_500_000} amount={4_000_000} index={1} />
+          <BudgetCardItem category="Operasional" spent={3_500_000} amount={4_000_000} />
         </BudgetCardList>
         <BudgetCardFooter>
           <span>Total sisa</span>

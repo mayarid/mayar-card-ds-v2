@@ -3,7 +3,7 @@ import { useRender } from '@base-ui/react/use-render'
 import { createContext, use, useMemo } from 'react'
 
 import { Button, type ButtonProps } from '@/components/ui/button'
-import { UsageBar, type UsageBarProps } from '@/components/ui/usage-bar'
+import { getUsageTone, UsageBar, type UsageBarProps } from '@/components/ui/usage-bar'
 import { cn } from '@/lib/utils'
 
 /*
@@ -11,9 +11,11 @@ import { cn } from '@/lib/utils'
  * Visual reference: Wonder Dashboard › "Plan Quota Card" Normal / Near Limit / Full v2.
  * A well card (radius 3xl = 16, 4px inset, border-subtle) holds the tier line (caption-lg semibold,
  * primary) and a surface body (radius xl, padding 12, gap 10, ambient shadow) with the description
- * (body-sm, ink-2), the usage bar on a well track (the blue ramp, red at 100%) and the one-line
- * legend "3 terpakai · 7 tersedia" (caption-lg, muted, tabular). Suspended: the legend reads
- * "Paket berakhir" in semibold warning-text. The card does not change colour by status.
+ * (body-sm, ink-2), the usage bar on a well track and the one-line legend "3 terpakai · 7 tersedia"
+ * (caption-lg, muted, tabular). Suspended: the legend reads "Paket berakhir" in warning-text.
+ * The card does not change colour by status.
+ * Audit (17 Nov 2026): the bar is primary, warning from near (80%), red at 100%+ (the app: a blue
+ * ramp); the suspended legend is regular weight (the app: semibold).
  */
 
 type PlanQuotaStatus = 'ok' | 'near' | 'at' | 'over' | 'unlimited' | 'unknown' | 'suspended'
@@ -137,18 +139,28 @@ function PlanQuotaDescription({ className, children, ...props }: React.Component
 }
 
 /**
- * The usage bar on a well track: the blue usage ramp, red at 100% or more. Hidden when there is
- * nothing to measure (unlimited, unknown or suspended). Decorative: the legend prints the numbers.
+ * The usage bar on a well track: primary, the warning tone from the near state (80%), red at 100%
+ * or more. Hidden when there is nothing to measure (unlimited, unknown or suspended). Decorative:
+ * the legend prints the numbers.
  */
 function PlanQuotaBar({ className, ...props }: Omit<UsageBarProps, 'value'>) {
   const { percent } = use(PlanQuotaContext)
   if (percent === null) return null
-  return <UsageBar data-slot="plan-quota-bar" value={percent} track="well" className={className} {...props} />
+  return (
+    <UsageBar
+      data-slot="plan-quota-bar"
+      value={percent}
+      track="well"
+      tone={getUsageTone(percent, NEAR_LIMIT_PERCENT)}
+      className={className}
+      {...props}
+    />
+  )
 }
 
 /**
  * The numbers as one line: "3 terpakai · 7 tersedia". With no usage it prints "10 kartu",
- * "Kartu tanpa batas" or "Paket berakhir" (semibold warning-text). Pass `children` to replace it.
+ * "Kartu tanpa batas" or "Paket berakhir" (warning-text). Pass `children` to replace it.
  */
 function PlanQuotaLegend({ className, children, ...props }: React.ComponentProps<'span'>) {
   const { status, legend } = use(PlanQuotaContext)
@@ -158,7 +170,7 @@ function PlanQuotaLegend({ className, children, ...props }: React.ComponentProps
       data-status={status}
       className={cn(
         'text-caption-lg text-muted tabular-nums',
-        status === 'suspended' && 'font-semibold text-warning-text',
+        status === 'suspended' && 'text-warning-text',
         className,
       )}
       {...props}

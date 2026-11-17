@@ -24,7 +24,7 @@ describe('OtpInput', () => {
     render(<Labelled />)
     expect(slots()).toHaveLength(6)
     expect(screen.getByRole('textbox', { name: 'Kode verifikasi' })).toBe(slots()[0])
-    expect(screen.getByRole('textbox', { name: 'Digit 2 of 6' })).toBe(slots()[1])
+    expect(screen.getByRole('textbox', { name: 'Digit 2 dari 6' })).toBe(slots()[1])
     expect(slots()[0]?.getAttribute('autocomplete')).toBe('one-time-code')
     expect(slots()[0]?.getAttribute('inputmode')).toBe('numeric')
     expect(document.querySelectorAll('[data-slot=otp-input-separator]')).toHaveLength(1)

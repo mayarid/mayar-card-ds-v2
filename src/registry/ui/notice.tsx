@@ -16,8 +16,9 @@ import { cn } from '@/lib/utils'
  * error/notice copies in the modals and forms.
  * banner: 16px padding, 12px gap, 20px icon, radius 2xl, body in ink.
  * inline: 10px 12px padding, 8px gap, 16px icon, radius lg, body in the tone text colour.
- * Tones: info (primary-tint), neutral (well + subtle ring), success, warning, danger
- * (inline danger: danger-subtle + danger-light ring).
+ * Tones: info (primary-tint), neutral (well + 0.5px subtle ring, audit), success, warning, danger
+ * (inline danger: danger-subtle + 1px danger-light ring, the tinted callout edge).
+ * Icon (audit): the tone icon shows by default, but not when a `title` is set.
  */
 
 const noticeVariants = cva('flex w-full items-start', {
@@ -28,7 +29,7 @@ const noticeVariants = cva('flex w-full items-start', {
     },
     tone: {
       info: 'bg-primary-tint [--notice-text:var(--color-primary)]',
-      neutral: 'bg-well inset-ring inset-ring-border-subtle [--notice-text:var(--color-ink)]',
+      neutral: 'bg-well inset-ring-[0.5px] inset-ring-border-subtle [--notice-text:var(--color-ink)]',
       success: 'bg-success-light [--notice-text:var(--color-success-text)]',
       warning: 'bg-warning-light [--notice-text:var(--color-warning-text)]',
       danger: 'bg-danger-light [--notice-text:var(--color-danger-text)]',
@@ -50,7 +51,10 @@ const NOTICE_ICONS: Record<NoticeTone, IconProps['icon']> = {
 }
 
 interface NoticeProps extends Omit<React.ComponentProps<'div'>, 'title'>, VariantProps<typeof noticeVariants> {
-  /** Icon override (a Hugeicons icon). Leave it out for the tone icon; `false` shows no icon. */
+  /**
+   * Icon override (a Hugeicons icon); `false` shows no icon. Left out: the tone icon, or no icon when
+   * `title` is set (audit: the title already leads the notice).
+   */
   icon?: IconProps['icon'] | false
   /** Body colour: `tone` (the tone text colour) or `ink`. Default: banner `ink`, inline `tone`. */
   bodyTone?: 'ink' | 'tone'
@@ -79,7 +83,7 @@ function Notice({
   children,
   ...props
 }: NoticeProps) {
-  const glyph = icon === false ? null : (icon ?? NOTICE_ICONS[tone ?? 'info'])
+  const glyph = icon === false ? null : (icon ?? (title ? null : NOTICE_ICONS[tone ?? 'info']))
   const body = bodyTone ?? (variant === 'inline' ? 'tone' : 'ink')
   return (
     <div

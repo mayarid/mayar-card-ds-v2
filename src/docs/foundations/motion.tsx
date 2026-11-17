@@ -12,7 +12,7 @@ import { CopyChip, Mono, Note, Rules, TokenTable } from './_parts/ui'
 
 const BASE_DURATIONS = [
   { name: 'micro', use: 'Tiny colour nudges.' },
-  { name: 'quick', use: 'Hover and colour fades: Radio, choice card ring, OTP slot ring, Select chevron, Switch hover stretch.' },
+  { name: 'quick', use: 'Hover and colour fades, and the press scale: Radio, choice card ring, OTP slot ring, Select chevron.' },
   { name: 'fast', use: 'Short moves.' },
   { name: 'medium', use: 'Larger moves and settle-in.' },
 ]
@@ -21,31 +21,34 @@ const COMPONENT_DURATIONS = [
   { name: 'switch', use: 'Switch thumb travel, with a 1px overshoot. Uses ease-toggle.' },
   { name: 'check-box', use: 'Checkbox fill.' },
   { name: 'check-draw', use: 'Checkbox tick draw.' },
-  { name: 'dropdown-open', use: 'Select, Combobox, Popover entry (scale from 0.97).' },
-  { name: 'dropdown-close', use: 'Menu close: fade + 0.99.' },
+  { name: 'dropdown-open', use: 'Menu, Select, Combobox, Popover entry: fade + scale from 0.97, origin at the trigger.' },
+  { name: 'dropdown-close', use: 'Menu exit. Faster than the entry.' },
   { name: 'tabs', use: 'Tabs pill or line indicator and label colour.' },
-  { name: 'choice-pop', use: 'Choice card radio dot, scale 0 → 1.' },
+  { name: 'choice-pop', use: 'Choice card radio dot, scale 0.5 → 1 with a fade.' },
   { name: 'toast-open', use: 'Toast entry: rise 16px, scale 0.97.' },
   { name: 'toast-close', use: 'Toast exit and stack restack.' },
-  { name: 'dialog-open', use: 'Dialog entry: opacity + scale 0.96. No exit motion.' },
-  { name: 'bar-fill', use: 'Usage bar fill, scaleX from the left. Never animate width.' },
+  { name: 'dialog-open', use: 'Dialog entry: 16px rise, 4px blur, fade.' },
+  { name: 'dialog-close', use: 'Dialog exit. Faster than the entry.' },
+  { name: 'sheet-open', use: 'Phone bottom sheet: slides up, solid the whole way.' },
+  { name: 'sheet-close', use: 'Phone bottom sheet: slides down, and springs back after a short drag.' },
+  { name: 'bar-fill', use: 'Usage bar fill: a fade on first paint. Bars never grow from 0.' },
   { name: 'state-swap', use: 'Combobox loading ↔ results body: 4px rise, 2px blur.' },
 ]
 
 const EASINGS = [
   { name: 'smooth-out', className: 'ease-smooth-out', use: 'Everything that enters or moves, except Switch.' },
   { name: 'toggle', className: 'ease-toggle', use: 'Switch thumb only. A small overshoot.' },
-  { name: 'standard', className: 'ease-standard', use: 'Symmetric transitions that are not entrances.' },
+  { name: 'standard', className: 'ease-standard', use: 'Rare. Not for anything the user causes; use smooth-out there.' },
 ]
 
 /* Class names stay literal so Tailwind generates them. */
 const ANIMATIONS = [
-  { name: 'menu-in', className: 'animate-menu-in', use: 'Menus and popovers. Scale 0.97 → 1 and fade.' },
-  { name: 'dialog-in', className: 'animate-dialog-in', use: 'Dialog panel. Scale 0.96 → 1 and fade.' },
-  { name: 'drawer-in', className: 'animate-drawer-in', use: 'Dialog as a drawer. Slides 24px from the right.' },
-  { name: 'fade-in', className: 'animate-fade-in', use: 'Backdrops and plain reveals.' },
+  { name: 'menu-in', className: 'animate-menu-in', use: 'Entry only. Components use enter and exit transitions; keep this for one-off reveals.' },
+  { name: 'dialog-in', className: 'animate-dialog-in', use: 'Entry only: 16px rise, 4px blur, fade. Components use transitions.' },
+  { name: 'drawer-in', className: 'animate-drawer-in', use: 'Entry only: slides its full width from the right.' },
+  { name: 'fade-in', className: 'animate-fade-in', use: 'Plain reveals.' },
   { name: 'shake', className: 'animate-shake', use: 'Validation error on submit: Field, OTP, Select. Never on mount or typing.' },
-  { name: 'bar-fill', className: 'animate-bar-fill origin-left', use: 'Usage bar first paint. Needs origin-left.' },
+  { name: 'bar-fill', className: 'animate-bar-fill', use: 'Usage bar first paint: a fade.' },
   { name: 'state-swap', className: 'animate-state-swap', use: 'Swap one body for another (loading → results).' },
   { name: 'shimmer', className: 'animate-shimmer', use: 'Skeleton shimmer. Infinite.' },
 ]
@@ -202,7 +205,7 @@ function MotionPage() {
       <Section
         id="reduced-motion"
         title="Reduced motion"
-        description="Under prefers-reduced-motion: reduce, the theme sets these tokens to 0ms. State still changes at once: colour, opacity and the tick appear with no fade."
+        description="Under prefers-reduced-motion: reduce, the theme changes these tokens. Small controls change at once. Overlays (menus, dialogs, sheets, toasts) keep a 150ms crossfade, and their travel, scale and blur go to neutral."
       >
         <div className="flex flex-wrap gap-1.5">
           {REDUCED.map((name) => (
@@ -212,14 +215,14 @@ function MotionPage() {
           ))}
         </div>
         <Note>
-          --motion-micro, --motion-medium and the toast tokens keep their values. A component that uses them adds
-          motion-reduce:animate-none or motion-reduce:transition-none on the moving element.
+          Overlays keep a short crossfade, so a change is still visible. Do not add motion-reduce:transition-none to
+          overlays; the tokens already handle it.
         </Note>
         <Rules
           items={{
             do: [
               'Read durations from --motion-* so reduced motion turns them off.',
-              'Animate transform and opacity only. Use scaleX for bars.',
+              'Animate transform and opacity only. Bars fade in; they never grow from 0.',
               'Enter with ease-smooth-out.',
               'Skip motion on first paint: tabs snap, checkboxes and switches wait for the first change.',
             ],

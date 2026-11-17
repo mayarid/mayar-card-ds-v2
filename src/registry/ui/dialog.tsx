@@ -2,7 +2,17 @@ import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { createContext, use, useMemo, type ReactNode } from 'react'
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
@@ -13,10 +23,15 @@ import { cn } from '@/lib/utils'
  * Source: the shipped app (foundations/Dialog.svelte + DialogFooter.svelte), built from the v2
  * frames (Create Card, Kartu Actions, KYC, PIN Gate, Transaksi detail drawer).
  * Sizes: SM 400 / MD 480 / LG 880. Radius media 20px. Overlay bg-overlay. z --z-modal.
- * Header: plain (36px ghost close, body 0 24 24) · divided (hairline, 32px close, body 24) ·
+ * Header: plain (36px ghost close, body 0 24 24) · divided (0.5px hairline, 32px close, body 24) ·
  * none (corner close, body 32 24 24). Placement: center or drawer (right edge, 8px inset, 430px).
- * Motion: entrance only. Panel opacity + scale 0.96 → 1, drawer translateX 24px → 0, overlay fade,
- * --motion-dialog-open 200ms smooth-out. Reduced motion zeroes the token.
+ * Under 768px (audit) the panel is a bottom sheet: full width, top radius 14px, a grab handle in place
+ * of the ×, drag down to close, footer buttons stacked full width.
+ * Motion (audit): CSS transitions on data-starting-style / data-ending-style, so the exit runs too.
+ * Panel opacity + rise --motion-dialog-rise + blur --motion-dialog-blur, in --motion-dialog-open 240ms,
+ * out --motion-dialog-close 200ms. Drawer translateX --motion-drawer-x, no fade. Sheet slides up in
+ * --motion-sheet-open 320ms, down in --motion-sheet-close 200ms, solid. Overlay fade + 2px blur.
+ * Reduced motion: the tokens drop travel and blur and keep a 150ms crossfade.
  */
 
 type DialogHeaderKind = 'plain' | 'divided' | 'none'
@@ -26,21 +41,28 @@ type DialogDismiss = 'auto' | 'no-close-button' | 'none'
 interface DialogPolicy {
   dismiss: DialogDismiss
   busy: boolean
+  /** Closes the dialog (used by the sheet handle and drag). */
+  close: () => void
 }
 
 interface DialogLayout extends DialogPolicy {
   header: DialogHeaderKind
   closeLabel: string
   showCloseButton: boolean
+  /** Under 768px the panel is a bottom sheet. */
+  sheet: boolean
 }
 
-const DialogPolicyContext = createContext<DialogPolicy>({ dismiss: 'auto', busy: false })
+const noop = () => {}
+const DialogPolicyContext = createContext<DialogPolicy>({ dismiss: 'auto', busy: false, close: noop })
 const DialogLayoutContext = createContext<DialogLayout>({
   header: 'plain',
   dismiss: 'auto',
   busy: false,
+  close: noop,
   closeLabel: 'Tutup',
   showCloseButton: true,
+  sheet: false,
 })
 
 /** Close reasons that `dismiss="none"` blocks. A `<DialogClose>` you render yourself still closes. */
@@ -62,11 +84,31 @@ type DialogRootProps = DialogPrimitive.Root.Props & {
  * Focus is trapped, Esc and an overlay press close it, and focus goes back to the trigger.
  * `open` / `defaultOpen` / `onOpenChange` work as in Base UI.
  */
-function Dialog({ dismiss = 'auto', busy = false, onOpenChange, disablePointerDismissal, ...props }: DialogRootProps) {
-  const policy = useMemo(() => ({ dismiss, busy }), [dismiss, busy])
+function Dialog({
+  dismiss = 'auto',
+  busy = false,
+  onOpenChange,
+  disablePointerDismissal,
+  actionsRef: actionsRefProp,
+  ...props
+}: DialogRootProps) {
+  const actionsRef = useRef<DialogPrimitive.Root.Actions | null>(null)
+  useImperativeHandle(
+    actionsRefProp,
+    () => ({
+      close: () => actionsRef.current?.close(),
+      unmount: () => actionsRef.current?.unmount(),
+    }),
+    [],
+  )
+  const policy = useMemo(
+    () => ({ dismiss, busy, close: () => actionsRef.current?.close() }),
+    [dismiss, busy],
+  )
   return (
     <DialogPolicyContext value={policy}>
       <DialogPrimitive.Root
+        actionsRef={actionsRef}
         disablePointerDismissal={disablePointerDismissal ?? (busy || dismiss === 'none')}
         onOpenChange={(open, details) => {
           if (!open && details.reason !== 'imperative-action') {
@@ -122,17 +164,20 @@ interface DialogLayoutProps extends DialogPanelVariantProps {
   header?: DialogHeaderKind
   /** Accessible name of the close buttons. */
   closeLabel?: string
-  /** Under 640px the centre panel fills the viewport (a full-height sheet). */
+  /**
+   * Under 768px the panel is a bottom sheet (default `true`): full width, a grab handle, drag down to
+   * close. `false` keeps the centred panel or the drawer at every width.
+   */
   mobileSheet?: boolean
   /** Controls at the top-left of a `header="none"` panel, level with the corner close. */
   toolbar?: ReactNode
 }
 
-function useLayout(header: DialogHeaderKind, closeLabel: string): DialogLayout {
+function useLayout(header: DialogHeaderKind, closeLabel: string, sheet: boolean): DialogLayout {
   const policy = use(DialogPolicyContext)
   return useMemo(
-    () => ({ ...policy, header, closeLabel, showCloseButton: policy.dismiss === 'auto' }),
-    [policy, header, closeLabel],
+    () => ({ ...policy, header, closeLabel, sheet, showCloseButton: policy.dismiss === 'auto' }),
+    [policy, header, closeLabel, sheet],
   )
 }
 
@@ -147,12 +192,216 @@ function CornerControls({ toolbar }: { toolbar?: ReactNode }) {
         </div>
       ) : null}
       {layout.showCloseButton ? (
-        <div className="absolute top-3 right-3 z-1">
+        <div className={cn('absolute top-3 right-3 z-1', closeVisibility(layout.sheet))}>
           <DialogCloseButton size="icon-md" />
         </div>
       ) : null}
     </>
   )
+}
+
+/**
+ * The × hides when the panel has a footer (audit: the footer is the way out) and, on a sheet,
+ * under 768px (the grab handle takes its place).
+ */
+function closeVisibility(sheet: boolean) {
+  return cn('group-has-data-[slot=dialog-footer]/dialog:hidden', sheet && 'max-md:hidden')
+}
+
+/** The sheet grab handle: a 36×5 pill with a 44px hit area. Only under 768px. A tap closes. */
+function SheetHandle() {
+  const { closeLabel, busy, close } = use(DialogLayoutContext)
+  return (
+    <button
+      type="button"
+      data-slot="dialog-sheet-handle"
+      aria-label={closeLabel}
+      disabled={busy}
+      onClick={close}
+      className={cn(
+        'absolute top-2 left-1/2 z-2 hit-44 h-[5px] w-9 -translate-x-1/2 cursor-pointer rounded-pill bg-surface shadow-control',
+        'outline-none focus-ring:outline-focus disabled:cursor-default md:hidden',
+      )}
+    />
+  )
+}
+
+/* Panel motion. Transitions (not keyframes) so the exit runs and an interrupted open reverses. */
+const CENTER_MOTION = [
+  'transition-[opacity,translate,filter] duration-(--motion-dialog-open) ease-smooth-out',
+  'data-ending-style:duration-(--motion-dialog-close)',
+  'data-starting-style:translate-y-(--motion-dialog-rise) data-starting-style:opacity-0 data-starting-style:blur-(--motion-dialog-blur)',
+  'data-ending-style:translate-y-(--motion-dialog-rise) data-ending-style:opacity-0 data-ending-style:blur-(--motion-dialog-blur)',
+]
+const DRAWER_MOTION = [
+  'transition-[opacity,translate] duration-(--motion-dialog-open) ease-smooth-out',
+  'data-ending-style:duration-(--motion-dialog-close)',
+  'data-starting-style:translate-x-(--motion-drawer-x) data-ending-style:translate-x-(--motion-drawer-x)',
+  // Reduced motion sets --motion-drawer-x to 0: keep the crossfade.
+  'motion-reduce:data-starting-style:opacity-0 motion-reduce:data-ending-style:opacity-0',
+]
+/* The same motion from 768px up, when the panel is a sheet below it. */
+const CENTER_MOTION_MD = [
+  'ease-smooth-out md:transition-[opacity,translate,filter] md:duration-(--motion-dialog-open)',
+  'md:data-ending-style:duration-(--motion-dialog-close)',
+  'md:data-starting-style:translate-y-(--motion-dialog-rise) md:data-starting-style:opacity-0 md:data-starting-style:blur-(--motion-dialog-blur)',
+  'md:data-ending-style:translate-y-(--motion-dialog-rise) md:data-ending-style:opacity-0 md:data-ending-style:blur-(--motion-dialog-blur)',
+]
+const DRAWER_MOTION_MD = [
+  'ease-smooth-out md:transition-[opacity,translate] md:duration-(--motion-dialog-open)',
+  'md:data-ending-style:duration-(--motion-dialog-close)',
+  'md:data-starting-style:translate-x-(--motion-drawer-x) md:data-ending-style:translate-x-(--motion-drawer-x)',
+  'md:motion-reduce:data-starting-style:opacity-0 md:motion-reduce:data-ending-style:opacity-0',
+]
+/* The sheet: slides up, solid the whole way. Reduced motion: a crossfade instead of the slide. */
+const SHEET = [
+  'max-md:w-full max-md:max-w-none! max-md:h-auto max-md:max-h-[calc(100dvh-24px)]',
+  'max-md:rounded-t-[14px] max-md:rounded-b-none max-md:pt-3',
+  'max-md:transition-[opacity,translate,transform] max-md:duration-(--motion-sheet-open)',
+  'max-md:data-ending-style:duration-(--motion-sheet-close)',
+  'max-md:motion-safe:data-starting-style:translate-y-full max-md:motion-safe:data-ending-style:translate-y-full',
+  'max-md:motion-reduce:data-starting-style:opacity-0 max-md:motion-reduce:data-ending-style:opacity-0',
+]
+
+const BACKDROP = cn(
+  'fixed inset-0 z-(--z-modal) bg-overlay backdrop-blur-[2px]',
+  'transition-opacity duration-(--motion-dialog-open) ease-smooth-out data-ending-style:duration-(--motion-dialog-close)',
+  'data-starting-style:opacity-0 data-ending-style:opacity-0',
+)
+
+const FIELD_SELECTOR =
+  '[data-slot=dialog-body] :is(input:not([type=hidden]):not(:disabled), textarea:not(:disabled), select:not(:disabled), [contenteditable]:not([contenteditable=false]))'
+
+type FocusTarget = DialogPrimitive.Popup.Props['initialFocus']
+type OpenType = Parameters<Extract<NonNullable<FocusTarget>, (...args: never[]) => unknown>>[0]
+
+/** Default initial focus: the first field in the body, else the panel (never the ×). */
+function firstFieldTarget(panel: HTMLElement | null, openType: OpenType): HTMLElement | true {
+  if (!panel) return true
+  // Opened by touch: focus the panel, so the virtual keyboard does not cover the sheet.
+  if (openType === 'touch') return panel
+  return panel.querySelector<HTMLElement>(FIELD_SELECTOR) ?? panel
+}
+
+function mergeRefs<T>(...refs: (React.Ref<T> | undefined)[]) {
+  return (node: T | null) => {
+    for (const ref of refs) {
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+    }
+  }
+}
+
+const DRAG_START = 4
+const DRAG_DISTANCE = 64
+const DRAG_FRACTION = 0.15
+const DRAG_VELOCITY = 0.11 // px per ms
+const NO_DRAG = 'input, textarea, select, [contenteditable]:not([contenteditable=false])'
+
+/**
+ * Drag the sheet down to close it. Pointer events on the panel; under 768px only. A drag starts once the
+ * pointer moves 4px down, not from a field and not inside a body that is scrolled. Release past
+ * min(64px, 15% of the height) or faster than 0.11 px/ms closes; less springs back.
+ */
+function useSheetDrag(panel: HTMLElement | null, enabled: boolean, close: () => void) {
+  const closeRef = useRef(close)
+  useEffect(() => {
+    closeRef.current = close
+  })
+
+  useEffect(() => {
+    if (!enabled || !panel || typeof window === 'undefined' || !window.matchMedia) return
+    const phone = window.matchMedia('(max-width: 767.98px)')
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+    let state: 'idle' | 'pending' | 'dragging' = 'idle'
+    let pointerId = -1
+    let startY = 0
+    let offset = 0
+    let lastY = 0
+    let lastT = 0
+    let velocity = 0
+
+    function reset() {
+      state = 'idle'
+      pointerId = -1
+    }
+
+    function onDown(event: PointerEvent) {
+      if (!phone.matches || event.button !== 0 || state !== 'idle') return
+      const target = event.target as Element | null
+      if (!target || target.closest(NO_DRAG)) return
+      const body = target.closest<HTMLElement>('[data-slot=dialog-body]')
+      if (body && body.scrollTop > 0) return
+      state = 'pending'
+      pointerId = event.pointerId
+      startY = lastY = event.clientY
+      lastT = event.timeStamp
+      velocity = 0
+      offset = 0
+    }
+
+    function onMove(event: PointerEvent) {
+      if (state === 'idle' || event.pointerId !== pointerId || !panel) return
+      const dy = event.clientY - startY
+      if (state === 'pending') {
+        if (dy < -DRAG_START) return reset()
+        if (dy <= DRAG_START) return
+        state = 'dragging'
+        panel.setPointerCapture?.(pointerId)
+        panel.style.transition = 'none'
+      }
+      const dt = event.timeStamp - lastT
+      if (dt > 0) velocity = (event.clientY - lastY) / dt
+      lastY = event.clientY
+      lastT = event.timeStamp
+      offset = Math.max(0, dy)
+      if (!reduce.matches) panel.style.transform = `translateY(${offset}px)`
+    }
+
+    function onUp(event: PointerEvent) {
+      if (event.pointerId !== pointerId || !panel) return
+      const dragged = state === 'dragging'
+      reset()
+      if (!dragged) return
+      // A drag is not a tap: swallow the click that follows on the element under the pointer.
+      panel.addEventListener('click', swallow, { capture: true, once: true })
+      window.setTimeout(() => panel.removeEventListener('click', swallow, { capture: true }), 0)
+      const threshold = Math.min(DRAG_DISTANCE, panel.offsetHeight * DRAG_FRACTION)
+      if (event.type !== 'pointercancel' && (offset > threshold || velocity > DRAG_VELOCITY)) {
+        // Keep the dragged offset: the exit transition slides on from there.
+        panel.style.transition = ''
+        closeRef.current()
+        return
+      }
+      panel.style.transition = 'transform var(--motion-sheet-close) var(--ease-smooth-out)'
+      panel.style.transform = ''
+      panel.addEventListener('transitionend', () => (panel.style.transition = ''), { once: true })
+    }
+
+    function swallow(event: MouseEvent) {
+      event.stopPropagation()
+      event.preventDefault()
+    }
+
+    // iOS scrolls the page under a touch drag unless touchmove is cancelled.
+    function onTouchMove(event: TouchEvent) {
+      if (state === 'dragging') event.preventDefault()
+    }
+
+    panel.addEventListener('pointerdown', onDown)
+    panel.addEventListener('pointermove', onMove)
+    panel.addEventListener('pointerup', onUp)
+    panel.addEventListener('pointercancel', onUp)
+    panel.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      panel.removeEventListener('pointerdown', onDown)
+      panel.removeEventListener('pointermove', onMove)
+      panel.removeEventListener('pointerup', onUp)
+      panel.removeEventListener('pointercancel', onUp)
+      panel.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [panel, enabled])
 }
 
 type DialogContentProps = DialogPrimitive.Popup.Props &
@@ -168,45 +417,56 @@ function DialogContent({
   placement = 'center',
   header = 'plain',
   closeLabel = 'Tutup',
-  mobileSheet = false,
+  mobileSheet = true,
   toolbar,
   portalProps,
+  initialFocus,
+  ref,
   children,
   ...props
 }: DialogContentProps) {
-  const layout = useLayout(header, closeLabel)
+  const layout = useLayout(header, closeLabel, mobileSheet)
   const drawer = placement === 'drawer'
+  const popupRef = useRef<HTMLDivElement | null>(null)
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null)
+  const mergedRef = useMemo(() => mergeRefs<HTMLDivElement>(ref, popupRef, setPanel), [ref])
+  const defaultFocus = useCallback((openType: OpenType) => firstFieldTarget(popupRef.current, openType), [])
+  useSheetDrag(panel, mobileSheet && layout.dismiss !== 'none' && !layout.busy, layout.close)
+
   return (
     <DialogLayoutContext value={layout}>
       <DialogPrimitive.Portal data-slot="dialog-portal" {...portalProps}>
-        <DialogPrimitive.Backdrop
-          data-slot="dialog-backdrop"
-          className="fixed inset-0 z-(--z-modal) bg-overlay animate-fade-in"
-        />
+        <DialogPrimitive.Backdrop data-slot="dialog-backdrop" className={BACKDROP} />
         <DialogPrimitive.Viewport
           data-slot="dialog-viewport"
           className={cn(
             'fixed inset-0 z-(--z-modal) flex',
             drawer ? 'items-stretch justify-end p-2' : 'items-center justify-center p-4',
-            mobileSheet && !drawer && 'max-sm:p-0',
+            mobileSheet && 'max-md:items-end max-md:justify-center max-md:p-0',
           )}
         >
           <DialogPrimitive.Popup
+            ref={mergedRef}
             data-slot="dialog-content"
             data-size={size ?? 'md'}
             data-placement={placement}
             data-header={header}
+            data-sheet={mobileSheet ? '' : undefined}
             aria-busy={layout.busy || undefined}
+            initialFocus={initialFocus ?? defaultFocus}
             className={cn(
               dialogPanelVariants({ size, placement }),
-              drawer ? 'h-full max-h-full animate-drawer-in' : 'max-h-[calc(100dvh-32px)] animate-dialog-in',
-              mobileSheet &&
-                !drawer &&
-                'max-sm:h-dvh max-sm:max-h-dvh max-sm:max-w-none max-sm:rounded-none',
+              drawer ? 'h-full max-h-full' : 'max-h-[calc(100dvh-32px)]',
+              mobileSheet
+                ? [drawer ? DRAWER_MOTION_MD : CENTER_MOTION_MD, SHEET]
+                : drawer
+                  ? DRAWER_MOTION
+                  : CENTER_MOTION,
               className,
             )}
             {...props}
           >
+            {mobileSheet && layout.dismiss !== 'none' ? <SheetHandle /> : null}
             <CornerControls toolbar={toolbar} />
             {children}
           </DialogPrimitive.Popup>
@@ -232,7 +492,7 @@ function DialogPanel({
   children,
   ...props
 }: DialogPanelProps) {
-  const layout = useLayout(header, closeLabel)
+  const layout = useLayout(header, closeLabel, false)
   return (
     <DialogLayoutContext value={layout}>
       <div
@@ -251,14 +511,14 @@ function DialogPanel({
   )
 }
 
-function DialogCloseButton({ size }: { size: 'icon-md' | 'icon-lg' }) {
+function DialogCloseButton({ size, className }: { size: 'icon-md' | 'icon-lg'; className?: string }) {
   const { closeLabel, busy } = use(DialogLayoutContext)
   return (
     <DialogPrimitive.Close
       data-slot="dialog-close-button"
       disabled={busy}
       aria-label={closeLabel}
-      render={<Button variant="ghost" size={size} />}
+      render={<Button variant="ghost" size={size} className={className} />}
     >
       <Icon icon={Cancel01Icon} />
     </DialogPrimitive.Close>
@@ -268,7 +528,10 @@ function DialogCloseButton({ size }: { size: 'icon-md' | 'icon-lg' }) {
 interface DialogHeaderProps extends React.ComponentProps<'div'> {
   /** Above the title row, e.g. an `<IconDisc>` (Register v2). Switches to the stacked header. */
   media?: ReactNode
-  /** End of the title row, e.g. "Langkah 1 dari 3" (KYC v2). Switches to the stacked header. */
+  /**
+   * End of the title row, e.g. a status `<Badge>`. Switches to the stacked header. Do not repeat the
+   * step count here when `below` holds a `<Steps>`: the steps already show it.
+   */
   aside?: ReactNode
   /** Under the title row, inside the header, e.g. `<Steps>` (KYC v2). Switches to the stacked header. */
   below?: ReactNode
@@ -276,13 +539,19 @@ interface DialogHeaderProps extends React.ComponentProps<'div'> {
 
 /**
  * The title row: put `<DialogTitle>` and an optional `<DialogDescription>` in `children`.
- * The close button is added at the end when the dialog `dismiss` is `auto`.
+ * The close button is added at the end when the dialog `dismiss` is `auto` and the panel has no
+ * footer (audit). On a sheet under 768px the grab handle takes its place.
  */
 function DialogHeader({ className, media, aside, below, children, ...props }: DialogHeaderProps) {
-  const { header, showCloseButton } = use(DialogLayoutContext)
+  const { header, showCloseButton, sheet } = use(DialogLayoutContext)
   if (header === 'none') return null
   const stacked = Boolean(media || aside || below)
-  const close = showCloseButton ? <DialogCloseButton size={header === 'divided' || stacked ? 'icon-md' : 'icon-lg'} /> : null
+  const close = showCloseButton ? (
+    <DialogCloseButton
+      size={header === 'divided' || stacked ? 'icon-md' : 'icon-lg'}
+      className={closeVisibility(sheet)}
+    />
+  ) : null
 
   if (stacked) {
     return (
@@ -292,7 +561,7 @@ function DialogHeader({ className, media, aside, below, children, ...props }: Di
         className={cn(
           'flex shrink-0 flex-col items-stretch gap-3 px-6 pt-5 pb-4',
           media && 'pt-6 pb-5',
-          header === 'divided' && 'border-b border-border-subtle',
+          header === 'divided' && 'border-b-[0.5px] border-border-subtle',
           className,
         )}
         {...props}
@@ -317,7 +586,7 @@ function DialogHeader({ className, media, aside, below, children, ...props }: Di
         'flex shrink-0 items-center justify-between gap-3 pl-6 has-data-[slot=dialog-description]:items-start',
         // The app keeps the divided padding (14 16 14 24) when a description is present.
         header === 'divided'
-          ? 'border-b border-border-subtle py-3.5 pr-4'
+          ? 'border-b-[0.5px] border-border-subtle py-3.5 pr-4'
           : 'py-3 pr-3 has-data-[slot=dialog-description]:pt-4 has-data-[slot=dialog-description]:pb-1',
         className,
       )}
@@ -375,16 +644,18 @@ function DialogBody({ className, flush = false, ...props }: DialogBodyProps) {
 }
 
 /**
- * The action bar under the body: a top hairline, actions on the right, 8px apart.
+ * The action bar under the body: a top 0.5px hairline, actions on the right, 8px apart.
  * Order: secondary "Batal" first, then the primary or danger action. Buttons are LG.
  * For one control on the left, give it `className="mr-auto"`.
+ * Under 768px (audit) the buttons stack full width, 8px apart, the last one (the confirm) on top.
  */
 function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-footer"
       className={cn(
-        'flex shrink-0 items-center justify-end gap-2 border-t border-border-subtle px-6 py-4',
+        'flex shrink-0 items-center justify-end gap-2 border-t-[0.5px] border-border-subtle px-6 py-4',
+        'max-md:flex-col-reverse max-md:items-stretch max-md:[&>*]:w-full max-md:[&>*]:mr-0!',
         className,
       )}
       {...props}
@@ -415,21 +686,41 @@ const ALERT_LAYOUT: DialogLayout = {
   header: 'plain',
   dismiss: 'no-close-button',
   busy: false,
+  close: noop,
   closeLabel: 'Tutup',
   showCloseButton: false,
+  sheet: false,
 }
 
-/** The alert dialog panel (default SM 400) with its overlay, in a portal. */
-function AlertDialogContent({ className, size = 'sm', portalProps, ...props }: AlertDialogContentProps) {
+/** Default initial focus of an alert: the last footer button (the confirm), else Base UI's default. */
+function confirmTarget(panel: HTMLElement | null): HTMLElement | true {
+  const buttons = panel?.querySelectorAll<HTMLElement>('[data-slot=dialog-footer] button:not(:disabled)')
+  return buttons?.length ? buttons[buttons.length - 1]! : true
+}
+
+/** The alert dialog panel (default SM 400) with its overlay, in a portal. Focus starts on the confirm. */
+function AlertDialogContent({
+  className,
+  size = 'sm',
+  portalProps,
+  initialFocus,
+  ref,
+  ...props
+}: AlertDialogContentProps) {
+  const popupRef = useRef<HTMLDivElement | null>(null)
+  const mergedRef = useMemo(() => mergeRefs<HTMLDivElement>(ref, popupRef), [ref])
+  const defaultFocus = useCallback(() => confirmTarget(popupRef.current), [])
   return (
     <DialogLayoutContext value={ALERT_LAYOUT}>
       <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...portalProps}>
-        <AlertDialogPrimitive.Backdrop className="fixed inset-0 z-(--z-modal) bg-overlay animate-fade-in" />
+        <AlertDialogPrimitive.Backdrop data-slot="alert-dialog-backdrop" className={BACKDROP} />
         <AlertDialogPrimitive.Viewport className="fixed inset-0 z-(--z-modal) flex items-center justify-center p-4">
           <AlertDialogPrimitive.Popup
+            ref={mergedRef}
             data-slot="alert-dialog-content"
             data-size={size}
-            className={cn(dialogPanelVariants({ size }), 'max-h-[calc(100dvh-32px)] animate-dialog-in', className)}
+            initialFocus={initialFocus ?? defaultFocus}
+            className={cn(dialogPanelVariants({ size }), 'max-h-[calc(100dvh-32px)]', CENTER_MOTION, className)}
             {...props}
           />
         </AlertDialogPrimitive.Viewport>

@@ -3,7 +3,8 @@ import { cn } from '@/lib/utils'
 /*
  * Mayar v2 Kbd. Wonder "Mayar Forms Inputs Guide" › Kbd row (⌘K, Esc, Enter, /) and the in-input Kbd
  * (default and disabled). 20px tall, min-width 20px, 6px side padding, radius sm, component fill,
- * ink-2, caption-sm (11/16 medium). Disabled uses disabled-foreground.
+ * ink-2, caption-sm (11/16 medium). Disabled uses disabled-foreground. Hidden under a coarse pointer
+ * (a touch device has no keyboard to hint at).
  */
 
 interface KbdProps extends React.ComponentProps<'kbd'> {
@@ -23,7 +24,7 @@ function Kbd({ className, disabled = false, ...props }: KbdProps) {
       data-slot="kbd"
       data-disabled={disabled ? '' : undefined}
       className={cn(
-        'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-component px-1.5',
+        'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-component px-1.5 pointer-coarse:hidden',
         'font-sans text-caption-sm font-medium whitespace-nowrap text-ink-2',
         'data-disabled:text-disabled-foreground',
         className,

@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils'
  * The art is drawn at the base size of 420×264 (radius 20) and scaled with a transform, so every
  * value stays as it is at every size. The status overlay is NOT scaled: its text stays readable on
  * a small tile.
+ * Audit (17 Nov 2026): prefers-reduced-motion is read at each freeze or thaw. Under reduced motion
+ * the CSS frost veil crossfades in and out in 150ms (opacity only) in place of a snap (the app).
  */
 
 /** The nine card designs, in the order of the app picker. */
@@ -72,6 +74,8 @@ const MAYAR_M =
 const MAYAR_SWOOSH = 'm71.8 9.9h-64.1c0 0 53.8 15.7 65.3 35.8z'
 
 const FROST_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
+/** Under reduced motion the frost veil crossfades in this time (the reduced --motion-state-swap). */
+const REDUCED_FADE_MS = 150
 
 function prefersReducedMotion() {
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -235,10 +239,15 @@ function CardFace({
   const [lastFrozen, setLastFrozen] = useState(frozen)
   const [freezing, setFreezing] = useState(false)
   const [thawing, setThawing] = useState(false)
+  // Reduced motion: the CSS veil only crossfades (no scale, corners or sheen).
+  const [fadeOnly, setFadeOnly] = useState(false)
   if (lastFrozen !== frozen) {
     setLastFrozen(frozen)
-    const motion = animated && !prefersReducedMotion()
+    // Read at the flip, so a reduced-motion change applies to the next freeze or thaw.
+    const reduced = prefersReducedMotion()
+    const motion = animated && !reduced
     const glOnScreen = glPath && glReady
+    setFadeOnly(animated && reduced)
     if (frozen) {
       // Mid-thaw the ice is still mounted and ready; else it starts again from a fresh snapshot.
       if (!glThawing) {
@@ -246,14 +255,14 @@ function CardFace({
         setGlAppear(motion)
       }
       setGlThawing(false)
-      setFreezing(motion)
+      setFreezing(animated)
       setThawing(false)
     } else {
       // The ice melts itself; the CSS veil thaws only when it is what the holder sees.
       setGlThawing(motion && glOnScreen)
       if (!(motion && glOnScreen)) setGlReady(false)
       setFreezing(false)
-      setThawing(motion && !glOnScreen)
+      setThawing(animated && !glOnScreen)
     }
   }
 
@@ -267,6 +276,10 @@ function CardFace({
   useEffect(() => {
     const overlay = overlayRef.current
     if (!freezing || !overlay) return
+    if (fadeOnly) {
+      const fade = play(overlay, [{ opacity: 0 }, { opacity: 1 }], { duration: REDUCED_FADE_MS, easing: 'ease-out' })
+      return () => fade?.cancel()
+    }
     const animations = [
       play(overlay, [{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing: FROST_EASE }),
       play(overlay.querySelector('[data-frost]'), [{ opacity: 0, transform: 'scale(1.06)' }, { opacity: 1, transform: 'scale(1)' }], {
@@ -292,12 +305,16 @@ function CardFace({
       ),
     ]
     return () => animations.forEach((a) => a?.cancel())
-  }, [freezing, cssFrost])
+  }, [freezing, cssFrost, fadeOnly])
 
   // Thaw: the veil stays mounted while it fades out, then unmounts.
   useEffect(() => {
     if (!thawing) return
-    const animation = play(overlayRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: 'ease', fill: 'forwards' })
+    const animation = play(overlayRef.current, [{ opacity: 1 }, { opacity: 0 }], {
+      duration: fadeOnly ? REDUCED_FADE_MS : 450,
+      easing: 'ease',
+      fill: 'forwards',
+    })
     const done = () => setThawing(false)
     if (!animation) {
       const id = window.setTimeout(done, 0)
@@ -305,7 +322,7 @@ function CardFace({
     }
     animation.onfinish = done
     return () => animation.cancel()
-  }, [thawing])
+  }, [thawing, fadeOnly])
 
   // A frozen tile keeps its label over the WebGL ice too (the app CardTile overlay).
   const tileLabel = frozen && density === 'compact'

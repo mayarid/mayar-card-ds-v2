@@ -110,7 +110,7 @@ export const doc: ComponentDoc = {
     { name: 'variant', type: '"banner" | "inline"', default: '"banner"', description: 'Page banner or a message inside a form or dialog.' },
     { name: 'bodyTone', type: '"ink" | "tone"', description: 'Body colour override. Default: banner ink, inline tone.' },
     { name: 'title', type: 'ReactNode', description: 'A semibold first line in the tone colour.' },
-    { name: 'icon', type: 'IconSvgElement | false', description: 'Another Hugeicons icon, or false for none. Default: the tone icon.' },
+    { name: 'icon', type: 'IconSvgElement | false', description: 'Another Hugeicons icon, or false for none. Default: the tone icon, or none when title is set.' },
     { name: 'action', type: 'ReactNode', description: 'A Button or link at the end of the row.' },
     { name: 'role', type: 'string', default: '"alert" (danger) / "status"', description: 'Pass "note" for a banner that is on the page from the first paint.' },
   ],
@@ -129,5 +129,7 @@ export const doc: ComponentDoc = {
     'Code-only: no Notice specimen on the Wonder Design System page. It comes from the shipped app (Notice.svelte), built from the admin StateBanner and the inline notice copies.',
     'Icons: info and neutral use information-circle, success checkmark-circle-02, warning alert-02 (triangle), danger alert-circle, as in the app.',
     'The app takes an icon name; this port takes a Hugeicons icon object (or false).',
+    'Audit (17 Nov 2026): when title is set the icon defaults to off (the title leads the notice); an explicit icon prop still shows. The shipped app always shows the tone icon.',
+    'Audit (17 Nov 2026): the neutral ring (border-subtle on well) is 0.5px. The inline danger ring stays 1px: it is the tinted callout edge, not a structural line. The shipped app draws both at 1px.',
   ],
 }

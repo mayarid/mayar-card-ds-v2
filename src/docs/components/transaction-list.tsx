@@ -33,11 +33,11 @@ const OCCURRED = '2026-11-12T01:15:00Z'
 
 const SAMPLE: Record<TransactionType, { merchant: string; category: string | null; direction: TransactionDirection; amount: number }> = {
   PURCHASE: { merchant: 'Tokopedia', category: 'Operasional', direction: 'DEBIT', amount: 1250000 },
-  TOPUP_CREDIT: { merchant: 'Top-up Saldo', category: null, direction: 'CREDIT', amount: 10000000 },
-  REFUND: { merchant: 'Pengembalian Dana', category: null, direction: 'CREDIT', amount: 349000 },
+  TOPUP_CREDIT: { merchant: 'Top-up saldo', category: null, direction: 'CREDIT', amount: 10000000 },
+  REFUND: { merchant: 'Pengembalian dana', category: null, direction: 'CREDIT', amount: 349000 },
   REVERSAL: { merchant: 'Pembalikan', category: null, direction: 'CREDIT', amount: 2500000 },
   ADJUSTMENT: { merchant: 'Penyesuaian', category: null, direction: 'DEBIT', amount: 150000 },
-  REJECTION_FEE: { merchant: 'Biaya Penolakan', category: null, direction: 'DEBIT', amount: 5000 },
+  REJECTION_FEE: { merchant: 'Biaya penolakan', category: null, direction: 'DEBIT', amount: 5000 },
 }
 
 interface RowOptions {
@@ -233,6 +233,8 @@ export const doc: ComponentDoc = {
   props: [
     { name: 'TransactionList variant', type: '"feed" | "cards"', default: '"feed"', description: 'One panel with day headers, or a card per day.' },
     { name: 'TransactionGroup label / summary', type: 'ReactNode', description: 'Day label (names the group) and the day totals.' },
+    { name: 'TransactionGroup summaryFull', type: 'string', description: 'The totals in full when summary is compact: the title, and spoken in place of the short text.' },
+    { name: 'TransactionListFooter', type: 'div props', description: 'The pager. Put it after TransactionList, not inside it. No hairline.' },
     { name: 'TransactionRow selected', type: 'boolean', default: 'false', description: 'Primary tint and aria-current="true".' },
     { name: 'TransactionRow render', type: 'ReactElement', description: 'A link instead of a button: render={<a href="…" />}.' },
     { name: 'TransactionRowIcon', type: 'icon, tone: "neutral" | "credit" | "accent", accent', description: '36px disc (32 in cards). A letter as children for an initial.' },
@@ -240,7 +242,7 @@ export const doc: ComponentDoc = {
     { name: 'TransactionAmount', type: 'amount, direction, currency?, void?', description: '"− Rp …" / "+ Rp …"; void strikes it through.' },
     { name: 'TransactionRowStatus status', type: 'TransactionStatus', description: 'The status Badge (Menunggu, Ditolak, Dibalik); nothing for SETTLED.' },
     { name: 'TransactionStatusBadge', type: 'status, withIcon?, Badge props', description: 'The status chip for drawers and tables.' },
-    { name: 'groupTransactionsByDay(rows, now?)', type: '(rows) => { key, label, summary, rows }[]', description: 'Day groups; declined and reversed rows are left out of the totals.' },
+    { name: 'groupTransactionsByDay(rows, now?)', type: '(rows) => { key, label, summary, summaryFull, rows }[]', description: 'Day groups; declined and reversed rows are left out of the totals. A sum over 6 digits is compact in summary ("Rp 12,5 jt") and full in summaryFull.' },
     { name: 'transactionIconStyle / categoryStyle', type: '(tx | name) => { icon, color, tint }', description: 'The ported transaction-style and category-style maps.' },
   ],
   guidelines: {
@@ -261,5 +263,10 @@ export const doc: ComponentDoc = {
     'REVERSED ("Dibalik"), hover, pressed, focus, selected and the day-cards layout come from the app; Wonder has no feed specimen for them.',
     'Pressed (sunken) and selected (primary tint) are additions of this port; the app has hover (canvas) and a highlight tint on the QRIS cards.',
     'The detail drawer stays out of this pattern; the example composes it with Dialog placement="drawer".',
+    'Audit (17 Nov 2026): the pager (TransactionListFooter) goes after the list panel, not inside it, and has no hairline. The API is the same; only the placement and the border changed. The shipped app puts the load-more row inside the panel with a top hairline.',
+    'Audit (17 Nov 2026): the day label is regular weight (was semibold); colour and the component fill mark the header. The shipped app sets it semibold.',
+    'Audit (17 Nov 2026): type labels are sentence case: "Top-up saldo", "Pengembalian dana", "Biaya penolakan", "Pembalikan". The shipped app uses title case.',
+    'Audit (17 Nov 2026): TransactionRowTitle and TransactionRowDetail put their plain text in title, so a cut name can still be read. The shipped app has no title.',
+    'Audit (17 Nov 2026): a day sum with more than 6 integer digits prints in id-ID compact notation ("Masuk Rp 10 jt"); pass summaryFull and the full totals become the title and the spoken text. The shipped app prints full sums.',
   ],
 }

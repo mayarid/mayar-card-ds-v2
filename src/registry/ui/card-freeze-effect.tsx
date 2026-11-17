@@ -12,6 +12,9 @@ import { cn } from '@/lib/utils'
  * `onShatter` fires. The host then sets the card active again.
  *
  * Nothing in this module touches `window` or `document` at import time, so it is safe on the server.
+ * Audit (17 Nov 2026): prefers-reduced-motion is read on every frame, not once when the controller
+ * is created (the app), so a change applies without a remount. Under reduced motion the WebGL ramps
+ * still jump to their end state.
  */
 
 /* ── Shared between every instance ───────────────────────────────────────── */
@@ -110,6 +113,7 @@ function stepRamp(r: Ramp, frozen: boolean, dtMs: number, reduce: boolean) {
   return false
 }
 
+/** Read at each call (each frame, each collapse), not once per controller, so a setting change applies live. */
 function prefersReducedMotion() {
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -645,7 +649,6 @@ function mountLookOnly(cv: HTMLCanvasElement, cb: Callbacks, appear: boolean): C
     cb.fail()
     return noop
   }
-  const reduce = prefersReducedMotion()
   const ramp: Ramp = { be: cb.frozen() && !appear ? 1 : 0, xe: 0 }
   let isFrozen = cb.frozen()
   let destroyed = false
@@ -688,7 +691,8 @@ function mountLookOnly(cv: HTMLCanvasElement, cb: Callbacks, appear: boolean): C
     const t = performance.now()
     const dtMs = Math.min(50, t - lastT)
     lastT = t
-    stepRamp(ramp, isFrozen, dtMs, reduce)
+    // Read each frame, so a reduced-motion change applies to the next freeze or thaw.
+    stepRamp(ramp, isFrozen, dtMs, prefersReducedMotion())
     const [w, h] = bufSize()
     if (s.glCv.width !== w || s.glCv.height !== h) {
       s.glCv.width = w
@@ -824,7 +828,6 @@ interface Shard {
 /** Interactive ice (Detail Kartu hero): a live context, the hammer, cracks, shards and the collapse. */
 function mountInteractive(cv: HTMLCanvasElement, cb: Callbacks, appear: boolean): Controller {
   const noop: Controller = { sync() {}, keyHit: () => false, destroy() {} }
-  const reduce = prefersReducedMotion()
   let ice: IceGl | null
   try {
     ice = createIce(cv)
@@ -972,7 +975,7 @@ function mountInteractive(cv: HTMLCanvasElement, cb: Callbacks, appear: boolean)
     cb.shatter()
   }
   const startCollapse = (t: number) => {
-    if (reduce) {
+    if (prefersReducedMotion()) {
       // Reduced motion: no cascade of falling plates, the ice breaks at once.
       fireShatter()
       return
@@ -1135,6 +1138,8 @@ function mountInteractive(cv: HTMLCanvasElement, cb: Callbacks, appear: boolean)
     const dtMs = Math.min(50, t - lastT)
     const dt = dtMs / 1000
     lastT = t
+    // Read each frame, not once at mount, so a reduced-motion change applies at once.
+    const reduce = prefersReducedMotion()
     if (!reduce) tSec += dt
     // Freeze and thaw follow isFrozen alone, as linear time ramps.
     if (stepRamp(ramp, isFrozen, dtMs, reduce) && !reduce) {

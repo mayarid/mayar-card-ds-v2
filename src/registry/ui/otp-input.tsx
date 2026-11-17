@@ -7,35 +7,34 @@ import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 OTP / PIN input. Wonder "Mayar Forms Inputs Guide" › OTP.
- * MD (default): 40×40 slots, radius xl, title-md 20/28 semibold digits, 8px gap; 6 slots show as two
- * groups of 3 with a 12×2 separator. States: empty, active (border-focus ring), filled, masked, invalid
+ * Slots are flat wells (no shadow, well-hover on hover).
+ * MD (default): 40×40 slots (44×44 under a coarse pointer), radius xl, title-md 20/28 semibold digits, 8px gap; 6 slots show as two
+ * groups of 3 with a 12×2 separator. States: empty, active (2px border-focus ring), filled, masked, invalid
  * (danger-subtle + danger ring, one shake when it turns invalid), disabled.
  * LG (code-only, the PIN gate in the shipped app): 44×52 slots in one row, a 10px ink dot when masked,
- * focus ring + 3px primary-light halo (danger + danger-light when invalid), flat when disabled.
+ * one 2px focus ring (danger when invalid), flat when disabled.
+ * Slots 2…n are named "Digit 2 dari 6" by default.
  */
 
 const slotVariants = cva(
   [
     'm-0 border-0 p-0 text-center font-sans text-title-md font-semibold text-ink tabular-nums outline-none',
-    'rounded-xl bg-surface shadow-control touch-manipulation',
+    'rounded-xl bg-well shadow-none touch-manipulation',
     'transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
+    'hover-fine:not-focus:not-aria-invalid:bg-well-hover',
     'aria-invalid:bg-danger-subtle aria-invalid:shadow-[0_0_0_1px_var(--color-danger)]',
     'disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground',
   ],
   {
     variants: {
       size: {
-        md: [
-          'size-10',
-          'not-aria-invalid:focus-ring:shadow-[0_0_0_1px_var(--color-border-focus),0_1px_1px_-1px_var(--color-shadow-drop),0_1px_2px_var(--color-shadow-ambient)]',
-        ],
+        md: ['size-10 pointer-coarse:size-11', 'not-aria-invalid:focus-ring:shadow-focus'],
         lg: [
           'peer h-13 w-11 caret-primary aria-invalid:caret-danger',
           '[&[type=password]]:text-transparent',
-          'focus:shadow-[0_0_0_1px_var(--color-border-focus),0_0_0_3px_var(--color-primary-light)]',
-          '[&[data-force-state~=focus]]:shadow-[0_0_0_1px_var(--color-border-focus),0_0_0_3px_var(--color-primary-light)]',
-          'aria-invalid:focus:shadow-[0_0_0_1px_var(--color-danger),0_0_0_3px_var(--color-danger-light)]',
-          'aria-invalid:[&[data-force-state~=focus]]:shadow-[0_0_0_1px_var(--color-danger),0_0_0_3px_var(--color-danger-light)]',
+          'focus:shadow-focus [&[data-force-state~=focus]]:shadow-focus',
+          'aria-invalid:focus:shadow-[0_0_0_2px_var(--color-danger)]',
+          'aria-invalid:[&[data-force-state~=focus]]:shadow-[0_0_0_2px_var(--color-danger)]',
           'disabled:shadow-none',
         ],
       },
@@ -77,7 +76,7 @@ function OtpInput({
   mask = false,
   invalid = false,
   inputMode = 'numeric',
-  slotLabel = (index, total) => `Digit ${index + 1} of ${total}`,
+  slotLabel = (index, total) => `Digit ${index + 1} dari ${total}`,
   autoFocus = false,
   'data-force-state': forceState,
   ref,

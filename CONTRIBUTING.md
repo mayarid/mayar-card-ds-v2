@@ -12,6 +12,11 @@ This repo is a React port of the Mayar Card v2 design system plus the gallery th
 When the two differ, **the code wins** (decision, 12 Nov 2026). Write the difference in the doc's `notes`.
 The gallery does not show it. See [Gallery copy and provenance](#gallery-copy-and-provenance).
 
+**Exception: the tactile-design audit (17 Nov 2026).** This port fixes craft issues where the app is weak: focus
+ring, field wells, hairlines, overlay motion and reduced motion, touch targets, contrast and similar. Each change is
+marked `audit` in `theme.css` and starts with "Audit (17 Nov 2026):" in the doc's `notes`. Brand values (blue
+primary, Plus Jakarta Sans, shadows, radii) stay as in the app.
+
 ## Layout
 
 | Path | What |
@@ -92,6 +97,10 @@ Keep filling these fields. Tests read `spec` from the manifest. The gallery does
 - **Elevation.** Wonder has the shadow colours. Every shadow composite (`shadow-ring`, `shadow-control`, `shadow-raised`,
   and so on) is code-only: the shipped app combines them.
 - **Motion.** Wonder has no motion tokens. Every duration, easing and keyframe is code-only, from the app's `motion.css`.
+  Audit (17 Nov 2026): menu 150/120ms, dialog 240/200ms with a rise and blur, sheet tokens, and a 150ms crossfade for
+  overlays under reduced motion (the app sets every token to 0ms).
+- **Audit colours (17 Nov 2026).** `border-focus` and `focus-ring` are solid `#253ce2` (Wonder `#253ce2a1`, under 3:1).
+  `overlay` is 30% (Wonder 40%). `switch-off` is `#878c99` (Wonder `#d4d6dd`, 1.45:1). `well-hover` is new.
 - **Layout.** Container (Wonder `container`, theme `max-w-layout`) and gutter (Wonder `gutter`) come from Wonder. The
   z-index scale is code-only.
 - **Icons.** The Wonder icon library (Design System, Hugeicons) could not be listed for the Icons page. The page shows the

@@ -41,6 +41,17 @@ describe('Notice', () => {
     expect(container.querySelector('[data-slot=notice-icon]')).toBeTruthy()
   })
 
+  it('with a title the icon defaults to off; an explicit icon still shows', () => {
+    const { container, rerender } = render(<Notice title="Judul">Isi</Notice>)
+    expect(container.querySelector('[data-slot=notice-icon]')).toBeNull()
+    rerender(
+      <Notice title="Judul" icon={StarIcon}>
+        Isi
+      </Notice>,
+    )
+    expect(container.querySelector('[data-slot=notice-icon]')).toBeTruthy()
+  })
+
   it('renders title, body and action; bodyTone sets the body colour', () => {
     const { container } = render(
       <Notice title="Kartu diblokir" action={<button type="button">Buka blokir</button>} bodyTone="tone" tone="warning">

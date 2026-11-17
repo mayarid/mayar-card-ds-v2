@@ -170,5 +170,7 @@ export const doc: ComponentDoc = {
     'The app soft-disable (aria-disabled, focusable) is not ported: use disabled, or readOnly on the card (Base UI) for a focusable card that cannot be picked.',
     'The app ChoiceCardPair takes an items array and a legend. Here the pair is a layout part: put ChoiceCard children in it, and name the group on ChoiceCardGroup (aria-label or a <fieldset> + <legend>).',
     'leading, icon, method and list are code-only (Top Up v2, KYC v2 and card actions screens).',
+    'Audit (17 Nov 2026): the radio dot pops from scale 0.5 and opacity 0 to 1 and 1 (--motion-choice-pop), so it does not grow from nothing. The shipped app scales it from 0.',
+    'Audit (17 Nov 2026): a selected list row shows only the component fill; the tick is removed, so the state has one signal. The shipped app shows the fill and a tick.',
   ],
 }

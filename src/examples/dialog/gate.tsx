@@ -17,7 +17,7 @@ export default function DialogGate() {
     <>
       <Button onClick={() => setOpen(true)}>Mulai verifikasi</Button>
       <Dialog open={open} onOpenChange={setOpen} dismiss="none">
-        <DialogContent mobileSheet>
+        <DialogContent>
           <DialogHeader aside={<span className="text-caption-lg text-ink-2">Langkah 1 dari 3</span>}>
             <DialogTitle>Verifikasi KYC</DialogTitle>
             <DialogDescription>Lengkapi data diri untuk memakai kartu.</DialogDescription>

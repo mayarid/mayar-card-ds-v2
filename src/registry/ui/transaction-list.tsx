@@ -49,6 +49,10 @@ import { cn } from '@/lib/utils'
  * ("kategori · kartu · 08:15", the time never truncates) · amount body-sm semibold tabular,
  * "− Rp" out / "+ Rp" in (success-text), struck through and muted when declined or reversed.
  * The row status is the status Badge (md) 2px under the amount, only when it is not Berhasil.
+ * Audit (17 Nov 2026), differences from the app: the pager (TransactionListFooter) goes after the
+ * list, with no hairline; day labels are regular weight; type labels are sentence case; cut titles
+ * and details keep their full text in title; a day sum over 6 digits prints compact ("Rp 12,5 jt")
+ * with the full value in title and for screen readers.
  */
 
 // ── Data: types, statuses, category and merchant styles ─────────────────────
@@ -61,11 +65,11 @@ type TransactionStatusTone = 'success' | 'warning' | 'danger' | 'neutral'
 /** The Indonesian label of each type (the meta line falls back to it with no category). */
 const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   PURCHASE: 'Pembayaran',
-  TOPUP_CREDIT: 'Top-up Saldo',
-  REFUND: 'Pengembalian Dana',
+  TOPUP_CREDIT: 'Top-up saldo',
+  REFUND: 'Pengembalian dana',
   REVERSAL: 'Pembalikan',
   ADJUSTMENT: 'Penyesuaian',
-  REJECTION_FEE: 'Biaya Penolakan',
+  REJECTION_FEE: 'Biaya penolakan',
 }
 
 interface TransactionStatusMeta {
@@ -274,9 +278,30 @@ interface GroupableTransaction {
 interface TransactionDayGroup<T extends GroupableTransaction> {
   key: string
   label: string
-  /** "Keluar Rp 1.250.000 · Masuk Rp 5.000.000" (declined and reversed rows left out). */
+  /**
+   * "Keluar Rp 1.250.000 · Masuk Rp 5.000.000" (declined and reversed rows left out). A sum with more
+   * than 6 integer digits is compact: "Masuk Rp 12,5 jt".
+   */
   summary: string
+  /** The same totals with every sum in full. Pass it to `TransactionGroup summaryFull`. */
+  summaryFull: string
   rows: T[]
+}
+
+/** Integer digits above which a day sum prints compact. */
+const COMPACT_DIGITS = 6
+const RUPIAH_COMPACT = new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 })
+
+/** "Rp 1.250.000", or "Rp 12,5 jt" with `compact` when the sum has more than 6 integer digits. */
+function formatDaySum(value: number, compact: boolean): string {
+  const long = Math.trunc(Math.abs(value)).toString().length > COMPACT_DIGITS
+  return `Rp ${compact && long ? RUPIAH_COMPACT.format(value) : RUPIAH.format(value)}`
+}
+
+function daySummary(out: number, incoming: number, compact: boolean): string {
+  return [out > 0 && `Keluar ${formatDaySum(out, compact)}`, incoming > 0 && `Masuk ${formatDaySum(incoming, compact)}`]
+    .filter(Boolean)
+    .join(' · ')
 }
 
 /** Groups rows (newest first) under day labels with the money out and in for each day. */
@@ -287,7 +312,7 @@ function groupTransactionsByDay<T extends GroupableTransaction>(rows: readonly T
     const key = Number.isNaN(date.getTime()) ? 'unknown' : dayKey(date)
     let group = groups.get(key)
     if (!group) {
-      group = { key, label: formatTransactionDay(tx.occurredAt, now), summary: '', rows: [], out: 0, in: 0 }
+      group = { key, label: formatTransactionDay(tx.occurredAt, now), summary: '', summaryFull: '', rows: [], out: 0, in: 0 }
       groups.set(key, group)
     }
     group.rows.push(tx)
@@ -298,9 +323,8 @@ function groupTransactionsByDay<T extends GroupableTransaction>(rows: readonly T
   }
   return [...groups.values()].map(({ out, in: incoming, ...group }) => ({
     ...group,
-    summary: [out > 0 && `Keluar Rp ${RUPIAH.format(out)}`, incoming > 0 && `Masuk Rp ${RUPIAH.format(incoming)}`]
-      .filter(Boolean)
-      .join(' · '),
+    summary: daySummary(out, incoming, true),
+    summaryFull: daySummary(out, incoming, false),
   }))
 }
 
@@ -353,12 +377,17 @@ interface TransactionGroupProps extends Omit<React.ComponentProps<'div'>, 'child
   label: React.ReactNode
   /** The day totals on the right ("Keluar Rp … · Masuk Rp …"). */
   summary?: React.ReactNode
+  /**
+   * The totals in full when `summary` is shortened (compact sums): shown as the title and spoken in
+   * place of the short text. `groupTransactionsByDay` gives it as `summaryFull`.
+   */
+  summaryFull?: string
   /** The rows. */
   children?: React.ReactNode
 }
 
 /** One day: a header with the label and totals, then its rows as a list. A `role="group"` named by the day. */
-function TransactionGroup({ className, label, summary, children, ...props }: TransactionGroupProps) {
+function TransactionGroup({ className, label, summary, summaryFull, children, ...props }: TransactionGroupProps) {
   const variant = use(TransactionListContext)
   const labelId = useId()
   const cards = variant === 'cards'
@@ -377,10 +406,19 @@ function TransactionGroup({ className, label, summary, children, ...props }: Tra
           cards ? 'h-8' : 'min-h-9 bg-component px-4 py-2',
         )}
       >
-        <h3 id={labelId} className={cn('m-0 shrink-0 text-caption-lg font-semibold', cards ? 'text-muted' : 'text-ink-2')}>
+        <h3 id={labelId} className={cn('m-0 shrink-0 text-caption-lg', cards ? 'text-muted' : 'text-ink-2')}>
           {label}
         </h3>
-        {summary ? <span className="min-w-0 text-right text-muted tabular-nums">{summary}</span> : null}
+        {summary ? (
+          summaryFull && summaryFull !== summary ? (
+            <span data-compact="" title={summaryFull} className="min-w-0 text-right text-muted tabular-nums">
+              <span className="sr-only">{summaryFull}</span>
+              <span aria-hidden>{summary}</span>
+            </span>
+          ) : (
+            <span className="min-w-0 text-right text-muted tabular-nums">{summary}</span>
+          )
+        ) : null}
       </div>
       <ul
         role="list"
@@ -489,11 +527,12 @@ function TransactionRowContent({ className, ...props }: React.ComponentProps<'sp
   return <span data-slot="transaction-row-content" {...props} className={cn('flex min-w-0 flex-1 flex-col', className)} />
 }
 
-/** The merchant (or description, or type label). */
+/** The merchant (or description, or type label). Plain text is also its `title`, so a cut name can be read. */
 function TransactionRowTitle({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="transaction-row-title"
+      title={textOf(props.children)}
       {...props}
       className={cn('min-w-0 truncate text-body-sm font-medium text-ink', className)}
     />
@@ -516,9 +555,29 @@ function TransactionRowMeta({ className, children, ...props }: React.ComponentPr
   )
 }
 
-/** The part of the meta line that may truncate (category, card name, masked number). */
+/**
+ * The part of the meta line that may truncate (category, card name, masked number). Its text is
+ * also its `title`; pass `title` yourself when the children are not plain text.
+ */
 function TransactionRowDetail({ className, ...props }: React.ComponentProps<'span'>) {
-  return <span data-slot="transaction-row-detail" {...props} className={cn('min-w-0 truncate', className)} />
+  return (
+    <span
+      data-slot="transaction-row-detail"
+      title={textOf(props.children)}
+      {...props}
+      className={cn('min-w-0 truncate', className)}
+    />
+  )
+}
+
+/** The plain text of string and number children, or undefined when there is an element. */
+function textOf(children: React.ReactNode): string | undefined {
+  const parts = Array.isArray(children) ? children : [children]
+  if (!parts.every((part) => typeof part === 'string' || typeof part === 'number' || part == null || part === false)) {
+    return undefined
+  }
+  const text = parts.filter((part) => typeof part === 'string' || typeof part === 'number').join('')
+  return text || undefined
 }
 
 /** A "·" between meta parts, hidden from screen readers. */
@@ -625,18 +684,16 @@ function TransactionRowStatus({ status, ...props }: TransactionRowStatusProps) {
   )
 }
 
-/** The foot of a feed: a load-more button and its error. */
+/**
+ * The pager under a list: a load-more button and its error. Put it after `TransactionList`, not
+ * inside it, so it sits outside the panel. It has no hairline.
+ */
 function TransactionListFooter({ className, ...props }: React.ComponentProps<'div'>) {
-  const variant = use(TransactionListContext)
   return (
     <div
       data-slot="transaction-list-footer"
       {...props}
-      className={cn(
-        'flex min-h-12 flex-col items-center justify-center gap-1 px-4 py-1',
-        variant === 'feed' && 'border-t border-border-subtle',
-        className,
-      )}
+      className={cn('flex min-h-12 flex-col items-center justify-center gap-1 px-4 py-1', className)}
     />
   )
 }

@@ -48,11 +48,13 @@ describe('EmptyState', () => {
     expect(container.querySelector('[data-slot="empty-state-title"]')?.tagName).toBe('P')
   })
 
-  it('the disc follows the size: md 48, sm 40', () => {
-    const { container, rerender } = render(<Example />)
-    expect((container.querySelector('[data-slot="empty-state-icon"]') as HTMLElement).dataset.size).toBe('48')
-    rerender(<Example size="sm" />)
-    expect((container.querySelector('[data-slot="empty-state-icon"]') as HTMLElement).dataset.size).toBe('40')
+  it('the icon is a bare 18px glyph (no disc) and the title is not semibold', () => {
+    const { container } = render(<Example />)
+    const icon = container.querySelector('[data-slot="empty-state-icon"]') as HTMLElement
+    expect(icon.className).toContain('[&_svg]:size-[18px]')
+    expect(icon.className).not.toMatch(/\bbg-/)
+    expect(container.querySelector('[data-slot="icon-disc"]')).toBeNull()
+    expect(container.querySelector('[data-slot="empty-state-title"]')!.className).not.toContain('font-semibold')
   })
 
   it('passes role="alert" and other props through', () => {

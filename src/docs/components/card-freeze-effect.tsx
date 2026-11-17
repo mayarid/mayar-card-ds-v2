@@ -96,5 +96,6 @@ export const doc: ComponentDoc = {
     'Not in the app: the keyboard control (three Enter / Space hits, with a status line), a pause while the card is off screen, and reduced motion that also stops the idle twinkle and breaks the ice at once instead of the cascade.',
     'The app does not cancel its frame loop on unmount; this port cancels requestAnimationFrame, removes every listener, frees the GL objects and loses the context.',
     'Colours of the placeholder texture come from the theme tokens (card-chip, card-mc, skin-midnight). The shader colours are the app values, as GLSL floats.',
+    'Audit (17 Nov 2026): prefers-reduced-motion is read on every frame (and when the collapse starts), not once when the controller is created, so a change applies without a remount. Under reduced motion the freeze and thaw ramps still jump to their end state (no WebGL crossfade); the card-face CSS frost crossfades in 150ms. The shipped app reads the setting once.',
   ],
 }

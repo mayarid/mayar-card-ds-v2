@@ -24,6 +24,11 @@ import { cn } from '@/lib/utils'
  * (32px, radius lg, ink-2 glyph), as the app's `Button variant="ghost" size="md" icon`.
  * The source of truth is the app code (decision 2026-11-12); Wonder is the visual reference.
  * Hidden balance: a mask "Rp ••••••••" that screen readers hear as "saldo disembunyikan".
+ * Audit (17 Nov 2026), differences from the app: card actions sit in the header row above the
+ * figure; a figure of 1.000.000 or more prints compact ("Rp 48,3 jt") with the full value in title
+ * and for screen readers; a missing value is a muted en dash; the error takes an optional retry
+ * button; the warning caption is regular weight. The label-above layout and the 4-tile group are
+ * kept from the app as a documented exception to the figure recipe.
  */
 
 /** The mask the app shows in place of a hidden money figure. */
@@ -209,13 +214,16 @@ function BalanceCardGroup({
   )
 }
 
-/** The top row: the label on the left, the hide toggle or a menu on the right. */
+/**
+ * The top row: the label on the left; the hide toggle, a menu or `BalanceCardActions` on the right.
+ * When the row is too narrow, the right side wraps under the label (still above the figure).
+ */
 function BalanceCardHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="balance-card-header"
       {...props}
-      className={cn('flex min-h-5 min-w-0 items-center justify-between gap-2', className)}
+      className={cn('flex min-h-5 min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-3', className)}
     />
   )
 }
@@ -245,7 +253,7 @@ function BalanceCardLabel({ className, ...props }: React.ComponentProps<'span'>)
 interface BalanceCardValueProps extends Omit<React.ComponentProps<'span'>, 'children' | 'prefix'> {
   /** A word after the figure in body-sm ink-2, e.g. "terpakai" (Wonder Anggaran tab). */
   children?: React.ReactNode
-  /** The amount in Rupiah (whole units). `null`: not available, shows "—". */
+  /** The amount in Rupiah (whole units). `null`: not available, shows a muted "–". */
   value: number | null
   /** ISO currency. IDR prints "Rp ". Ignored when `money` is false. */
   currency?: string
@@ -267,6 +275,16 @@ function BalanceCardValue({ children, ...props }: BalanceCardValueProps) {
   )
 }
 
+/** Integer digits above which a figure prints in compact notation ("Rp 48,3 jt"). */
+const COMPACT_DIGITS = 6
+const COMPACT_FORMAT: Intl.NumberFormatOptions = { notation: 'compact', maximumFractionDigits: 1 }
+const FULL_FORMAT: Intl.NumberFormatOptions = { maximumFractionDigits: 0 }
+
+/** Whether the whole part of `value` has more than 6 digits (1.000.000 and up). */
+function needsCompact(value: number): boolean {
+  return Math.trunc(Math.abs(value)).toString().length > COMPACT_DIGITS
+}
+
 function BalanceCardFigure({ className, value, currency = 'IDR', suffix, money = true, ...props }: Omit<BalanceCardValueProps, 'children'>) {
   const { hidden, loading } = useBalanceCard()
   const classes = cn('block min-w-0 truncate text-title-md font-semibold text-ink tabular-nums', className)
@@ -279,24 +297,36 @@ function BalanceCardFigure({ className, value, currency = 'IDR', suffix, money =
   }
   if (value === null) {
     return (
-      <span data-slot="balance-card-value" {...props} className={classes}>
-        —
+      <span data-slot="balance-card-value" {...props} className={cn(classes, 'text-muted')}>
+        –
       </span>
     )
   }
-  return (
+  const masked = money && hidden
+  const prefix = money ? (currency === 'IDR' ? 'Rp ' : `${currency} `) : ''
+  const compact = !masked && needsCompact(value)
+  const figure = (
     <AnimatedNumber
-      data-slot="balance-card-value"
+      data-slot={compact ? 'balance-card-figure-number' : 'balance-card-value'}
       value={value}
-      prefix={money ? (currency === 'IDR' ? 'Rp ' : `${currency} `) : ''}
+      prefix={prefix}
       suffix={suffix}
-      format={{ maximumFractionDigits: 0 }}
-      hidden={money && hidden}
+      format={compact ? COMPACT_FORMAT : FULL_FORMAT}
+      hidden={masked}
       hiddenText={BALANCE_MASK}
       hiddenLabel={BALANCE_HIDDEN_LABEL}
-      {...props}
-      className={cn(classes, 'font-sans')}
+      {...(compact ? { 'aria-hidden': true } : props)}
+      className={compact ? undefined : cn(classes, 'font-sans')}
     />
+  )
+  if (!compact) return figure
+  // A long figure prints short ("Rp 48,3 jt"); the full value is the title and is spoken.
+  const full = `${money ? formatRupiah(value, currency) : RUPIAH.format(value)}${suffix ?? ''}`
+  return (
+    <span data-slot="balance-card-value" data-compact="" title={full} {...props} className={cn(classes, 'font-sans')}>
+      <span className="sr-only">{full}</span>
+      {figure}
+    </span>
   )
 }
 
@@ -326,7 +356,7 @@ const captionVariants = cva('flex min-h-5 min-w-0 flex-wrap items-center gap-x-1
   variants: {
     tone: {
       muted: 'text-muted',
-      warning: 'font-medium text-warning-text',
+      warning: 'text-warning-text',
       danger: 'text-danger-text',
     },
   },
@@ -398,9 +428,19 @@ function BalanceCardDelta({ className, tone, direction, children, ...props }: Ba
   )
 }
 
-/** A read error in place of the caption ("Gagal memuat saldo QRIS."). It is a live alert. */
-function BalanceCardError({ className, children, ...props }: React.ComponentProps<'p'>) {
-  return (
+interface BalanceCardErrorProps extends React.ComponentProps<'p'> {
+  /** Shows one secondary small "Coba lagi" button next to the error line. Do not use it inside a tile that is a button. */
+  onRetry?: () => void
+  /** The retry button text. */
+  retryLabel?: string
+}
+
+/**
+ * A read error in place of the caption ("Gagal memuat saldo QRIS."). It is a live alert.
+ * With `onRetry`, a secondary small "Coba lagi" button follows the line.
+ */
+function BalanceCardError({ className, children, onRetry, retryLabel = 'Coba lagi', ...props }: BalanceCardErrorProps) {
+  const line = (
     <p
       data-slot="balance-card-error"
       role="alert"
@@ -410,6 +450,15 @@ function BalanceCardError({ className, children, ...props }: React.ComponentProp
       <Icon icon={AlertCircleIcon} />
       {children}
     </p>
+  )
+  if (!onRetry) return line
+  return (
+    <div data-slot="balance-card-error-row" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+      {line}
+      <Button data-slot="balance-card-retry" type="button" variant="secondary" size="sm" onClick={onRetry}>
+        {retryLabel}
+      </Button>
+    </div>
   )
 }
 
@@ -453,18 +502,17 @@ function BalanceCardHideToggle({
   )
 }
 
-/** The buttons (Top up, Perbarui…). In a `strip` card they sit at the end of the row. */
+/**
+ * The buttons (Top up, Perbarui…). In a `card`, put them in `BalanceCardHeader` after the label:
+ * they sit at the right of the label, above the figure, and wrap under the label when the card is
+ * narrow. In a `strip` card they sit at the end of the row.
+ */
 function BalanceCardActions({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="balance-card-actions"
       {...props}
-      className={cn(
-        'flex flex-wrap items-center gap-2',
-        'group-data-[variant=strip]/balance:shrink-0',
-        'group-data-[variant=card]/balance:mt-1',
-        className,
-      )}
+      className={cn('flex flex-wrap items-center gap-2', 'group-data-[variant=strip]/balance:shrink-0', className)}
     />
   )
 }

@@ -1,20 +1,47 @@
 'use client'
 
 import NumberFlow from '@number-flow/react'
-import { useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 
 import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 AnimatedNumber. Code-only: no specimen on the Wonder Design System page.
  * Port of foundations/AnimatedNumber.svelte: NumberFlow rolls the changed digits (an odometer).
- * Same timing as the app: transform and spin 350ms, opacity 150ms, on the smooth-out curve.
+ * Audit (17 Nov 2026): NumberFlow is a documented exception to the CSS motion tokens, but its
+ * timing comes from them: transform and spin use --motion-fast (250ms), opacity --motion-quick
+ * (150ms), both read from the root at runtime, so reduced motion makes them 0. The app uses 350ms.
  */
 
 /** The same curve as --ease-smooth-out. */
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
-const TRANSFORM_TIMING = { duration: 350, easing: EASE }
-const OPACITY_TIMING = { duration: 150, easing: EASE }
+
+/** A `--motion-*` token from the root, in ms. Falls back when there is no DOM or no value. */
+function readMotionToken(name: string, fallback: number): number {
+  if (typeof document === 'undefined') return fallback
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  if (!raw) return fallback
+  const amount = Number.parseFloat(raw)
+  if (!Number.isFinite(amount)) return fallback
+  return raw.endsWith('ms') ? amount : raw.endsWith('s') ? amount * 1000 : amount
+}
+
+const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
+function subscribeMotion(onChange: () => void) {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {}
+  const query = window.matchMedia(REDUCED_MOTION)
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
+}
+/** --motion-fast and --motion-quick, read again when the reduced-motion setting changes. */
+function useMotionTimings() {
+  const fast = useSyncExternalStore(subscribeMotion, () => readMotionToken('--motion-fast', 250), () => 250)
+  const quick = useSyncExternalStore(subscribeMotion, () => readMotionToken('--motion-quick', 150), () => 150)
+  return useMemo(
+    () => ({ transform: { duration: fast, easing: EASE }, opacity: { duration: quick, easing: EASE } }),
+    [fast, quick],
+  )
+}
 
 /*
  * Whether this browser can run NumberFlow (it needs CSS mod()). Checked here, not with NumberFlow's
@@ -98,6 +125,7 @@ function AnimatedNumber({
   // Render NumberFlow wherever the browser can run it; NumberFlow then decides per user whether to
   // animate (it respects prefers-reduced-motion on its own).
   const canAnimate = useCanAnimate()
+  const timings = useMotionTimings()
   const classes = cn('tabular-nums', className)
 
   if (hidden && canAnimate) {
@@ -137,9 +165,9 @@ function AnimatedNumber({
           format={format as React.ComponentProps<typeof NumberFlow>['format']}
           prefix={prefix}
           suffix={suffix}
-          transformTiming={TRANSFORM_TIMING}
-          spinTiming={TRANSFORM_TIMING}
-          opacityTiming={OPACITY_TIMING}
+          transformTiming={timings.transform}
+          spinTiming={timings.transform}
+          opacityTiming={timings.opacity}
         />
       </span>
     )

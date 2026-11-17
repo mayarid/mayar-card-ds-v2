@@ -10,7 +10,7 @@ import {
   EmptyStateTitle,
 } from '@/components/ui/empty-state'
 import { Icon } from '@/components/ui/icon'
-import type { IconDiscShape, IconDiscTone } from '@/components/ui/icon-disc'
+import type { IconDiscTone } from '@/components/ui/icon-disc'
 import type { ComponentDoc, PropValue } from '@/docs/types'
 import { indent, toJsx } from '@/gallery/jsx'
 import source from '@/registry/ui/empty-state.tsx?raw'
@@ -32,7 +32,7 @@ function render(props: Record<string, PropValue>) {
   const c = copyFor(tone)
   return (
     <EmptyState size={(props.size ?? 'md') as 'sm' | 'md'} className="w-80">
-      <EmptyStateIcon tone={tone as IconDiscTone} shape={(props.shape ?? 'circle') as IconDiscShape}>
+      <EmptyStateIcon tone={tone as IconDiscTone}>
         <Icon icon={c.icon} />
       </EmptyStateIcon>
       <EmptyStateText>
@@ -57,7 +57,7 @@ function code(props: Record<string, PropValue>) {
   const text = [toJsx('EmptyStateTitle', {}, c.title)]
   if (props.description !== false) text.push(toJsx('EmptyStateDescription', {}, c.text))
   const parts = [
-    toJsx('EmptyStateIcon', { tone, shape: props.shape }, `<Icon icon={${c.iconName}} />`, { tone: 'neutral', shape: 'circle' }),
+    toJsx('EmptyStateIcon', { tone }, `<Icon icon={${c.iconName}} />`, { tone: 'neutral' }),
     `<EmptyStateText>\n${indent(text.join('\n'))}\n</EmptyStateText>`,
   ]
   if (props.actions !== false) {
@@ -77,7 +77,7 @@ export const doc: ComponentDoc = {
   name: 'Empty State',
   group: 'Feedback',
   description:
-    'A centred empty, error or no-match state: an icon disc, a title, one line of text and actions. It sits inside the panel it replaces.',
+    'A centred empty, error or no-match state: an icon, a title, one line of text and actions. It sits inside the panel it replaces.',
   spec: 'code-only',
   registry: 'empty-state',
   source: [{ path: 'components/ui/empty-state.tsx', code: source }],
@@ -85,7 +85,6 @@ export const doc: ComponentDoc = {
     controls: [
       { name: 'size', type: 'select', options: ['md', 'sm'], default: 'md' },
       { name: 'tone', type: 'select', options: TONES, default: 'neutral' },
-      { name: 'shape', type: 'select', options: ['circle', 'square'], default: 'circle' },
       { name: 'description', type: 'boolean', default: true },
       { name: 'actions', type: 'boolean', default: true },
     ],
@@ -95,7 +94,7 @@ export const doc: ComponentDoc = {
   matrices: [
     {
       title: 'Sizes × content',
-      description: 'md: 48px disc, 16px gap (page panels). sm: 40px disc, 12px gap (modules, console cards).',
+      description: 'md: 16px gap (page panels). sm: 12px gap (modules, console cards). The icon is a bare 18px glyph at both sizes.',
       rows: [
         { label: 'MD', props: { size: 'md' }, codeOnly: true },
         { label: 'SM', props: { size: 'sm' }, codeOnly: true },
@@ -104,22 +103,21 @@ export const doc: ComponentDoc = {
         { label: 'Full', props: {} },
         { label: 'No actions', props: { actions: false } },
         { label: 'Title only', props: { actions: false, description: false } },
-        { label: 'Square disc', props: { shape: 'square' } },
       ],
       render,
       code,
       cellWidth: 340,
     },
     {
-      title: 'Disc tones (SM)',
-      description: 'The disc takes every Icon Disc tone. Use neutral for empty, danger for an error.',
+      title: 'Icon tones (SM)',
+      description: 'The glyph takes the colour of each Icon Disc tone. Use neutral for empty, danger for an error.',
       rows: [
         { label: 'Neutral', props: { tone: 'neutral' }, codeOnly: true },
         { label: 'Danger', props: { tone: 'danger' }, codeOnly: true },
         { label: 'Primary', props: { tone: 'primary' }, codeOnly: true },
         { label: 'Well', props: { tone: 'well' }, codeOnly: true },
       ],
-      columns: [{ label: 'Circle', props: { size: 'sm' } }],
+      columns: [{ label: 'SM', props: { size: 'sm' } }],
       render,
       code,
       cellWidth: 340,
@@ -128,11 +126,11 @@ export const doc: ComponentDoc = {
   examples: [
     { id: 'empty-state/no-data', title: 'No data yet', description: 'The title is an h2 here, because it heads the panel.', codeOnly: true },
     { id: 'empty-state/error', title: 'Error', description: 'role="alert" so a screen reader announces it.', codeOnly: true },
-    { id: 'empty-state/no-match', title: 'No match (SM, in a card)', description: 'A square disc and a ghost action.', codeOnly: true },
+    { id: 'empty-state/no-match', title: 'No match (SM, in a card)', description: 'A search glyph and a ghost action.', codeOnly: true },
   ],
   props: [
-    { name: 'size', type: '"sm" | "md"', default: '"md"', description: 'Disc size, gap and padding.' },
-    { name: 'EmptyStateIcon', type: 'IconDisc props', description: 'tone and shape. The size follows the empty state.' },
+    { name: 'size', type: '"sm" | "md"', default: '"md"', description: 'Gap and padding.' },
+    { name: 'EmptyStateIcon', type: 'span props + tone', description: 'A bare 18px glyph in the tone colour. size and shape are accepted and ignored.' },
     { name: 'EmptyStateText', type: 'div props', description: 'Groups title and description, 4px apart, max 440px.' },
     { name: 'EmptyStateTitle render', type: 'ReactElement', description: 'A <p> by default. Use render={<h2 />} when it heads the region.' },
     { name: 'EmptyStateDescription', type: 'p props', description: 'One line of help.' },
@@ -149,5 +147,7 @@ export const doc: ComponentDoc = {
   notes: [
     'Code-only: Empty State has no specimen on the Wonder Design System page. The Dashboard page has empty panels; values come from EmptyState.svelte.',
     'The app takes title, description, icon and actions as props/snippets. This port uses compound parts; titleAs becomes render on EmptyStateTitle.',
+    'Audit (17 Nov 2026): the icon is a bare 18px glyph in the tone colour, with no disc. The shipped app puts it in a 48px (md) / 40px (sm) IconDisc.',
+    'Audit (17 Nov 2026): the title is body-base regular ink (no semibold); the description is unchanged. The shipped app sets the title semibold.',
   ],
 }

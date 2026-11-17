@@ -196,6 +196,7 @@ export const doc: ComponentDoc = {
     'While the WebGL ice is on screen, the hero veil and the "Kartu dibekukan" label are not shown, as in the app. The card name still ends in "dibekukan". The CSS frost and label show before the snapshot is ready, without WebGL, when the shader fails or the context is lost, in matrices (freezeEffect="css") and on thumbnails.',
     'Not in the app: a keyboard path for the hammer. The breakable card has a "Pecahkan es untuk membuka kartu" control; Enter or Space is one hit, and three hits break the ice (also without WebGL). A polite status line counts the hits.',
     'The CSS frost (corners, cold tint, sheen) is the fallback for the WebGL ice. The app fallback also draws frost ferns, an idle shimmer and an animated hammer; this port leaves those out.',
+    'Audit (17 Nov 2026): prefers-reduced-motion is read at each freeze or thaw, not once. Under reduced motion the CSS frost veil crossfades in and out in 150ms (opacity only: no scale, corners or sheen) in place of an instant snap; the WebGL ice still jumps to its end state. The shipped app snaps.',
     'WebGL budget: a breakable card holds one live context while it is frozen. Look-only frozen cards share at most 4 short-lived contexts on the page, and each one is released when its ice settles.',
     'Code-only (not on the Wonder page): the 48px thumbnail and width="auto". The app has no expired state, so there is none here.',
   ],

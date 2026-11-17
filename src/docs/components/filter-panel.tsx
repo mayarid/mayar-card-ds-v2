@@ -342,5 +342,9 @@ export const doc: ComponentDoc = {
     'Date: the app pairs presets with a range calendar (DateRangeCalendar). This port skips the calendar: preset chips (one choice) and two native date inputs.',
     'The ID Transaksi text field is not a part: put an Input in a FilterPanelSection and set the draft through useFilterPanel().setField.',
     'The Wonder Kartu checklist board ("Card Filter Status Checklist") is a non-v2 hex specimen; the checklist uses the v2 Checkbox and is marked code-only.',
+    'Audit (17 Nov 2026): section labels (FilterPanelSection) are caption-lg ink-2 at the regular weight; position and colour mark them. The shipped app sets them semibold.',
+    'Audit (17 Nov 2026): the chip × keeps the full 44px hit area (hit-44); the 40px override is removed. The shipped app uses 40px.',
+    'Audit (17 Nov 2026): below 768px the active chips stay on one line that scrolls sideways (no wrap). No scrollbar utility exists in the theme, so the scrollbar is not hidden. The shipped app wraps the chips.',
+    'Audit (17 Nov 2026): a chip with plain-text content puts it in title, so a cut chip can still be read. The shipped app has no title.',
   ],
 }

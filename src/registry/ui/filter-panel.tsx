@@ -48,11 +48,15 @@ import { cn } from '@/lib/utils'
  * count pill when filters are applied, an optional 14px chevron (the date button). Hover and open
  * canvas, a background-color transition (quick, smooth-out; none with reduced motion), pointer cursor.
  * Panel: 380 wide, the Popover surface (radius 2xl, shadow-popover). Header 12×16, hairline, body-base
- * semibold title and "Atur ulang". Body 16px padding, sections 16px apart, caption-lg semibold ink-2
+ * semibold title and "Atur ulang". Body 16px padding, sections 16px apart, caption-lg ink-2
  * labels 8px above the control. Footer 12×16, hairline, "Batal" + "Terapkan (N)", both MD.
  * Section controls: the Toggle Group SM chips, one choice (as the app; `multiple` for a list),
  * checkbox list (with search), select, amount (mode track + Rp inputs, Input LG), date range (presets +
- * two date inputs). Active chips: 28px primary-light, radius md, × to remove, "Hapus filter", result count.
+ * two date inputs). Active chips: 28px primary-light, radius md, × to remove (44px hit area),
+ * "Hapus filter", result count. Below 768px the chips stay on one line that scrolls sideways.
+ * Audit (17 Nov 2026), differences from the app: section labels are regular weight (the app:
+ * semibold), the × keeps the full 44px hit area (the app: 40px), chips do not wrap on a phone, and a
+ * cut chip keeps its full text in title.
  * Draft contract: the panel edits a draft; "Terapkan" commits it; "Batal", Esc and an outside press drop it.
  */
 
@@ -495,7 +499,7 @@ function useFilterField(name: string, part: string) {
 const SectionContext = createContext<{ labelId: string; label: string }>({ labelId: '', label: '' })
 
 interface FilterPanelSectionProps extends React.ComponentProps<'div'> {
-  /** The section label (caption-lg semibold ink-2). It names the control inside. */
+  /** The section label (caption-lg ink-2). It names the control inside. */
   label: string
 }
 
@@ -506,7 +510,7 @@ function FilterPanelSection({ className, label, children, ...props }: FilterPane
   return (
     <SectionContext value={context}>
       <div data-slot="filter-panel-section" className={cn('flex min-w-0 flex-col gap-2', className)} {...props}>
-        <span id={labelId} className="text-caption-lg font-semibold text-ink-2">
+        <span id={labelId} className="text-caption-lg text-ink-2">
           {label}
         </span>
         {children}
@@ -837,13 +841,20 @@ function FilterActiveBar({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-/** The chips and the "Hapus filter" link, 8px apart, wrapping. */
+/**
+ * The chips and the "Hapus filter" link, 8px apart. They wrap from 768px; below, they stay on one
+ * line that scrolls sideways.
+ */
 function FilterChipList({ className, ...props }: React.ComponentProps<'ul'>) {
   return (
     <ul
       data-slot="filter-chip-list"
       aria-label="Filter aktif"
-      className={cn('m-0 flex min-w-0 list-none flex-wrap items-center gap-2 p-0', className)}
+      className={cn(
+        'm-0 flex min-w-0 list-none flex-wrap items-center gap-2 p-0',
+        'max-md:flex-nowrap max-md:overflow-x-auto max-md:[&>li]:shrink-0',
+        className,
+      )}
       {...props}
     />
   )
@@ -869,7 +880,9 @@ function FilterChip({ className, children, onRemove, label, ...props }: FilterCh
       )}
       {...props}
     >
-      <span className="min-w-0 truncate">{children}</span>
+      <span className="min-w-0 truncate" title={typeof children === 'string' ? children : undefined}>
+        {children}
+      </span>
       {onRemove ? (
         <button
           type="button"
@@ -878,7 +891,6 @@ function FilterChip({ className, children, onRemove, label, ...props }: FilterCh
           onClick={onRemove}
           className={cn(
             'relative hit-44 inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-current outline-none',
-            'before:size-10!',
             'transition-colors duration-(--motion-quick) ease-smooth-out hover-fine:bg-primary-light-hover focus-ring:outline-focus',
           )}
         >

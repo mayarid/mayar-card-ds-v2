@@ -5,12 +5,15 @@ import { describe, expect, it, vi } from 'vitest'
 import { expectNoAxeViolations } from '@/test/axe'
 
 import {
+  TRANSACTION_TYPE_LABEL,
   TransactionAmount,
   TransactionGroup,
   TransactionList,
+  TransactionListFooter,
   TransactionListSkeleton,
   TransactionRow,
   TransactionRowContent,
+  TransactionRowDetail,
   TransactionRowEnd,
   TransactionRowIcon,
   TransactionRowMeta,
@@ -99,11 +102,53 @@ describe('TransactionList data', () => {
     expect(groups).toHaveLength(2)
     expect(groups[0]?.rows).toHaveLength(3)
     expect(groups[0]?.summary).toBe('Keluar Rp 100.000 · Masuk Rp 300.000')
+    expect(groups[0]?.summaryFull).toBe(groups[0]?.summary)
     expect(groups[1]?.label).toMatch(/^Kemarin/)
+  })
+
+  it('prints a day sum over 6 digits compact and keeps the full sum', () => {
+    const [group] = groupTransactionsByDay([
+      { id: '1', occurredAt: new Date(2026, 10, 12, 9).toISOString(), amount: 12_500_000, direction: 'CREDIT', status: 'SETTLED' },
+    ])
+    expect(group?.summary).toMatch(/^Masuk Rp 12,5\sjt$/)
+    expect(group?.summaryFull).toBe('Masuk Rp 12.500.000')
+  })
+
+  it('uses sentence case type labels', () => {
+    expect(TRANSACTION_TYPE_LABEL.TOPUP_CREDIT).toBe('Top-up saldo')
+    expect(TRANSACTION_TYPE_LABEL.REFUND).toBe('Pengembalian dana')
+    expect(TRANSACTION_TYPE_LABEL.REJECTION_FEE).toBe('Biaya penolakan')
   })
 })
 
 describe('TransactionList', () => {
+  it('a compact summary keeps the full totals as title and spoken text', () => {
+    render(
+      <TransactionList>
+        <TransactionGroup label="Hari ini" summary="Masuk Rp 12,5 jt" summaryFull="Masuk Rp 12.500.000">
+          <TransactionRow>
+            <TransactionRowTitle>PT Nama Pedagang Yang Sangat Panjang Sekali</TransactionRowTitle>
+            <TransactionRowDetail>
+              {'Pemasaran'} · {'Kartu Tim'}
+            </TransactionRowDetail>
+          </TransactionRow>
+        </TransactionGroup>
+      </TransactionList>,
+    )
+    const summary = document.querySelector('[data-compact]') as HTMLElement
+    expect(summary.getAttribute('title')).toBe('Masuk Rp 12.500.000')
+    expect(summary.querySelector('.sr-only')?.textContent).toBe('Masuk Rp 12.500.000')
+    expect(screen.getByText('PT Nama Pedagang Yang Sangat Panjang Sekali').getAttribute('title')).toBe(
+      'PT Nama Pedagang Yang Sangat Panjang Sekali',
+    )
+    expect(document.querySelector('[data-slot=transaction-row-detail]')?.getAttribute('title')).toBe('Pemasaran · Kartu Tim')
+  })
+
+  it('the footer has no hairline', () => {
+    render(<TransactionListFooter data-testid="foot" />)
+    expect(screen.getByTestId('foot').className).not.toContain('border-t')
+  })
+
   it('a group is named by its day, rows are list items with buttons', () => {
     render(<List />)
     expect(screen.getByRole('group', { name: 'Hari ini · Kamis, 12 Nov' })).toBeTruthy()

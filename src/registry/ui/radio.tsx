@@ -6,13 +6,14 @@ import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 Radio. Wonder "Mayar Forms Inputs Guide" › Radio.
- * 16px round. Unchecked: surface + 1px ring. Checked: primary + inset highlight + a 6px white dot.
+ * 16px round. Unchecked: surface + 1.5px muted inset ring. Checked: primary + inset highlight + a 6px white dot.
  * Motion: a quiet colour and opacity fade (--motion-quick). No stroke draw: a radio has a dot.
  * For an exclusive choice with a title and a description, use ChoiceCard instead.
  */
 const radioClassName = cn(
   'relative inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-pill outline-none',
-  'bg-surface shadow-[0_0_0_1px_var(--color-shadow-ring),0_1px_1px_-1px_var(--color-shadow-drop)]',
+  // Unchecked: a 1.5px muted ring, so the circle stands out from the page at 3:1.
+  'bg-surface shadow-[inset_0_0_0_1.5px_var(--color-muted)]',
   'transition-[background-color,box-shadow] duration-(--motion-quick) ease-smooth-out',
   'focus-ring:outline-focus',
   'data-checked:bg-primary data-checked:shadow-none data-checked:inset-shadow-highlight',

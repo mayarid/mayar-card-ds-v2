@@ -194,7 +194,7 @@ export const doc: ComponentDoc = {
             {props.icons ? <Icon icon={Copy01Icon} /> : null}
             Salin nomor kartu
           </div>
-          <hr className="mx-1 my-1.5 h-px border-0 bg-border-subtle" />
+          <hr className="my-1.5 h-[0.5px] border-0 bg-border-subtle" />
           <StaticItem props={{ withIcon: props.icons, tone: 'danger' }} />
         </ActionMenuPanel>
       ),
@@ -237,7 +237,9 @@ export const doc: ComponentDoc = {
     'Keyboard, focus and outside press come from Base UI Menu. Base UI highlights items (data-highlighted) and keeps focus on the menu, where the app moves DOM focus to each item; the paint is the same.',
     'The app positions a fixed menu by hand and closes it on scroll. Base UI positions it with Floating UI (flip, shift) and keeps it open on scroll.',
     'z-index: --z-dropdown (40) in every case. The app uses --z-sticky for its in-flow (absolute) menu, which a portal does not need.',
-    'The app menu enters with its own keyframe (opacity + scale --motion-dropdown-pre-scale 0.97) at --motion-quick. The theme menu-in is the same keyframe; this port sets its duration to --motion-quick.',
+    'Audit (17 Nov 2026): the menu animates in and out with a transition on data-starting-style / data-ending-style: opacity + scale --motion-dropdown-pre-scale (0.97) from the trigger corner, in --motion-dropdown-open (150ms), out --motion-dropdown-close (120ms). Reduced motion keeps a 150ms fade. The shipped app has an entrance keyframe only, at --motion-quick.',
+    'Audit (17 Nov 2026): items are 36px tall on a fine pointer and 44px on a coarse pointer, 2px apart. The shipped app makes every item 44px with no gap.',
+    'Audit (17 Nov 2026): the separator is 0.5px and runs the full inner width (no 4px side inset). The shipped app draws 1px with a 4px inset.',
     'The app rail menu (side="right") sits 12px from the trigger with the bottom edges aligned. Here: side="right" align="end" sideOffset={12}.',
   ],
 }

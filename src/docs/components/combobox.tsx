@@ -115,7 +115,7 @@ function code(props: Record<string, PropValue>) {
 function PopupSpecimen({ query, loading }: { query: string; loading?: boolean }) {
   return (
     <Combobox items={loading ? [] : TEAMS} inline open defaultInputValue={query} defaultValue={TEAMS[0]}>
-      <div className={cn(selectPopupClassName, comboboxPopupClassName, 'w-60 animate-none')}>
+      <div className={cn(selectPopupClassName, comboboxPopupClassName, 'w-60')}>
         <Popup loading={loading} />
       </div>
     </Combobox>
@@ -221,5 +221,8 @@ export const doc: ComponentDoc = {
     'The menu uses z-(--z-modal) like the app, so it paints over a Dialog or Popover.',
     'The trigger keeps the focus ring and drops the hover wash while the popup is open, like the app.',
     'ComboboxClear is code-only: neither the app nor Wonder has a clear button in the search row.',
+    'Audit (17 Nov 2026): the trigger focus and open ring is 2px (ghost: shadow-focus), and the trigger is 44px tall under a coarse pointer. The shipped app uses a 1px ring and keeps the size height.',
+    'Audit (17 Nov 2026): the selected row has a component-active fill with ink text and no tick; rows are 36px, radius md, with a 2px gap; separators are 0.5px and edge to edge. The shipped app shows a tick on 32px radius-lg rows and 1px inset separators.',
+    'Audit (17 Nov 2026): the popup opens and closes with the Select transition (150ms in, 120ms out, a crossfade under reduced motion), and the empty and loading fade eases with smooth-out. The shipped app uses the menu-in keyframe and ease-in-out on the fade.',
   ],
 }

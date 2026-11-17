@@ -85,7 +85,7 @@ export const doc: ComponentDoc = {
   name: 'Plan Quota',
   group: 'Patterns',
   description:
-    'Shows how many cards of the plan quota are used: a usage bar on the blue ramp that turns red when the quota is full, and a one-line legend.',
+    'Shows how many cards of the plan quota are used: a usage bar that turns to warning near the limit and red when the quota is full, and a one-line legend.',
   spec: 'wonder',
   wonderRef: 'Mayar Card Dashboard › Dashboard › Plan Quota Card Normal / Near Limit / Full v2',
   registry: 'plan-quota',
@@ -107,7 +107,7 @@ export const doc: ComponentDoc = {
     {
       title: 'Status × state',
       description:
-        'Normal, near limit and full are on the Wonder page. As in the app, only the bar changes: darker blue as usage grows, red at 100%. Focus applies when the whole card is a link (code-only).',
+        'Only the bar changes: primary, warning from 80%, red at 100%. Focus applies when the whole card is a link.',
       rows: STATUSES,
       columns: [
         { label: 'Default' },
@@ -134,7 +134,7 @@ export const doc: ComponentDoc = {
     { name: 'render', type: 'ReactElement', description: 'Make the card a link, e.g. <a href="/settings" />.' },
     { name: 'PlanQuotaTier', type: 'component', description: 'Tier line, caption-lg semibold primary.' },
     { name: 'PlanQuotaDescription', type: 'component', description: '"Kuota kartu aktif paket Anda."; children replace it.' },
-    { name: 'PlanQuotaBar', type: 'component', description: 'UsageBar on a well track: the blue ramp, red at 100%. Hidden with no percent.' },
+    { name: 'PlanQuotaBar', type: 'component', description: 'UsageBar on a well track: primary, warning from 80%, red at 100%. Hidden with no percent.' },
     { name: 'PlanQuotaLegend', type: 'component', description: 'One line: "3 terpakai · 7 tersedia", "10 kartu", "Kartu tanpa batas" or "Paket berakhir".' },
     { name: 'PlanQuotaAction', type: 'ButtonProps', description: 'Optional full-width primary MD Button, "Upgrade paket" by default. Not in the app sidebar card.' },
     { name: 'getPlanQuota / usePlanQuota', type: 'function / hook', description: 'Status, percent, used, available and legend text.' },
@@ -150,11 +150,13 @@ export const doc: ComponentDoc = {
   notes: [
     'Source of truth: the app Sidebar.svelte plan quota card. Wonder is the visual reference; where they differ, this port follows the app.',
     'Radius 16px (3xl), as in the app. Wonder shows 14px.',
-    'Tones: the app keeps the well card and the primary tier at every status, and the bar uses the blue usage ramp (red only at 100%). Wonder shows a warning card and fill near the limit and a danger card and fill when full.',
+    'Tones: the app keeps the well card and the primary tier at every status. Wonder shows a warning card and fill near the limit and a danger card and fill when full.',
+    'Audit (17 Nov 2026): the bar is one flat primary fill, the warning fill from the near state (80%) and danger from 100%. The card and tier keep their colours. The shipped app uses the blue usage ramp (darker as usage grows, red only at 100%).',
+    'Audit (17 Nov 2026): the suspended legend "Paket berakhir" is warning-text at the regular weight; colour carries the state. The shipped app sets it semibold.',
     'Legend: one line "3 terpakai · 7 tersedia" in muted caption-lg, as in the app. Over the quota it reads "12 terpakai · 0 tersedia". Wonder splits it into two parts with semibold numbers.',
     'Description: always "Kuota kartu aktif paket Anda." (the app). Wonder changes it near the limit and when full.',
     'Upgrade action: Wonder shows an "Upgrade paket" button on the full card. The app sidebar card has none (the whole card links to settings), so PlanQuotaAction is opt-in.',
-    'status (ok, near, at, over, unlimited, unknown, suspended) stays in getPlanQuota and data-status as information, e.g. to show the upgrade action. near (80%+) changes nothing on screen.',
+    'status (ok, near, at, over, unlimited, unknown, suspended) stays in getPlanQuota and data-status as information, e.g. to show the upgrade action. near (80%+) changes only the bar to the warning fill.',
     'Over quota, unlimited, unknown usage and suspended are code-only (from the app). Focus on a linked card is code-only; the app has no hover style on the card.',
   ],
 }

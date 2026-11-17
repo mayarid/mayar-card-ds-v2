@@ -1,4 +1,5 @@
 import { mergeProps } from '@base-ui/react/merge-props'
+import { Tooltip } from '@base-ui/react/tooltip'
 import { useRender } from '@base-ui/react/use-render'
 import { SparklesIcon } from '@hugeicons/core-free-icons'
 
@@ -15,8 +16,11 @@ import { cn } from '@/lib/utils'
  * - PlanBadge row: Wonder Dashboard › "Plan Badge" (Starter, Business, Enterprise Unlimited, Free,
  *   Suspended, Rail). The app has no row badge; it uses the app tokens of the sidebar quota card:
  *   a 28px primary IconDisc with the sparkles glyph, the tier (caption-lg semibold, primary) over the
- *   quota line (caption-sm, muted; semibold warning-text once the plan has ended). Row: padding
- *   10/14, gap 10, a border-subtle hairline on top. Rail: the disc alone, centred.
+ *   quota line (caption-sm, muted; warning-text once the plan has ended). Row: padding
+ *   10/14, gap 10, a border-subtle hairline on top. Rail: the disc alone, centred, with the tier
+ *   and quota in a Base UI tooltip (the Sidebar rail tooltip style) and as screen-reader text.
+ * Audit (17 Nov 2026): the rail uses a tooltip in place of a title, the lapsed line is regular
+ * weight (was semibold), and the cut tier and quota lines keep their text in title.
  */
 
 type PlanTier = 'free' | 'starter' | 'business' | 'enterprise'
@@ -43,7 +47,7 @@ interface PlanBadgeProps extends useRender.ComponentProps<'div'> {
   used?: number | null
   /** The plan has lapsed: the quota line says "Paket berakhir" in warning ink. */
   suspended?: boolean
-  /** `row` (default): disc, tier and quota. `rail`: the disc alone, for the collapsed sidebar. */
+  /** `row` (default): disc, tier and quota. `rail`: the disc alone with a tooltip, for the collapsed sidebar. */
   layout?: 'row' | 'rail'
 }
 
@@ -79,7 +83,6 @@ function PlanBadge({
     'data-tier': tier,
     'data-layout': layout,
     'data-suspended': suspended ? '' : undefined,
-    title: layout === 'rail' ? fullText : undefined,
     className: cn(
       'flex items-center border-t border-border-subtle bg-surface py-2.5 font-sans no-underline',
       layout === 'rail' ? 'justify-center px-2' : 'gap-2.5 px-3.5',
@@ -96,15 +99,16 @@ function PlanBadge({
         <>
           {disc}
           <span className="flex min-w-0 flex-1 flex-col">
-            <span data-slot="plan-badge-tier" className="truncate text-caption-lg font-semibold text-primary">
+            <span data-slot="plan-badge-tier" title={label} className="truncate text-caption-lg font-semibold text-primary">
               {label}
             </span>
             {quota ? (
               <span
                 data-slot="plan-badge-quota"
+                title={quota.legend}
                 className={cn(
                   'truncate text-caption-sm font-normal tracking-normal text-muted tabular-nums',
-                  suspended && 'font-semibold text-warning-text',
+                  suspended && 'text-warning-text',
                 )}
               >
                 {quota.legend}
@@ -115,8 +119,27 @@ function PlanBadge({
       ),
   } as useRender.ElementProps<'div'>
 
-  return useRender({ defaultTagName: 'div', render, props: mergeProps<'div'>(defaultProps, props) })
+  const element = useRender({ defaultTagName: 'div', render, props: mergeProps<'div'>(defaultProps, props) })
+  if (layout !== 'rail') return element
+
+  // The rail shows the disc alone: the tier and quota show in a tooltip on hover and focus.
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger render={element} />
+      <Tooltip.Portal>
+        <Tooltip.Positioner side="right" sideOffset={12} className="z-(--z-popover)">
+          <Tooltip.Popup data-slot="plan-badge-tooltip" className={tooltipClass}>
+            {fullText}
+          </Tooltip.Popup>
+        </Tooltip.Positioner>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  )
 }
+
+/** The same tooltip surface as the Sidebar rail. */
+const tooltipClass =
+  'flex h-7 items-center rounded-lg bg-surface px-2.5 font-sans text-body-sm font-medium whitespace-nowrap text-ink shadow-popover origin-(--transform-origin) animate-fade-in [animation-duration:var(--motion-quick)]'
 
 interface PlanBadgeChipProps extends Omit<BadgeProps, 'variant' | 'prefix'> {
   tier: PlanTier

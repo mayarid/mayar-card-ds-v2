@@ -227,7 +227,7 @@ export const doc: ComponentDoc = {
     'The app positions the panel by hand (absolute / fixed strategy, flip, nudge into the viewport) and closes a fixed panel on scroll. Base UI Popover positions it with Floating UI: it flips, shifts and follows scroll, so it does not close on scroll.',
     'canvas-anchor.ts in the app turns a control on a CSS-scaled canvas into a virtual anchor. Base UI measures the real client rect, which includes CSS transforms; pass anchor= (an element or a virtual element) if you need another anchor.',
     'placement="bottom-end" in the app is side="bottom" align="end" here (the default).',
-    'The app panel enters with menu-in at --motion-quick (150ms). The theme menu-in animation uses --motion-dropdown-open (250ms), so the panel sets the animation duration back to --motion-quick.',
+    'Audit (17 Nov 2026): the panel animates in and out with a transition on data-starting-style / data-ending-style: opacity + scale --motion-dropdown-pre-scale (0.97) from the anchor corner, in --motion-dropdown-open (150ms), out --motion-dropdown-close (120ms). Reduced motion keeps a 150ms fade. The shipped app has an entrance keyframe only (menu-in at --motion-quick).',
     'z-index: the positioner uses --z-popover (50), as in the app.',
   ],
 }

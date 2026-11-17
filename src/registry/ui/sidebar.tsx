@@ -16,6 +16,8 @@ import {
   type ReactNode,
   use,
   useCallback,
+  useEffect,
+  useId,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -32,9 +34,13 @@ import { cn } from '@/lib/utils'
  * Expanded 264px column, padding 26/12, gap 20, canvas fill. Collapsed rail 68px (desktop only).
  * Below lg (responsive layout) it is an off-canvas drawer: a modal Base UI Dialog over the overlay,
  * so focus stays inside while it is open and goes back to the trigger when it closes.
- * Item: 36px, radius xl, gap 10, 17px icon (also on the rail), body-base medium. States: default,
- * hover (state-hover), pressed (state-pressed), focus, active (surface + control shadow,
- * aria-current="page"), locked (placeholder ink, lock icon, not focusable) and disabled (code-only).
+ * Item: 36px (44px below lg, audit), radius xl, gap 10, 17px icon (also on the rail), body-base
+ * medium. States: default, hover (state-hover), pressed (state-pressed), focus, active (surface +
+ * control shadow, aria-current="page"), locked (placeholder ink, lock icon, not focusable, the reason
+ * as visible text: the footer notice or a caption) and disabled (code-only).
+ * Audit: logo-row icon buttons 12px apart, group label toggle with a 44px hit area, rail tooltips
+ * with no delay that fade in and out (--motion-dropdown-*), drawer in --motion-sheet-open / out
+ * --motion-sheet-close with a 2px backdrop blur, 0.5px rail group divider.
  */
 
 /* ── State ─────────────────────────────────────────────────────────────── */
@@ -80,6 +86,9 @@ interface SidebarContextValue {
   drawer: boolean
   mobileOpen: boolean
   setMobileOpen: (next: boolean) => void
+  /** The id of the visible `SidebarNotice`, if any. Locked items point `aria-describedby` at it. */
+  noticeId: string | undefined
+  setNoticeId: (id: string | undefined) => void
 }
 
 const SidebarContext = createContext<SidebarContextValue>({
@@ -89,6 +98,8 @@ const SidebarContext = createContext<SidebarContextValue>({
   drawer: false,
   mobileOpen: false,
   setMobileOpen: () => {},
+  noticeId: undefined,
+  setNoticeId: () => {},
 })
 
 /** Reads the sidebar state: `rail`, `drawer`, `collapsed`, `mobileOpen` and their setters. */
@@ -98,11 +109,23 @@ function useSidebar(): SidebarContextValue {
 
 /* ── Tooltip (collapsed rail only) ─────────────────────────────────────── */
 
-const tooltipClass =
-  'flex h-7 items-center rounded-lg bg-surface px-2.5 font-sans text-body-sm font-medium whitespace-nowrap text-ink shadow-popover origin-(--transform-origin) animate-fade-in [animation-duration:var(--motion-quick)]'
+/* audit: a transition on data-starting-style / data-ending-style, so the tooltip also fades out. */
+const tooltipMotionClass = cn(
+  'origin-(--transform-origin) transition-[opacity,scale] duration-(--motion-dropdown-open) ease-smooth-out',
+  'data-ending-style:duration-(--motion-dropdown-close)',
+  'data-starting-style:scale-(--motion-dropdown-pre-scale) data-starting-style:opacity-0',
+  'data-ending-style:scale-(--motion-dropdown-pre-scale) data-ending-style:opacity-0',
+)
 
-const tooltipWideClass =
-  'flex w-58 flex-col items-start gap-1 rounded-xl bg-surface px-3 py-2.5 font-sans text-ink shadow-popover origin-(--transform-origin) animate-fade-in [animation-duration:var(--motion-quick)]'
+const tooltipClass = cn(
+  'flex h-7 items-center rounded-lg bg-surface px-2.5 font-sans text-body-sm font-medium whitespace-nowrap text-ink shadow-popover',
+  tooltipMotionClass,
+)
+
+const tooltipWideClass = cn(
+  'flex w-58 flex-col items-start gap-1 rounded-xl bg-surface px-3 py-2.5 font-sans text-ink shadow-popover',
+  tooltipMotionClass,
+)
 
 function RailTooltip({ label, wide = false, children }: { label: ReactNode; wide?: boolean; children: ReactElement }) {
   const { rail } = useSidebar()
@@ -165,10 +188,11 @@ function Sidebar({
   const isDesktop = useIsDesktop()
   const drawer = layout === 'responsive' && !isDesktop
   const rail = collapsed && !drawer
+  const [noticeId, setNoticeId] = useState<string | undefined>(undefined)
 
   const context = useMemo(
-    () => ({ collapsed, setCollapsed, rail, drawer, mobileOpen, setMobileOpen }),
-    [collapsed, setCollapsed, rail, drawer, mobileOpen, setMobileOpen],
+    () => ({ collapsed, setCollapsed, rail, drawer, mobileOpen, setMobileOpen, noticeId, setNoticeId }),
+    [collapsed, setCollapsed, rail, drawer, mobileOpen, setMobileOpen, noticeId],
   )
 
   const classes = cn(
@@ -178,8 +202,11 @@ function Sidebar({
     drawer
       ? cn(
           'fixed inset-y-0 left-0 z-(--z-popover) shadow-popover',
-          'transition-transform duration-(--motion-fast) ease-smooth-out motion-reduce:transition-none',
-          'data-starting-style:-translate-x-full data-ending-style:-translate-x-full',
+          // audit: in --motion-sheet-open, out --motion-sheet-close. Reduced motion sets
+          // --motion-drawer-x to 0 and keeps a 150ms crossfade.
+          'transition-[translate,opacity] duration-(--motion-sheet-open) ease-smooth-out data-ending-style:duration-(--motion-sheet-close)',
+          'data-starting-style:-translate-x-(--motion-drawer-x) data-ending-style:-translate-x-(--motion-drawer-x)',
+          'motion-reduce:data-starting-style:opacity-0 motion-reduce:data-ending-style:opacity-0',
         )
       : 'transition-[width] duration-(--motion-fast) ease-smooth-out',
     layout === 'responsive' && !drawer && 'sticky top-0',
@@ -188,7 +215,7 @@ function Sidebar({
 
   return (
     <SidebarContext value={context}>
-      <Tooltip.Provider delay={300}>
+      <Tooltip.Provider delay={0}>
         {drawer ? (
           // The phone drawer is a modal dialog (a div: an <aside> cannot take role="dialog"). Tab and
           // Shift+Tab stay inside, focus moves in on open and back to the trigger on close; Escape
@@ -197,7 +224,7 @@ function Sidebar({
             <Dialog.Portal>
               <Dialog.Backdrop
                 data-slot="sidebar-backdrop"
-                className="fixed inset-0 z-(--z-dropdown) bg-overlay transition-opacity duration-(--motion-fast) ease-smooth-out data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none"
+                className="fixed inset-0 z-(--z-dropdown) bg-overlay backdrop-blur-[2px] transition-opacity duration-(--motion-dialog-open) ease-smooth-out data-ending-style:duration-(--motion-dialog-close) data-ending-style:opacity-0 data-starting-style:opacity-0"
               />
               <Dialog.Popup
                 aria-label="Menu"
@@ -263,7 +290,9 @@ function SidebarActions({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="sidebar-actions"
-      className={cn('flex', rail ? 'flex-col gap-2' : 'gap-1', className)}
+      // audit: 12px between the 32px buttons (8px between the 36px rail buttons), so the 44px hit
+      // areas do not overlap.
+      className={cn('flex', rail ? 'flex-col gap-2' : 'gap-3', className)}
       {...props}
     />
   )
@@ -453,7 +482,7 @@ function SidebarGroupLabel({ className, children, ...props }: React.ComponentPro
   const { collapsible } = use(SidebarGroupContext)
   if (rail) {
     return collapsible ? (
-      <span data-slot="sidebar-group-divider" aria-hidden className="block h-px w-6 bg-border-subtle" />
+      <span data-slot="sidebar-group-divider" aria-hidden className="block h-[0.5px] w-6 bg-border-subtle" />
     ) : null
   }
   const classes = 'flex items-center justify-between px-2.5 pb-2 text-left font-sans text-caption-lg font-medium text-muted'
@@ -469,7 +498,7 @@ function SidebarGroupLabel({ className, children, ...props }: React.ComponentPro
       data-slot="sidebar-group-label"
       className={cn(
         classes,
-        'group/label cursor-pointer rounded-md bg-transparent outline-none focus-ring:outline-focus hover-fine:text-ink-2',
+        'group/label relative hit-44 cursor-pointer rounded-md bg-transparent outline-none focus-ring:outline-focus hover-fine:text-ink-2',
         className,
       )}
       {...(props as Collapsible.Trigger.Props)}
@@ -508,7 +537,11 @@ interface SidebarItemProps extends useRender.ComponentProps<'a'> {
   disabled?: boolean
   /** Locked until the account is verified: like disabled, plus a lock icon and a hint. */
   locked?: boolean
-  /** The hint on a locked item (its `title`). */
+  /**
+   * Why a locked item is locked. Shown as visible text (audit): the item points `aria-describedby`
+   * at the footer `SidebarNotice` when there is one, else a caption under the item shows this hint.
+   * Also the item `title`.
+   */
   lockedHint?: string
   /** Trailing content after the label, e.g. `<SidebarItemCount>3</SidebarItemCount>`. A dot on the rail. */
   badge?: ReactNode
@@ -526,19 +559,22 @@ const sidebarItemClass = [
   'data-[state=disabled]:cursor-not-allowed data-[state=disabled]:text-disabled-foreground',
 ]
 
+const DEFAULT_LOCKED_HINT = 'Selesaikan verifikasi untuk membuka menu'
+
 function SidebarItemElement({
   className,
   label,
   active = false,
   disabled = false,
   locked = false,
-  lockedHint = 'Selesaikan verifikasi untuk membuka menu',
+  lockedHint = DEFAULT_LOCKED_HINT,
   badge,
   render,
   children,
   onClick,
+  describedBy,
   ...props
-}: SidebarItemProps) {
+}: SidebarItemProps & { describedBy?: string }) {
   const { rail, drawer, setMobileOpen } = useSidebar()
   const state: SidebarItemState = locked ? 'locked' : disabled ? 'disabled' : active ? 'active' : 'default'
   const inactive = state === 'locked' || state === 'disabled'
@@ -549,10 +585,12 @@ function SidebarItemElement({
     'aria-current': state === 'active' ? 'page' : undefined,
     'aria-disabled': inactive || undefined,
     'aria-label': rail ? label : undefined,
+    'aria-describedby': state === 'locked' ? describedBy : undefined,
     title: state === 'locked' ? lockedHint : undefined,
     className: cn(
       sidebarItemClass,
-      rail ? 'w-9 justify-center px-0' : 'w-full px-2.5',
+      // audit: 44px tall in the phone drawer (a touch target).
+      rail ? 'w-9 justify-center px-0' : 'w-full px-2.5 max-lg:h-11',
       state === 'active' &&
         (rail ? 'border-border-subtle shadow-[0_1px_2px_var(--color-shadow-ambient)]' : 'shadow-control'),
       className,
@@ -609,10 +647,27 @@ function SidebarItemElement({
  * `<SidebarItem href="/cards" label="Kartu" active><Icon icon={CreditCardIcon} /></SidebarItem>`.
  */
 function SidebarItem(props: SidebarItemProps) {
-  return (
+  const { rail, noticeId } = useSidebar()
+  const hintId = useId()
+  // A locked item with no notice on screen shows its reason as a caption under it.
+  const caption = Boolean(props.locked) && !noticeId && !rail
+  const item = (
     <RailTooltip label={props.label}>
-      <SidebarItemElement {...props} />
+      <SidebarItemElement {...props} describedBy={caption ? hintId : noticeId} />
     </RailTooltip>
+  )
+  if (!caption) return item
+  return (
+    <>
+      {item}
+      <span
+        id={hintId}
+        data-slot="sidebar-item-hint"
+        className="block px-2.5 pt-0.5 pb-1 text-caption-lg text-muted"
+      >
+        {props.lockedHint ?? DEFAULT_LOCKED_HINT}
+      </span>
+    </>
   )
 }
 
@@ -657,7 +712,7 @@ interface SidebarNoticeProps extends Omit<React.ComponentProps<'div'>, 'title'> 
    * It gets the 36px warning square, the accessible name and the tooltip.
    */
   render?: useRender.ComponentProps<'a'>['render']
-  /** Accessible name of the rail link. Default: `"<title> — buka Pengaturan"`. */
+  /** Accessible name of the rail link. Default: `"<title>, buka Pengaturan"`. */
   linkLabel?: string
 }
 
@@ -678,8 +733,24 @@ function SidebarNoticeRailLink({ className, render, ...props }: useRender.Compon
  * On the rail it becomes a 36px warning square that links to the page that resolves it (default
  * `/settings`, as in the app), with the text in a tooltip. Pass `render` for a router link.
  */
-function SidebarNotice({ title, href = '/settings', render, linkLabel, className, children, ...props }: SidebarNoticeProps) {
-  const { rail } = useSidebar()
+function SidebarNotice({
+  title,
+  href = '/settings',
+  render,
+  linkLabel,
+  className,
+  children,
+  id: idProp,
+  ...props
+}: SidebarNoticeProps) {
+  const { rail, setNoticeId } = useSidebar()
+  const autoId = useId()
+  const id = idProp ?? autoId
+  // Locked items point aria-describedby here, so their reason is visible text.
+  useEffect(() => {
+    setNoticeId(id)
+    return () => setNoticeId(undefined)
+  }, [id, setNoticeId])
   if (rail) {
     return (
       <RailTooltip
@@ -692,9 +763,10 @@ function SidebarNotice({ title, href = '/settings', render, linkLabel, className
         }
       >
         <SidebarNoticeRailLink
+          id={id}
           href={href}
           render={render}
-          aria-label={linkLabel ?? `${title} — buka Pengaturan`}
+          aria-label={linkLabel ?? `${title}, buka Pengaturan`}
           className={className}
         />
       </RailTooltip>
@@ -703,15 +775,15 @@ function SidebarNotice({ title, href = '/settings', render, linkLabel, className
   return (
     <div
       role="note"
+      id={id}
       data-slot="sidebar-notice"
       className={cn('flex flex-col gap-1 rounded-3xl border border-border-subtle bg-warning-light p-1', className)}
       {...props}
     >
-      <p className="m-0 flex items-center gap-1.5 px-2 pt-1 text-caption-lg font-semibold text-warning-text">
-        <Icon icon={AlertCircleIcon} size={14} />
-        {title}
-      </p>
-      <p className="m-0 rounded-xl border border-border-subtle bg-surface p-3 text-body-sm text-ink-2 shadow-[0_1px_2px_var(--color-shadow-ambient)]">
+      {/* audit: no warning icon before the title; the tint and the title carry it. */}
+      <p className="m-0 px-2 pt-1 text-caption-lg font-semibold text-warning-text">{title}</p>
+      {/* audit: no inner border: the parent card already has one. */}
+      <p className="m-0 rounded-xl bg-surface p-3 text-body-sm text-ink-2 shadow-[0_1px_2px_var(--color-shadow-ambient)]">
         {children}
       </p>
     </div>

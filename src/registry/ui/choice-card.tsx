@@ -1,20 +1,21 @@
-import { Tick02Icon } from '@hugeicons/core-free-icons'
 import { Radio } from '@base-ui/react/radio'
 import { RadioGroup } from '@base-ui/react/radio-group'
 import { cva } from 'class-variance-authority'
 import { useId, type ComponentProps, type ReactNode } from 'react'
 
-import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 /*
  * Mayar v2 Choice Card. Wonder "Mayar Card Design System" › Selection › Choice Card.
  * default: 14px padding, 12px gap, radius xl, hairline ring; selected = primary tint + 1px primary
- *   ring, the radio dot pops in with `--motion-choice-pop`. Title stays 600 in every state.
+ *   ring, the radio dot pops in with `--motion-choice-pop` (scale 0.5 → 1 and opacity 0 → 1).
+ *   Title stays 600 in every state.
  * leading (code-only): radio first, radius 2xl, control shadow, 1.5px ring when selected.
  * icon (code-only): a 32px icon disc first, no radio dot.
  * method (code-only): a 32px icon tile first, the radio at the end; disabled = dashed and muted.
- * list (code-only): a 44px row in a `ChoiceCardList`; selected = component fill and a check.
+ * list (code-only): a 44px row in a `ChoiceCardList`; selected = component fill.
+ * Audit (17 Nov 2026): the dot starts at scale 0.5 (the app: 0), and the list row has no tick
+ * (the app: fill and tick).
  * Behaviour: Base UI RadioGroup + Radio, so arrows move and select, and Tab enters on the
  * selected card.
  */
@@ -171,7 +172,7 @@ function ChoiceCard({
       <span className={cn(radioVariants({ variant }))}>
         <span
           className={cn(
-            'size-1.5 scale-0 rounded-pill bg-on-brand opacity-0',
+            'size-1.5 scale-50 rounded-pill bg-on-brand opacity-0',
             'transition-[scale,opacity] duration-(--motion-choice-pop) ease-smooth-out',
             `group-data-checked/choice:scale-100 group-data-checked/choice:opacity-100`,
             variant === 'leading' && `group-data-disabled/choice:opacity-0!`,
@@ -214,13 +215,6 @@ function ChoiceCard({
         {children}
       </span>
       {variant !== 'leading' ? radio : null}
-      {variant === 'list' ? (
-        <Icon
-          icon={Tick02Icon}
-          data-slot="choice-card-check"
-          className={cn('pointer-events-none hidden text-primary', `group-data-checked/choice:block`)}
-        />
-      ) : null}
     </Radio.Root>
   )
 }
